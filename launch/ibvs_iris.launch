@@ -1,0 +1,4 @@
+<launch>
+  <node name="bearings_node" type="bearings" pkg="bearings" output="screen"/>
+  <rosparam command="load" file="$(find bearings)/config/params_iris.yaml"/>
+</launch>

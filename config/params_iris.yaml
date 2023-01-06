@@ -1,0 +1,50 @@
+# The camera intrinsic parameters matrix
+# 3x3 matrix
+camera_intrinsic_parameters: [241.4268236, 0,    376.0,
+                              0,    241.4268236, 240.0,
+                              0,    0,    1]
+
+# Sampling time
+dt: 0.01
+
+# Gain on linear velocities
+############################################################
+# Para el control #1
+gainv: .5
+############################################################
+# Para el control #2
+# gain_v: .4
+
+# POSICIÓN DESEADA : (X, Y, Z, Qx, Qy, Qz)
+# X = -1.5
+# Y = 0
+# Z = 1
+# Qx = 0
+# Qy = 0
+# Qz = 0
+
+# Gain on angular velocities
+gainw: 1
+
+# Threshold on the feature position error, used to stop the visual control
+feature_error_threshold: .05
+
+nfeatures: 500
+scaleFactor: 1.2
+nlevels: 8
+edgeThreshold: 15
+patchSize: 30
+fastThreshold: 20
+flann_ratio: 0.7
+
+############################################################
+# Cambio de control 1 o 2.
+control: 1
+
+############################################################
+# Cambio de cámara 0, 1 o 2.
+# 0 Para cámara de humminbird
+# 1 Para cámara de iris - frontal
+# 2 Para cámara de iris - abajo
+# 3 Para cámara de iris - Ambas
+camara: 1
