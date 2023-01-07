@@ -7,28 +7,26 @@
   <arg name="debug" default="false" />
   <arg name="gui" default="true" />
   <arg name="paused" default="false" />
-  <!-- The following line causes gzmsg and gzerr messages to be printed to the console
-      (even
-  when Gazebo is started through roslaunch) -->
+
   <arg name="verbose" default="false" />
 
   <arg name="x_1" default="-2" />
   <arg name="y_1" default="0" />
   <arg name="z_1" default="1" />
   <arg name="yaw_1" default="0" />
-  
-  <arg name="x_2" default="-4" />
-  <arg name="y_2" default="0" />
+
+  <arg name="x_2" default="-2" />
+  <arg name="y_2" default="2" />
   <arg name="z_2" default="1" />
   <arg name="yaw_2" default="0" />
 
-  <arg name="x_3" default="-6" />
+  <arg name="x_3" default="-4" />
   <arg name="y_3" default="0" />
   <arg name="z_3" default="1" />
   <arg name="yaw_3" default="0" />
-  
-  <arg name="x_4" default="-8" />
-  <arg name="y_4" default="0" />
+
+  <arg name="x_4" default="-4" />
+  <arg name="y_4" default="2" />
   <arg name="z_4" default="1" />
   <arg name="yaw_4" default="0" />
 
@@ -62,7 +60,6 @@
     </node>
     <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
       args="$(arg x_1) $(arg y_1) $(arg z_1) $(arg yaw_1) 1" />
-    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   </group>
@@ -87,7 +84,6 @@
     </node>
     <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
       args="$(arg x_2) $(arg y_2) $(arg z_2) $(arg yaw_2) 1" />
-    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   </group>
@@ -112,7 +108,6 @@
     </node>
     <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
       args="$(arg x_3) $(arg y_3) $(arg z_3) $(arg yaw_3) 1" />
-    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   </group>
@@ -137,7 +132,6 @@
     </node>
     <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
       args="$(arg x_4) $(arg y_4) $(arg z_4) $(arg yaw_4) 1" />
-    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   </group>
