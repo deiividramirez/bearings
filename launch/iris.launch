@@ -1,0 +1,144 @@
+<launch>
+  <arg name="mav_name" default="iris" />
+  <arg name="world_name" default="ground" />
+  <arg name="enable_logging" default="false" />
+  <arg name="enable_ground_truth" default="true" />
+  <arg name="log_file" default="$(arg mav_name)" />
+  <arg name="debug" default="false" />
+  <arg name="gui" default="true" />
+  <arg name="paused" default="false" />
+  <!-- The following line causes gzmsg and gzerr messages to be printed to the console
+      (even
+  when Gazebo is started through roslaunch) -->
+  <arg name="verbose" default="false" />
+
+  <arg name="x_1" default="-2" />
+  <arg name="y_1" default="0" />
+  <arg name="z_1" default="1" />
+  <arg name="yaw_1" default="0" />
+  
+  <arg name="x_2" default="-4" />
+  <arg name="y_2" default="0" />
+  <arg name="z_2" default="1" />
+  <arg name="yaw_2" default="0" />
+
+  <arg name="x_3" default="-6" />
+  <arg name="y_3" default="0" />
+  <arg name="z_3" default="1" />
+  <arg name="yaw_3" default="0" />
+  
+  <arg name="x_4" default="-8" />
+  <arg name="y_4" default="0" />
+  <arg name="z_4" default="1" />
+  <arg name="yaw_4" default="0" />
+
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find bearings)/models" />
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find bearings)/models" />
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find bearings)/worlds/$(arg world_name).world" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="$(arg verbose)" />
+  </include>
+
+  <group ns="$(arg mav_name)_1">
+    <include file="$(find bearings)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="iris1" />
+      <arg name="namespace" value="$(arg mav_name)_1" />
+      <arg name="model" value="$(find bearings)/urdf/mav_generic_odometry_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)" />
+      <arg name="x" value="$(arg x_1)" />
+      <arg name="y" value="$(arg y_1)" />
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control"
+      type="lee_position_controller_node" output="screen">
+      <rosparam command="load"
+        file="$(find bearings)/resource/lee_controller_iris.yaml" />
+      <rosparam command="load" file="$(find bearings)/resource/iris.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
+      args="$(arg x_1) $(arg y_1) $(arg z_1) $(arg yaw_1) 1" />
+    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="$(arg mav_name)_2">
+    <include file="$(find bearings)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="iris2" />
+      <arg name="namespace" value="$(arg mav_name)_2" />
+      <arg name="model" value="$(find bearings)/urdf/mav_generic_odometry_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)" />
+      <arg name="x" value="$(arg x_2)" />
+      <arg name="y" value="$(arg y_2)" />
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control"
+      type="lee_position_controller_node" output="screen">
+      <rosparam command="load"
+        file="$(find bearings)/resource/lee_controller_iris.yaml" />
+      <rosparam command="load" file="$(find bearings)/resource/iris.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
+      args="$(arg x_2) $(arg y_2) $(arg z_2) $(arg yaw_2) 1" />
+    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="$(arg mav_name)_3">
+    <include file="$(find bearings)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="iris3" />
+      <arg name="namespace" value="$(arg mav_name)_3" />
+      <arg name="model" value="$(find bearings)/urdf/mav_generic_odometry_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)" />
+      <arg name="x" value="$(arg x_3)" />
+      <arg name="y" value="$(arg y_3)" />
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control"
+      type="lee_position_controller_node" output="screen">
+      <rosparam command="load"
+        file="$(find bearings)/resource/lee_controller_iris.yaml" />
+      <rosparam command="load" file="$(find bearings)/resource/iris.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
+      args="$(arg x_3) $(arg y_3) $(arg z_3) $(arg yaw_3) 1" />
+    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+
+  <group ns="$(arg mav_name)_4">
+    <include file="$(find bearings)/launch/spawn_mav.launch">
+      <arg name="mav_name" value="iris4" />
+      <arg name="namespace" value="$(arg mav_name)_4" />
+      <arg name="model" value="$(find bearings)/urdf/mav_generic_odometry_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="$(arg log_file)" />
+      <arg name="x" value="$(arg x_4)" />
+      <arg name="y" value="$(arg y_4)" />
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control"
+      type="lee_position_controller_node" output="screen">
+      <rosparam command="load"
+        file="$(find bearings)/resource/lee_controller_iris.yaml" />
+      <rosparam command="load" file="$(find bearings)/resource/iris.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen"
+      args="$(arg x_4) $(arg y_4) $(arg z_4) $(arg yaw_4) 1" />
+    <!-- <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  </group>
+</launch>
