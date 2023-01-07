@@ -24,6 +24,7 @@ vc_homograpy_matching_result matching_result;
 
 // Conteo de imágenes
 int contIMG = 0;
+bool cam3 = false;
 
 // Matrices para mostrar las imágenes
 Mat img_old, img_points;
@@ -127,6 +128,7 @@ int main(int argc, char **argv)
 		image_sub = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
 		image_sub2 = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback2);
 		image_dir = "/src/Bearings/src/desired2.jpg";
+		cam3 = true;
 	}
 	else
 	{
@@ -383,7 +385,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				circle(actual, img_points.at<Point2f>(i, 0), 3, Scalar(255, 0, 0), -1);
 			}
 
-			imshow("Cámara frontal", actual);
+			imshow("Frontal camera", actual);
 			imshow("Desired", desired_temp);
 			waitKey(1);
 
@@ -392,7 +394,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			actual.copyTo(img_old);
 		}
 
-		string saveIMG = "/src/vc_new_controller/src/data/img/" + to_string(contIMG++) + ".jpg";
+		string saveIMG = "/src/Bearings/src/data/img/" + to_string(contIMG++) + ".jpg";
 		imwrite(workspace + saveIMG, actual);
 		cout << "[INFO] << Image saved >>" << saveIMG << endl;
 
@@ -421,18 +423,21 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cout << "[INFO] ImageCallback function" << endl;
-	try
+	if (cam3)
 	{
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-		cout << "[INFO] Image received" << endl;
+		try
+		{
+			Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+			cout << "[INFO] Image received" << endl;
 
-		imshow("Cámara de abajo", actual);
-		waitKey(1);
-	}
-	catch (cv_bridge::Exception &e)
-	{
-		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-							msg->encoding.c_str());
+			imshow("Bottom Camera", actual);
+			waitKey(1);
+		}
+		catch (cv_bridge::Exception &e)
+		{
+			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
+								msg->encoding.c_str());
+		}
 	}
 }
 

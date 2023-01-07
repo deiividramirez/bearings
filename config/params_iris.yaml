@@ -27,7 +27,7 @@ gainv: .5
 gainw: 1
 
 # Threshold on the feature position error, used to stop the visual control
-feature_error_threshold: .05
+feature_error_threshold: .01
 
 nfeatures: 500
 scaleFactor: 1.2
@@ -47,4 +47,4 @@ control: 1
 # 1 Para cámara de iris - frontal
 # 2 Para cámara de iris - abajo
 # 3 Para cámara de iris - Ambas
-camara: 1
+camara: 3
