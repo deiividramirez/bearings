@@ -1,7 +1,7 @@
-#ifndef VC_CONTROLLER_H
-#define VC_CONTROLLER_H
+// #ifndef VC_CONTROLLER_H
+// #define VC_CONTROLLER_H
 
-/******************************************************* ROS libraries*/
+/****************** ROS LIBRARIES ******************/
 #include <ros/ros.h>
 #include <mav_msgs/conversions.h>
 #include "tf/transform_datatypes.h"
@@ -9,7 +9,7 @@
 #include <image_transport/image_transport.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 
-/**************************************************** OpenCv Libraries*/
+/****************** OPENCV LIBRARIES ******************/
 #include <opencv2/core.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/imgproc.hpp>
@@ -19,7 +19,7 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/video/tracking.hpp>
 
-/*************************************************** c++ libraries */
+/****************** C++ LIBRARIES ******************/
 #include <string>
 #include <vector>
 #include <fstream>
@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <iostream>
 
-/*************************************************** custom libraries */
+/****************** CUSTOM LIBRARIES ******************/
 #include "vc_state/vc_state.h"
 
-#endif
+// #endif

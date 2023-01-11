@@ -82,10 +82,11 @@
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "[cpp]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 3
     },
     "[c]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 3
     },
-    "ros.distro": "noetic"
+    "ros.distro": "noetic",
+    "cmake.sourceDirectory": "${workspaceFolder}/."
 }

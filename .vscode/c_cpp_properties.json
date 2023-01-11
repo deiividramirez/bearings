@@ -14,8 +14,7 @@
         "~/catkin_ws/src/rotors_simulator/rotors_gazebo_plugins/include/**",
         "~/catkin_ws/src/rotors_simulator/rotors_hil_interface/include/**",
         "~/catkin_ws/src/rotors_simulator/rotors_joy_interface/include/**",
-        "~/catkin_ws/src/vc_controller/include/**",
-        "~/catkin_ws/src/vc_new_controller/include/**",
+        "~/catkin_ws/src/bearings/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",

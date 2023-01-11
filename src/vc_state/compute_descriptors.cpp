@@ -1,12 +1,12 @@
-#include "vc_state/img_tools.h"
+#include "vc_state/vc_state.h"
 
 using namespace cv;
 using namespace std;
 
 int compute_descriptors(const Mat &img,
-												const vc_parameters &params,
-												const vc_desired_configuration &desired_configuration,
-												vc_homograpy_matching_result &result)
+								const vc_parameters &params,
+								const vc_desired_configuration &desired_configuration,
+								vc_homograpy_matching_result &result)
 {
 
 	/*** KP ***/
@@ -24,7 +24,7 @@ int compute_descriptors(const Mat &img,
 	}
 	else
 	{
-		cout << "[ERROR] Keypoints detected: " << kp.size() << endl;
+		cout << "[INFO] Keypoints detected: " << kp.size() << endl;
 	}
 	orb->compute(img, kp, descriptors);
 
@@ -90,7 +90,7 @@ int compute_descriptors(const Mat &img,
 	// {
 	// 	circle(img, Point(result.p1.at<double>(i, 0), result.p1.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
 	// }
-	
+
 	// for (int i = 0; i < result.p2.rows; i++)
 	// {
 	// 	circle(desired_configuration.img, Point(result.p2.at<double>(i, 0), result.p2.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
@@ -111,7 +111,7 @@ int compute_descriptors(const Mat &img,
 
 	result.img_matches = Mat::zeros(img.rows, img.cols * 2, img.type());
 	drawMatches(desired_configuration.img, desired_configuration.kp, img, kp,
-							goodMatches, result.img_matches,
-							Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+					goodMatches, result.img_matches,
+					Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 	return 0;
 }

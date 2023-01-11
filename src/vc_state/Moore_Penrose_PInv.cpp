@@ -1,4 +1,4 @@
-#include "vc_state/img_tools.h"
+#include "vc_state/vc_state.h"
 
 using namespace cv;
 

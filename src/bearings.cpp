@@ -1,142 +1,93 @@
 #include "bearings.h"
 
-/* Declaring namespaces */
+/****************** DECLARING NAMESPACES ******************/
 using namespace cv;
 using namespace std;
 
-/* Declaring callbacks and other functions*/
+/****************** CALLBACKS ******************/
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg);
 void poseCallback(const geometry_msgs::Pose::ConstPtr &msg);
 void writeFile(vector<float> &vec, const string &name);
 
-/* Declaring objects to receive messages */
+/****************** DECLARING OBJECTS TO RECEIVE MESSAGES ******************/
 sensor_msgs::ImagePtr image_msg;
 
-/* Workspace definition from CMake */
+/****************** WORKSPACE DEFINITION FROM CMAKE ******************/
 string workspace = WORKSPACE;
 
-// Visual control state
+/****************** VISUAL CONTROL STATE AND RESULTS VARIABLES ******************/
 vc_state state;
-
-// Result of the matching operation
 vc_homograpy_matching_result matching_result;
 
-// Conteo de imágenes
+/****************** AUXILIAR GLOBAL VARIABLES ******************/
 int contIMG = 0;
 bool cam3 = false;
-
-// Matrices para mostrar las imágenes
 Mat img_old, img_points;
 
-int MinBy(Mat puntos, Mat key)
-{
-	// Make buuble sort with norm of the difference between points and key
-	Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
-	Mat p2 = puntos.clone();
-
-	for (int i = 0; i < p2.rows; i++)
-	{
-		orden.at<int>(0, i) = i;
-	}
-
-	for (int i = 0; i < p2.rows; i++)
-	{
-		for (int j = 0; j < p2.rows - 1; j++)
-		{
-			Mat diff1 = p2.row(j) - key;
-			Mat diff2 = p2.row(i) - key;
-			if (norm(diff1) > norm(diff2))
-			{
-				double temp = p2.at<double>(j, 0);
-				p2.at<double>(j, 0) = p2.at<double>(i, 0);
-				p2.at<double>(i, 0) = temp;
-
-				temp = p2.at<double>(j, 1);
-				p2.at<double>(j, 1) = p2.at<double>(i, 1);
-				p2.at<double>(i, 1) = temp;
-
-				int temp2 = orden.at<int>(0, j);
-				orden.at<int>(0, j) = orden.at<int>(0, i);
-				orden.at<int>(0, i) = temp2;
-			}
-		}
-	}
-
-	return orden.at<int>(0, 0);
-}
-
-Mat Orden(Mat puntos)
-{
-	Mat orden = Mat::zeros(1, 4, CV_32S);
-	// The next are constnat matrices to compare points around about
-	Mat key_p1 = (Mat_<double>(1, 2) << 188, 360);
-	Mat key_p2 = (Mat_<double>(1, 2) << 564, 360);
-	Mat key_p3 = (Mat_<double>(1, 2) << 188, 120);
-	Mat key_p4 = (Mat_<double>(1, 2) << 564, 120);
-
-	int mkey_p1 = MinBy(puntos, key_p1);
-	int mkey_p2 = MinBy(puntos, key_p2);
-	int mkey_p3 = MinBy(puntos, key_p3);
-	int mkey_p4 = MinBy(puntos, key_p4);
-
-	orden.at<int>(0, 0) = mkey_p1;
-	orden.at<int>(0, 1) = mkey_p2;
-	orden.at<int>(0, 2) = mkey_p3;
-	orden.at<int>(0, 3) = mkey_p4;
-
-	cout << "Orden: " << orden << endl;
-
-	return orden;
-}
-
-/* Main function */
+/****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
 {
-	/***************************************************************************************** INIT */
-	ros::init(argc, argv, "Bearings");
+	/****************** ROS INITIALIZING ******************/
+	ros::init(argc, argv, "bearings");
 	ros::NodeHandle nh;
 	state.load(nh);
 
 	image_transport::ImageTransport it(nh);
-	image_transport::Subscriber image_sub, image_sub2;
+	image_transport::Subscriber image_sub_1f, image_sub_1b, 
+										 image_sub_2f, image_sub_2b, 
+										 image_sub_3f, image_sub_3b, 
+										 image_sub_4f, image_sub_4b;
 
-	/************************************************************* CREATING PUBLISHER AND SUBSCRIBER */
-	string image_dir;
-	if (state.params.camara == 0)
-	{
-		cout << "[INFO] Using hummingbird bottom camera" << endl;
-		image_sub = it.subscribe("/hummingbird/camera_nadir/image_raw", 1, imageCallback);
-		image_dir = "/src/Bearings/src/desired.jpg";
-	}
-	else if (state.params.camara == 1)
-	{
-		cout << "[INFO] Using iris front camera" << endl;
-		image_sub = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
-		image_dir = "/src/Bearings/src/desired2.jpg";
-	}
-	else if (state.params.camara == 2)
-	{
-		cout << "[INFO] Using iris bottom camera" << endl;
-		image_sub = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback);
-		image_dir = "/src/Bearings/src/desired.jpg";
-	}
-	else if (state.params.camara == 3)
-	{
-		state.params.camara = 1;
-		cout << "[INFO] Using both cameras" << endl;
-		image_sub = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
-		image_sub2 = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback2);
-		image_dir = "/src/Bearings/src/desired2.jpg";
-		cam3 = true;
-	}
-	else
-	{
-		cout << "[ERROR] There is no camera with that number" << endl;
-		exit(-1);
-	}
+	/****************** CREATING PUBLISHER AND SUBSCRIBER ******************/
+	string image_dir = "/src/bearings/src/desired2.jpg";
 
-	image_transport::Publisher image_pub = it.advertise("matching", 1);
+	image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback2);
+	image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback2);
+
+	image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+	image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, imageCallback2);
+
+	image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback2);
+	image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, imageCallback2);
+
+	image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback2);
+	image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, imageCallback2);
+
+	// if (state.params.camara == 0)
+	// {
+	// 	cout << "[INFO] Using hummingbird bottom camera" << endl;
+	// 	image_sub_1f = it.subscribe("/hummingbird/camera_nadir/image_raw", 1, imageCallback);
+	// 	image_dir = "/src/bearings/src/desired.jpg";
+	// }
+	// else if (state.params.camara == 1)
+	// {
+	// 	cout << "[INFO] Using iris front camera" << endl;
+	// 	image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+	// 	image_dir = "/src/bearings/src/desired2.jpg";
+	// }
+	// else if (state.params.camara == 2)
+	// {
+	// 	cout << "[INFO] Using iris bottom camera" << endl;
+	// 	image_sub_1f = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback);
+	// 	image_dir = "/src/bearings/src/desired.jpg";
+	// }
+	// else if (state.params.camara == 3)
+	// {
+	// 	state.params.camara = 1;
+	// 	cout << "[INFO] Using both cameras" << endl;
+	// 	image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+	// 	image_sub2 = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, imageCallback2);
+	// 	image_dir = "/src/bearings/src/desired2.jpg";
+	// 	cam3 = true;
+	// }
+	// else
+	// {
+	// 	cout << "[ERROR] There is no camera with that number" << endl;
+	// 	exit(-1);
+	// }
+
+	// image_transport::Publisher image_pub = it.advertise("matching", 1);
 	ros::Rate rate(30);
 	// ros::Rate rate(120);
 
@@ -155,20 +106,20 @@ int main(int argc, char **argv)
 	}
 
 	Ptr<ORB> orb = ORB::create(state.params.nfeatures,
-														 state.params.scaleFactor,
-														 state.params.nlevels,
-														 state.params.edgeThreshold,
-														 state.params.firstLevel,
-														 state.params.WTA_K,
-														 state.params.scoreType,
-														 state.params.patchSize,
-														 state.params.fastThreshold);
+										state.params.scaleFactor,
+										state.params.nlevels,
+										state.params.edgeThreshold,
+										state.params.firstLevel,
+										state.params.WTA_K,
+										state.params.scoreType,
+										state.params.patchSize,
+										state.params.fastThreshold);
 
 	orb->detect(state.desired_configuration.img,
-							state.desired_configuration.kp);
+					state.desired_configuration.kp);
 	orb->compute(state.desired_configuration.img,
-							 state.desired_configuration.kp,
-							 state.desired_configuration.descriptors);
+					 state.desired_configuration.kp,
+					 state.desired_configuration.descriptors);
 
 	/******************************************************************************* MOVING TO A POSE */
 	ros::Publisher pos_pub;
@@ -177,14 +128,14 @@ int main(int argc, char **argv)
 	if (state.params.camara == 0)
 	{
 		cout << "[INFO] Hummingbird trajectory and pose" << endl
-				 << endl;
+			  << endl;
 		pos_pub = nh.advertise<trajectory_msgs::MultiDOFJointTrajectory>("/hummingbird/command/trajectory", 1);
 		pos_sub = nh.subscribe<geometry_msgs::Pose>("/hummingbird/ground_truth/pose", 1, poseCallback);
 	}
 	else if (state.params.camara == 1 || state.params.camara == 2)
 	{
 		cout << "[INFO] Iris trajectory and pose" << endl
-				 << endl;
+			  << endl;
 		pos_pub = nh.advertise<trajectory_msgs::MultiDOFJointTrajectory>("/iris_1/command/trajectory", 1);
 		pos_sub = nh.subscribe<geometry_msgs::Pose>("/iris_1/ground_truth/pose", 1, poseCallback);
 	}
@@ -201,7 +152,7 @@ int main(int argc, char **argv)
 
 	// Create message for the pose
 	trajectory_msgs::MultiDOFJointTrajectory msg;
-	string file_folder = "/src/Bearings/src/data/";
+	string file_folder = "/src/bearings/src/data/";
 
 	/******************************************************************************* CYCLE START*/
 	while (ros::ok())
@@ -228,16 +179,16 @@ int main(int argc, char **argv)
 		if (matching_result.mean_feature_error < state.params.feature_threshold)
 		{
 			cout << endl
-					 << "[INFO] Target reached within the feature threshold and maximum iterations" << endl
-					 << endl;
+				  << "[INFO] Target reached within the feature threshold and maximum iterations" << endl
+				  << endl;
 			waitKey(0);
 			break;
 		}
 
 		// Publish image of the matching
 		cout << endl
-				 << "[INFO] Publishing image" << endl;
-		image_pub.publish(image_msg);
+			  << "[INFO] Publishing image" << endl;
+		// image_pub.publish(image_msg);
 
 		// Update state with the current control
 		auto new_pose = state.update();
@@ -289,63 +240,25 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		if (contIMG < 3)
 		{
 			contIMG++;
-			cout << endl
-					 << "[INFO] Detecting keypoints" << endl;
+			cout << "\n[INFO] Detecting keypoints" << endl;
 
 			if (state.params.camara != 1)
 			{
-				if (compute_descriptors(actual, state.params, state.desired_configuration, matching_result) < 0)
+				if (Kanade_Lucas_Tomasi(actual, img_points, state, matching_result) < 0)
 				{
-					cout << "[ERROR] Error en compute_descriptors" << endl;
+					cout << "[ERROR] No Kanade-Lucas-Tomasi tracking were possible" << endl;
 					return;
 				}
-
-				Mat puntos = Orden(matching_result.p2);
-				img_points = Mat(4, 2, CV_32F);
-				img_points.at<Point2f>(0, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 0), 0), matching_result.p2.at<double>(puntos.at<int>(0, 0), 1));
-				img_points.at<Point2f>(1, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 1), 0), matching_result.p2.at<double>(puntos.at<int>(0, 1), 1));
-				img_points.at<Point2f>(2, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 2), 0), matching_result.p2.at<double>(puntos.at<int>(0, 2), 1));
-				img_points.at<Point2f>(3, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 3), 0), matching_result.p2.at<double>(puntos.at<int>(0, 3), 1));
-
-				Mat temporal = Mat::zeros(4, 2, CV_32F);
-				temporal.at<Point2f>(0, 0) = Point2f(matching_result.p1.at<double>(puntos.at<int>(0, 0), 0), matching_result.p1.at<double>(puntos.at<int>(0, 0), 1));
-				temporal.at<Point2f>(1, 0) = Point2f(matching_result.p1.at<double>(puntos.at<int>(0, 1), 0), matching_result.p1.at<double>(puntos.at<int>(0, 1), 1));
-				temporal.at<Point2f>(2, 0) = Point2f(matching_result.p1.at<double>(puntos.at<int>(0, 2), 0), matching_result.p1.at<double>(puntos.at<int>(0, 2), 1));
-				temporal.at<Point2f>(3, 0) = Point2f(matching_result.p1.at<double>(puntos.at<int>(0, 3), 0), matching_result.p1.at<double>(puntos.at<int>(0, 3), 1));
-				temporal.convertTo(matching_result.p1, CV_64F);
-
-				temporal = Mat::zeros(4, 2, CV_32F);
-				temporal.at<Point2f>(0, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 0), 0), matching_result.p2.at<double>(puntos.at<int>(0, 0), 1));
-				temporal.at<Point2f>(1, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 1), 0), matching_result.p2.at<double>(puntos.at<int>(0, 1), 1));
-				temporal.at<Point2f>(2, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 2), 0), matching_result.p2.at<double>(puntos.at<int>(0, 2), 1));
-				temporal.at<Point2f>(3, 0) = Point2f(matching_result.p2.at<double>(puntos.at<int>(0, 3), 0), matching_result.p2.at<double>(puntos.at<int>(0, 3), 1));
-				temporal.convertTo(matching_result.p2, CV_64F);
 			}
 			else
 			{
-				std::vector<int> markerIds;
-				std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-				cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
-				cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-				cv::aruco::detectMarkers(actual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-
-				Mat temporal = Mat::zeros(4, 2, CV_32F);
-				temporal.at<Point2f>(0, 0) = Point2f(markerCorners[0][0].x, markerCorners[0][0].y);
-				temporal.at<Point2f>(1, 0) = Point2f(markerCorners[0][1].x, markerCorners[0][1].y);
-				temporal.at<Point2f>(2, 0) = Point2f(markerCorners[0][2].x, markerCorners[0][2].y);
-				temporal.at<Point2f>(3, 0) = Point2f(markerCorners[0][3].x, markerCorners[0][3].y);
-				temporal.convertTo(matching_result.p2, CV_64F);
-				temporal.convertTo(img_points, CV_32F);
-
-				cv::aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-				temporal = Mat::zeros(4, 2, CV_32F);
-				temporal.at<Point2f>(0, 0) = Point2f(markerCorners[0][0].x, markerCorners[0][0].y);
-				temporal.at<Point2f>(1, 0) = Point2f(markerCorners[0][1].x, markerCorners[0][1].y);
-				temporal.at<Point2f>(2, 0) = Point2f(markerCorners[0][2].x, markerCorners[0][2].y);
-				temporal.at<Point2f>(3, 0) = Point2f(markerCorners[0][3].x, markerCorners[0][3].y);
-				temporal.convertTo(matching_result.p1, CV_64F);
+				if (aruco_detector(actual, img_points, state, matching_result) < 0)
+				{
+					cout << "[ERROR] No ArUco were found." << endl;
+					return;
+				}
 			}
-			cout << "[INFO] img_points: " << img_points << endl;
+			// cout << "[INFO] img_points: " << img_points << endl;
 			cout << "[INFO] matching_result.p1: " << matching_result.p1 << endl;
 			cout << "[INFO] matching_result.p2: " << matching_result.p2 << endl;
 
@@ -411,12 +324,12 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 		if (state.initialized)
 			cout << "[VELS] Vx: " << state.Vx << ", Vy: " << state.Vy << ", Vz: " << state.Vz << "\nVroll: " << state.Vroll << ", Vpitch: " << state.Vpitch << ", Wyaw: " << state.Vyaw << "\n==> average error: " << matching_result.mean_feature_error << "<==" << endl
-					 << "===================================================================\n\n";
+				  << "===================================================================\n\n";
 	}
 	catch (cv_bridge::Exception &e)
 	{
 		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-							msg->encoding.c_str());
+					 msg->encoding.c_str());
 	}
 }
 
@@ -430,13 +343,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 			cout << "[INFO] Image received" << endl;
 
-			imshow("Bottom Camera", actual);
+			imshow("Camera", actual);
 			waitKey(1);
 		}
 		catch (cv_bridge::Exception &e)
 		{
 			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-								msg->encoding.c_str());
+						 msg->encoding.c_str());
 		}
 	}
 }

@@ -138,11 +138,6 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/homography_node.cpp)
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -208,6 +203,8 @@ include_directories(
 
 add_executable(bearings src/bearings.cpp 
 src/vc_state/compute_descriptors.cpp
+src/vc_state/Kanade_Lucas_Tomasi.cpp
+src/vc_state/aruco_detector.cpp
 src/vc_state/Moore_Penrose_PInv.cpp 
 src/vc_state/GUO.cpp
 src/vc_state/vc_state.cpp
