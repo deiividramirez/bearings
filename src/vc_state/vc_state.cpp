@@ -21,8 +21,9 @@ void vc_state::load(const ros::NodeHandle &nh)
         istr >> this->params.K.at<double>(i / 3, i % 3);
       }
   }
-  cout << "[INF] Calibration Matrix " << endl
+  cout << "[INFO] Calibration Matrix \n"
        << this->params.K << endl;
+
   // Load error threshold parameter
   this->params.feature_threshold = nh.param(std::string("feature_error_threshold"), std::numeric_limits<double>::max());
   // Load feature detector parameters
@@ -50,19 +51,9 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
 {
   this->t += this->dt;
   // Integrating
-
-  // if (this->params.camara == 1)
-  // {
-  //   this->X = this->X + this->Kv * -this->Vz * this->dt;
-  //   this->Y = this->Y + this->Kv * this->Vy * this->dt;
-  //   this->Z = this->Z + this->Kv * this->Vx * this->dt;
-  // }
-  // else
-  // {
   this->X = this->X + this->Kv * this->Vx * this->dt;
   this->Y = this->Y + this->Kv * this->Vy * this->dt;
   this->Z = this->Z + this->Kv * this->Vz * this->dt;
-  // }
   this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
   cout << "X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl;
 

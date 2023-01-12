@@ -43,8 +43,7 @@ control: 1
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.
-# 0 Para cámara de humminbird
 # 1 Para cámara de iris - frontal
 # 2 Para cámara de iris - abajo
 # 3 Para cámara de iris - Ambas
-camara: 3
+camara: 1

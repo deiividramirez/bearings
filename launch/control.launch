@@ -1,4 +1,8 @@
 <launch>
   <node name="bearings_node" type="bearings" pkg="bearings" output="screen"/>
-  <rosparam command="load" file="$(find bearings)/config/params_iris.yaml"/>
+  <rosparam command="load" file="$(find bearings)/config/params_iris1.yaml" ns="ns1"></rosparam>
+  <rosparam command="load" file="$(find bearings)/config/params_iris2.yaml" ns="ns2"></rosparam>
+  <rosparam command="load" file="$(find bearings)/config/params_iris3.yaml" ns="ns3"></rosparam>
+  <rosparam command="load" file="$(find bearings)/config/params_iris4.yaml" ns="ns4"></rosparam>
+  <rosparam command="load" file="$(find bearings)/config/general.yaml" ns="general"></rosparam>
 </launch>

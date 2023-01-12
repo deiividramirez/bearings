@@ -79,6 +79,7 @@ typedef struct vc_desired_configuration
 #include <opencv2/calib3d.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/features2d.hpp>
+#include <opencv2/video/tracking.hpp>
 
 class vc_state
 {
@@ -97,6 +98,8 @@ public:
     float dt = 0.025;
     float t = 0;
     float lambda = 0;
+
+    bool in_target = false;
 
     // Image proessing parameters
     vc_parameters params;
@@ -132,6 +135,16 @@ int GUO(cv::Mat img,
 
 /****************** FUNCTIONS TO USE ******************/
 
+/****************** SAVE DESIRED IMAGES FROM POSES ******************/
+void saveDesired1f(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired1b(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired2f(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired2b(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired3b(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg);
+
 /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
 int compute_descriptors(const cv::Mat &img,
                         const vc_parameters &params,
@@ -142,7 +155,7 @@ int compute_descriptors(const cv::Mat &img,
 cv::Mat Moore_Penrose_PInv(cv::Mat L, double &det);
 
 /****************** TRAJECTORY TRACKER KLT - ALGORITHM ******************/
-int Kanade_Lucas_Tomasi(const Mat &actual,
+int Compute_descriptors(const Mat &actual,
                         Mat &img_points,
                         vc_state &state,
                         vc_homograpy_matching_result &matching_result);
@@ -152,4 +165,12 @@ int aruco_detector(const Mat &actual,
                    Mat &img_points,
                    vc_state &state,
                    vc_homograpy_matching_result &matching_result);
+
+int Kanade_Lucas_Tomasi(const Mat &img_old,
+                        const Mat &img_new,
+                        Mat &desired_temp,
+                        Mat &img_points,
+                        vc_state &state,
+                        vc_homograpy_matching_result &matching_result);
+
 #endif
