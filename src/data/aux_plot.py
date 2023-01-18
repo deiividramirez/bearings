@@ -9,20 +9,22 @@ Email: david.parada@cimat.mx
 
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 import os
 
 from pathlib import Path
 path = Path(__file__).parent.absolute()
 
+dron = sys.argv[1] if len(sys.argv) > 1 else "1"
 
-err = np.loadtxt(f"{path}/errors.txt")
-err_pix = np.loadtxt(f"{path}/errors_pix.txt")
-time = np.loadtxt(f"{path}/time.txt")
-vx = np.loadtxt(f"{path}/Vx.txt")
-vy = np.loadtxt(f"{path}/Vy.txt")
-vz = np.loadtxt(f"{path}/Vz.txt")
-vyaw = np.loadtxt(f"{path}/Vyaw.txt")
-lamb = np.loadtxt(f"{path}/lambda.txt")
+err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
+err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
+time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
+vx = np.loadtxt(f"{path}/out/out_Vx_{dron}.txt")
+vy = np.loadtxt(f"{path}/out/out_Vy_{dron}.txt")
+vz = np.loadtxt(f"{path}/out/out_Vz_{dron}.txt")
+vyaw = np.loadtxt(f"{path}/out/out_Vyaw_{dron}.txt")
+lamb = np.loadtxt(f"{path}/out/out_lambda_{dron}.txt")
 
 NUM = 0
 try:
@@ -90,8 +92,9 @@ des = f"{path.parent.absolute()}/desired2.jpg"
 
 ax[0].imshow(plt.imread(des))
 ax[0].set_ylabel("Imagen deseada")
-ax[1].imshow(plt.imread(f"{path}/img/{imgs[-1]}"))
-ax[1].set_ylabel("Imagen final")
+if len(imgs) > 0:
+    ax[1].imshow(plt.imread(f"{path}/img/{imgs[-1]}"))
+    ax[1].set_ylabel("Imagen final")
 
 [i.set_xticks([]) for i in ax]
 [i.set_yticks([]) for i in ax]

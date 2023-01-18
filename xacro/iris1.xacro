@@ -139,7 +139,7 @@
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>
 
-  <xacro:camera_macro
+  <!-- <xacro:camera_macro
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     camera_suffix="under_camera"
@@ -156,9 +156,9 @@
 
       <box size="0.05 0.05 0.02" />
       <origin xyz="0 0 -0.03" rpy="0 1.570796 0" />
-  </xacro:camera_macro>
+  </xacro:camera_macro> -->
 
-  <xacro:camera_macro
+ <!--  <xacro:camera_macro
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     camera_suffix="front_camera"
@@ -175,6 +175,10 @@
 
       <box size="0.05 0.05 0.02" />
       <origin xyz="0.09 0 0" rpy="0 0 0" />
-  </xacro:camera_macro>
+  </xacro:camera_macro> -->
+  
+  <xacro:include filename="$(find bearings)/description/camera.xacro"/>
+  <xacro:front_camera namespace="${namespace}" ></xacro:front_camera>
+  <xacro:under_camera namespace="${namespace}" ></xacro:under_camera>
 
 </robot>

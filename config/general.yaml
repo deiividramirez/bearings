@@ -1,5 +1,6 @@
 SAVE_DESIRED_IMAGES: 0
 SAVE_IMAGES: 0
+SHOW_IMAGES: 0
 
 cam_drone_1: 1
 cam_drone_2: 1

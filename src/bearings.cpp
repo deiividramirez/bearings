@@ -40,6 +40,7 @@ vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matc
 /****************** AUXILIAR GLOBAL VARIABLES ******************/
 Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old4, img_points4;
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0;
+int SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
 
 /****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
@@ -59,8 +60,9 @@ int main(int argc, char **argv)
 
 	/****************** CREATING PUBLISHER AND SUBSCRIBER ******************/
 
-	int SAVE_DESIRED_IMAGES;
 	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
+	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
+	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
 
 	cout << "\n[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True\n" : "False\n") << endl;
 
@@ -88,10 +90,10 @@ int main(int argc, char **argv)
 		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 		image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
+		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
+		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
@@ -177,7 +179,7 @@ int main(int argc, char **argv)
 
 	/****************** CREATE MESSAGE ******************/
 	trajectory_msgs::MultiDOFJointTrajectory msg;
-	string file_folder = "/src/bearings/src/data/";
+	string file_folder = "/src/bearings/src/data/out/";
 
 	/****************** STARTING CYCLE ******************/
 	while (ros::ok())
@@ -185,9 +187,9 @@ int main(int argc, char **argv)
 		// get a msg
 		ros::spinOnce();
 
-		if (contGEN > 10 && SAVE_DESIRED_IMAGES)
+		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
 		{
-			cout << "[INFO] Images have been saved." << endl;
+			cout << "\n[INFO] Images have been saved." << endl;
 			ros::shutdown();
 		}
 
@@ -197,6 +199,18 @@ int main(int argc, char **argv)
 			rate.sleep();
 			continue;
 		} // if we havent get the new pose for all the drones
+
+		float maxT = 0;
+		for (int i = 0; i < states.size(); i++)
+		{
+			if (states[i].t > maxT)
+				maxT = states[i].t;
+		}
+
+		for (int i = 0; i < states.size(); i++)
+		{
+			states[i].t = maxT;
+		}
 
 		/****************** SAVE DATA ******************/
 		for (int i = 0; i < states.size(); i++)
@@ -214,15 +228,21 @@ int main(int argc, char **argv)
 
 				if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
 				{
-					cout << "\n[INFO] Target reached within the feature threshold for drone" + to_string(i + 1) << endl;
-					waitKey(0);
+					cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
+					/* if (SHOW_IMAGES)
+					{
+						waitKey(0);
+					} */
 					break;
 				}
 			}
 			else
 			{
 				cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
-				waitKey(0);
+				/* if (SHOW_IMAGES)
+				{
+					waitKey(0);
+				} */
 				break;
 			}
 
@@ -312,7 +332,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				  << endl;
 
 			img_old1 = actual;
-			cout << "PASA DEL ELSE ?" << endl;
+			img_new = actual;
 		}
 		else
 		{
@@ -340,14 +360,20 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 			}
 
-			imshow("Frontal camera", img_new);
-			imshow("Desired", desired_temp);
-			waitKey(1);
+			if (SHOW_IMAGES)
+			{
+				imshow("Frontal camera", img_new);
+				imshow("Desired", desired_temp);
+				waitKey(1);
+			}
 		}
 
-		/* string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG1++) + ".jpg";
-		imwrite(workspace + saveIMG, img_new);
-		cout << "[INFO] << Image saved >>" << saveIMG << endl; */
+		if (SAVE_IMAGES)
+		{
+			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG1++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
 		/************************************************************* Prepare message */
 		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
@@ -414,10 +440,10 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] matching_result.p2: " << matching_results[1].p2 << endl;
 
 			img_old2 = actual;
+			img_new = actual;
 		}
 		else
 		{
-			cout << "PASA DEL ELSE ?" << endl;
 			img_new = actual;
 
 			cout << "[INFO] Calling control law." << endl;
@@ -442,14 +468,20 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 			}
 
-			imshow("Frontal camera", img_new);
-			imshow("Desired", desired_temp);
-			waitKey(1);
+			if (SHOW_IMAGES)
+			{
+				imshow("Frontal camera", img_new);
+				imshow("Desired", desired_temp);
+				waitKey(1);
+			}
 		}
 
-		/* string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG2++) + ".jpg";
-		imwrite(workspace + saveIMG, img_new);
-		cout << "[INFO] << Image saved >>" << saveIMG << endl; */
+		if (SAVE_IMAGES)
+		{
+			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG2++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
 		/************************************************************* Prepare message */
 		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
@@ -516,10 +548,10 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] matching_result.p2: " << matching_results[2].p2 << endl;
 
 			img_old3 = actual;
+			img_new = actual;
 		}
 		else
 		{
-			cout << "PASA DEL ELSE ?" << endl;
 			img_new = actual;
 
 			cout << "[INFO] Calling control law." << endl;
@@ -543,15 +575,20 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			{
 				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 			}
-
-			imshow("Frontal camera", img_new);
-			imshow("Desired", desired_temp);
-			waitKey(1);
+			if (SHOW_IMAGES)
+			{
+				imshow("Frontal camera", img_new);
+				imshow("Desired", desired_temp);
+				waitKey(1);
+			}
 		}
 
-		/* string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG3++) + ".jpg";
-		imwrite(workspace + saveIMG, img_new);
-		cout << "[INFO] << Image saved >>" << saveIMG << endl; */
+		if (SAVE_IMAGES)
+		{
+			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG3++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
 		/************************************************************* Prepare message */
 		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[2].img_matches).toImageMsg();
@@ -618,10 +655,10 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] matching_result.p2: " << matching_results[3].p2 << endl;
 
 			img_old4 = actual;
+			img_new = actual;
 		}
 		else
 		{
-			cout << "PASA DEL ELSE ?" << endl;
 			img_new = actual;
 
 			cout << "[INFO] Calling control law." << endl;
@@ -646,14 +683,20 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 			}
 
-			imshow("Frontal camera", img_new);
-			imshow("Desired", desired_temp);
-			waitKey(1);
+			if (SHOW_IMAGES)
+			{
+				imshow("Frontal camera", img_new);
+				imshow("Desired", desired_temp);
+				waitKey(1);
+			}
 		}
 
-		/* string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG4++) + ".jpg";
-		imwrite(workspace + saveIMG, img_new);
-		cout << "[INFO] << Image saved >>" << saveIMG << endl; */
+		if (SAVE_IMAGES)
+		{
+			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG4++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
 		/************************************************************* Prepare message */
 		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[3].img_matches).toImageMsg();
@@ -684,7 +727,7 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
+/* void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cout << "\n[INFO] ImageCallback2 function" << endl;
 
@@ -700,7 +743,7 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
 	}
-}
+} */
 
 void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 {
