@@ -20,6 +20,11 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg);
 
+void IMGCallback1(const sensor_msgs::Image::ConstPtr &msg);
+void IMGCallback2(const sensor_msgs::Image::ConstPtr &msg);
+void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg);
+void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg);
+
 // array with functions
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4};
@@ -41,6 +46,19 @@ vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matc
 Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old4, img_points4;
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0;
 int SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
+int seg1, seg2, seg3, seg4;
+
+bool target1, target2, target3, target4;
+vector<bool> targets = {target1, target2, target3, target4};
+
+/****************** OPENING STATE PARAMS FROM DESCRIPTORS ******************/
+ros::Publisher pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4;
+ros::Subscriber pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4;
+ros::Subscriber position_sub_1, position_sub_2, position_sub_3, position_sub_4;
+
+vector<ros::Publisher> pos_pubs = {pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4};
+vector<ros::Subscriber> pos_subs = {pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4};
+vector<ros::Subscriber> position_subs = {position_sub_1, position_sub_2, position_sub_3, position_sub_4};
 
 /****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
@@ -63,6 +81,10 @@ int main(int argc, char **argv)
 	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
 	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
 	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
+	gen.getParam("seguimiento_1", seg1);
+	gen.getParam("seguimiento_2", seg2);
+	gen.getParam("seguimiento_3", seg3);
+	gen.getParam("seguimiento_4", seg4);
 
 	cout << "\n[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True\n" : "False\n") << endl;
 
@@ -84,16 +106,22 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
+		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
+		//image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
+		//image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
+		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
+		//image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
+		//image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
@@ -120,14 +148,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/****************** OPENING STATE PARAMS FROM DESCRIPTORS ******************/
 	/****************** MOVING TO POSES ******************/
-	ros::Publisher pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4;
-	ros::Subscriber pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4;
-
-	vector<ros::Publisher> pos_pubs = {pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4};
-	vector<ros::Subscriber> pos_subs = {pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4};
-
 	if (!SAVE_DESIRED_IMAGES)
 	{
 		for (int i = 0; i < states.size(); i++)
@@ -159,6 +180,7 @@ int main(int argc, char **argv)
 	}
 
 	/****************** DATA FOR GRAPHICS ******************/
+
 	vector<float> vel_x1, vel_x2, vel_x3, vel_x4;
 	vector<float> vel_y1, vel_y2, vel_y3, vel_y4;
 	vector<float> vel_z1, vel_z2, vel_z3, vel_z4;
@@ -167,6 +189,9 @@ int main(int argc, char **argv)
 	vector<float> errors_pix1, errors_pix2, errors_pix3, errors_pix4;
 	vector<float> time1, time2, time3, time4;
 	vector<float> lambda1, lambda2, lambda3, lambda4;
+	vector<float> x1, x2, x3, x4;
+	vector<float> y1, y2, y3, y4;
+	vector<float> z1, z2, z3, z4;
 
 	vector<vector<float>> vel_x = {vel_x1, vel_x2, vel_x3, vel_x4};
 	vector<vector<float>> vel_y = {vel_y1, vel_y2, vel_y3, vel_y4};
@@ -176,6 +201,9 @@ int main(int argc, char **argv)
 	vector<vector<float>> errors_pix = {errors_pix1, errors_pix2, errors_pix3, errors_pix4};
 	vector<vector<float>> time = {time1, time2, time3, time4};
 	vector<vector<float>> lambda = {lambda1, lambda2, lambda3, lambda4};
+	vector<vector<float>> X = {x1, x2, x3, x4};
+	vector<vector<float>> Y = {y1, y2, y3, y4};
+	vector<vector<float>> Z = {z1, z2, z3, z4};
 
 	/****************** CREATE MESSAGE ******************/
 	trajectory_msgs::MultiDOFJointTrajectory msg;
@@ -186,6 +214,15 @@ int main(int argc, char **argv)
 	{
 		// get a msg
 		ros::spinOnce();
+
+		/* for (int i = 0; i < states.size(); i++)
+		{
+			auto new_pose = states[i].position();
+			X[i].push_back(new_pose[0]);
+			Y[i].push_back(new_pose[1]);
+			Z[i].push_back(new_pose[2]);
+			cout << "[INFO] Iris " << i + 1 << " position: " << new_pose[0] << ", " << new_pose[1] << ", " << new_pose[2] << endl;
+		} */
 
 		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
 		{
@@ -200,19 +237,8 @@ int main(int argc, char **argv)
 			continue;
 		} // if we havent get the new pose for all the drones
 
-		float maxT = 0;
-		for (int i = 0; i < states.size(); i++)
-		{
-			if (states[i].t > maxT)
-				maxT = states[i].t;
-		}
-
-		for (int i = 0; i < states.size(); i++)
-		{
-			states[i].t = maxT;
-		}
-
 		/****************** SAVE DATA ******************/
+
 		for (int i = 0; i < states.size(); i++)
 		{
 			if (!states[i].in_target)
@@ -229,6 +255,7 @@ int main(int argc, char **argv)
 				if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
 				{
 					cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
+					states[i].in_target = true;
 					/* if (SHOW_IMAGES)
 					{
 						waitKey(0);
@@ -262,10 +289,14 @@ int main(int argc, char **argv)
 		}
 
 		rate.sleep();
-		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000)
+		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 1000)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
-			break;
+			/* break; */
+		}
+		else
+		{
+			contGEN++;
 		}
 	}
 
@@ -280,6 +311,9 @@ int main(int argc, char **argv)
 		writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
 		writeFile(vel_yaw[i], workspace + file_folder + "out_Vyaw_" + to_string(i + 1) + ".txt");
 		writeFile(lambda[i], workspace + file_folder + "out_lambda_" + to_string(i + 1) + ".txt");
+		writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
+		writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
+		writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
 	}
 
 	return 0;
@@ -292,6 +326,44 @@ int main(int argc, char **argv)
 	params:
 		msg: ptr to the msg image.
 */
+
+void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
+{
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
+	/* cout << "[INFO] Image received" << endl; */
+
+	Mat bearing, ground_truth;
+	if (getBearing(actual, seg3, bearing, ground_truth, states[2], 3) < 0 )
+	{
+		cout << "[ERROR] No bearing found" << endl;
+	}
+
+	cout << "Bearing with ground truth drone " << 2 + 1 << endl;
+	cout << ground_truth << endl;
+
+	cout << "Bearing with bearing drone " << 2 + 1 << endl;
+	cout << bearing << endl;
+
+}
+
+void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
+{
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
+	/* cout << "[INFO] Image received" << endl; */
+
+	Mat bearing, ground_truth;
+	if (getBearing(actual, seg4, bearing, ground_truth, states[3], 4) < 0 )
+	{
+		cout << "[ERROR] No bearing found" << endl;
+	}
+
+	cout << "Bearing with ground truth drone " << 3 + 1 << endl;
+	cout << ground_truth << endl;
+
+	cout << "Bearing with bearing drone " << 3 + 1 << endl;
+	cout << bearing << endl;
+
+}
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -318,7 +390,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points1, states[0], matching_results[0]) < 0)
+				if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					ros::shutdown();
@@ -384,7 +456,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
 		image_msg->header.stamp = ros::Time::now();
 
-		cout << "[INFO] Matching published" << endl;
+		/* cout << "[INFO] Matching published" << endl; */
 
 		if (states[0].initialized)
 			cout << "[VELS] Vx: " << states[0].Vx
@@ -429,7 +501,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points2, states[1], matching_results[1]) < 0)
+				if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					ros::shutdown();
@@ -492,7 +564,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
 		image_msg->header.stamp = ros::Time::now();
 
-		cout << "[INFO] Matching published" << endl;
+		/* cout << "[INFO] Matching published" << endl; */
 
 		if (states[1].initialized)
 			cout << "[VELS] Vx: " << states[1].Vx
@@ -520,9 +592,8 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
 		cout << "[INFO] Image received" << endl;
 
-		if (contIMG3 < 3)
+		if (contIMG3++ > 4)
 		{
-			contIMG3++;
 			cout << "\n[INFO] Detecting keypoints" << endl;
 
 			if (states[2].params.camara != 1)
@@ -537,10 +608,11 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points3, states[2], matching_results[2]) < 0)
+				if (aruco_detector(actual, img_points3, states[2], matching_results[2], seg3) < 0)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					ros::shutdown();
+					return;
 				}
 			}
 			// cout << "[INFO] img_points3: " << img_points3 << endl;
@@ -548,10 +620,6 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] matching_result.p2: " << matching_results[2].p2 << endl;
 
 			img_old3 = actual;
-			img_new = actual;
-		}
-		else
-		{
 			img_new = actual;
 
 			cout << "[INFO] Calling control law." << endl;
@@ -581,36 +649,36 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 				imshow("Desired", desired_temp);
 				waitKey(1);
 			}
+
+			if (SAVE_IMAGES)
+			{
+				string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG3++) + ".jpg";
+				imwrite(workspace + saveIMG, img_new);
+				cout << "[INFO] << Image saved >>" << saveIMG << endl;
+			}
+
+			/************************************************************* Prepare message */
+			image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[2].img_matches).toImageMsg();
+			image_msg->header.frame_id = "matching_image";
+			image_msg->width = matching_results[2].img_matches.cols;
+			image_msg->height = matching_results[2].img_matches.rows;
+			image_msg->is_bigendian = false;
+			image_msg->step = sizeof(unsigned char) * matching_results[2].img_matches.cols * 3;
+			image_msg->header.stamp = ros::Time::now();
+
+			/* cout << "[INFO] Matching published" << endl; */
+
+			if (states[2].initialized)
+				cout << "[VELS] Vx: " << states[2].Vx
+					  << ", Vy: " << states[2].Vy
+					  << ", Vz: " << states[2].Vz
+					  << "\nVroll: " << states[2].Vroll
+					  << ", Vpitch: " << states[2].Vpitch
+					  << ", Wyaw: " << states[2].Vyaw
+					  << "\n==> average error: " << matching_results[2].mean_feature_error
+					  << "<==" << endl
+					  << "===================================================================\n\n";
 		}
-
-		if (SAVE_IMAGES)
-		{
-			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG3++) + ".jpg";
-			imwrite(workspace + saveIMG, img_new);
-			cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-
-		/************************************************************* Prepare message */
-		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[2].img_matches).toImageMsg();
-		image_msg->header.frame_id = "matching_image";
-		image_msg->width = matching_results[2].img_matches.cols;
-		image_msg->height = matching_results[2].img_matches.rows;
-		image_msg->is_bigendian = false;
-		image_msg->step = sizeof(unsigned char) * matching_results[2].img_matches.cols * 3;
-		image_msg->header.stamp = ros::Time::now();
-
-		cout << "[INFO] Matching published" << endl;
-
-		if (states[2].initialized)
-			cout << "[VELS] Vx: " << states[2].Vx
-				  << ", Vy: " << states[2].Vy
-				  << ", Vz: " << states[2].Vz
-				  << "\nVroll: " << states[2].Vroll
-				  << ", Vpitch: " << states[2].Vpitch
-				  << ", Wyaw: " << states[2].Vyaw
-				  << "\n==> average error: " << matching_results[2].mean_feature_error
-				  << "<==" << endl
-				  << "===================================================================\n\n";
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -627,9 +695,8 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
 		cout << "[INFO] Image received" << endl;
 
-		if (contIMG4 < 3)
+		if (contIMG4++ > 4)
 		{
-			contIMG4++;
 			cout << "\n[INFO] Detecting keypoints" << endl;
 
 			if (states[3].params.camara != 1)
@@ -644,7 +711,7 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points4, states[3], matching_results[3]) < 0)
+				if (aruco_detector(actual, img_points4, states[3], matching_results[3], seg4) < 0)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					ros::shutdown();
@@ -655,10 +722,6 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] matching_result.p2: " << matching_results[3].p2 << endl;
 
 			img_old4 = actual;
-			img_new = actual;
-		}
-		else
-		{
 			img_new = actual;
 
 			cout << "[INFO] Calling control law." << endl;
@@ -689,36 +752,36 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 				imshow("Desired", desired_temp);
 				waitKey(1);
 			}
+
+			if (SAVE_IMAGES)
+			{
+				string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG4++) + ".jpg";
+				imwrite(workspace + saveIMG, img_new);
+				cout << "[INFO] << Image saved >>" << saveIMG << endl;
+			}
+
+			/************************************************************* Prepare message */
+			image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[3].img_matches).toImageMsg();
+			image_msg->header.frame_id = "matching_image";
+			image_msg->width = matching_results[3].img_matches.cols;
+			image_msg->height = matching_results[3].img_matches.rows;
+			image_msg->is_bigendian = false;
+			image_msg->step = sizeof(unsigned char) * matching_results[3].img_matches.cols * 3;
+			image_msg->header.stamp = ros::Time::now();
+
+			/* cout << "[INFO] Matching published" << endl; */
+
+			if (states[3].initialized)
+				cout << "[VELS] Vx: " << states[3].Vx
+					  << ", Vy: " << states[3].Vy
+					  << ", Vz: " << states[3].Vz
+					  << "\nVroll: " << states[3].Vroll
+					  << ", Vpitch: " << states[3].Vpitch
+					  << ", Wyaw: " << states[3].Vyaw
+					  << "\n==> average error: " << matching_results[3].mean_feature_error
+					  << "<==" << endl
+					  << "===================================================================\n\n";
 		}
-
-		if (SAVE_IMAGES)
-		{
-			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG4++) + ".jpg";
-			imwrite(workspace + saveIMG, img_new);
-			cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-
-		/************************************************************* Prepare message */
-		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[3].img_matches).toImageMsg();
-		image_msg->header.frame_id = "matching_image";
-		image_msg->width = matching_results[3].img_matches.cols;
-		image_msg->height = matching_results[3].img_matches.rows;
-		image_msg->is_bigendian = false;
-		image_msg->step = sizeof(unsigned char) * matching_results[3].img_matches.cols * 3;
-		image_msg->header.stamp = ros::Time::now();
-
-		cout << "[INFO] Matching published" << endl;
-
-		if (states[3].initialized)
-			cout << "[VELS] Vx: " << states[3].Vx
-				  << ", Vy: " << states[3].Vy
-				  << ", Vz: " << states[3].Vz
-				  << "\nVroll: " << states[3].Vroll
-				  << ", Vpitch: " << states[3].Vpitch
-				  << ", Wyaw: " << states[3].Vyaw
-				  << "\n==> average error: " << matching_results[3].mean_feature_error
-				  << "<==" << endl
-				  << "===================================================================\n\n";
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -747,7 +810,7 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 
 void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 {
-	cout << "\n[INFO] doNothing function" << endl;
+	/* cout << "\n[INFO] doNothing function" << endl; */
 	return;
 }
 

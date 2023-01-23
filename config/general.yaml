@@ -9,5 +9,5 @@ cam_drone_4: 1
 
 seguimiento_1: 0
 seguimiento_2: 0
-seguimiento_3: 0
-seguimiento_4: 0
+seguimiento_3: 1
+seguimiento_4: 2

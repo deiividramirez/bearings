@@ -63,8 +63,6 @@ typedef struct vc_desired_configuration
 
 #endif
 
-
-
 #ifndef VC_STATE_H
 #define VC_STATE_H
 
@@ -118,6 +116,7 @@ public:
     vc_state();
 
     std::pair<Eigen::VectorXd, float> update();
+    std::vector<double> position();
     void load(const ros::NodeHandle &nh);
     void initialize(const float &x,
                     const float &y,
@@ -164,7 +163,8 @@ int Compute_descriptors(const Mat &actual,
 int aruco_detector(const Mat &actual,
                    Mat &img_points,
                    vc_state &state,
-                   vc_homograpy_matching_result &matching_result);
+                   vc_homograpy_matching_result &matching_result,
+                   int marker_id);
 
 int Kanade_Lucas_Tomasi(const Mat &img_old,
                         const Mat &img_new,
@@ -172,5 +172,12 @@ int Kanade_Lucas_Tomasi(const Mat &img_old,
                         Mat &img_points,
                         vc_state &state,
                         vc_homograpy_matching_result &matching_result);
+
+int getBearing(Mat &actual,
+               int marker_id,
+               Mat &bearing,
+               Mat &ground_truth,
+               vc_state &state,
+               int drone_id);
 
 #endif

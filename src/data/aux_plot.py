@@ -88,7 +88,7 @@ plt.savefig(f"{path}/out_velocidades.png", bbox_inches='tight', pad_inches=0.1)
 
 fig, ax = plt.subplots(2, 1, figsize=(5, 10))
 imgs = sorted(os.listdir(f"{path}/img"), key=lambda x: int(x.split(".")[0]))
-des = f"{path.parent.absolute()}/desired2.jpg"
+des = f"{path.parent.absolute()}/desired_{dron}f.jpg"
 
 ax[0].imshow(plt.imread(des))
 ax[0].set_ylabel("Imagen deseada")
