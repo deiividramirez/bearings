@@ -2,27 +2,38 @@
 
 #include <opencv2/aruco.hpp>
 #include <mav_msgs/conversions.h>
-#include <geometry_msgs/PointStamped.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 
 using namespace cv;
 using namespace std;
 
-void positionCallback(const geometry_msgs::PointStamped::ConstPtr &msg);
-void positionCallback2(const geometry_msgs::PointStamped::ConstPtr &msg);
 Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4);
 void Tipito(Mat &Matrix);
 
 geometry_msgs::PointStamped pos_msg;
 geometry_msgs::PointStamped pos_msg_to;
 
-int getBearing(Mat &actual,
+int getBearing(Mat &actual_image,
                int marker_id,
-               Mat &bearing,
-               Mat &ground_truth,
+               Mat &store_bearing,
+               Mat &store_ground_truth,
                vc_state &state,
-               int drone_id)
+               int drone_id,
+               vector<geometry_msgs::PointStamped> &pos_dron)
 {
+
+   for (int i = 0; i < pos_dron.size(); i++)
+   {
+      if (pos_dron[i].header.seq == 0)
+      {
+         cout << "[INFO] Waiting for position of drone " << i << endl;
+         cout << pos_dron[i].header.seq << endl;
+         cout << pos_dron[i].point.x << endl;
+         cout << pos_dron[i].point.y << endl;
+         cout << pos_dron[i].point.z << endl;
+         return -1;
+      }
+   }
 
    vector<int> markerIds;
    vector<vector<Point2f>> markerCorners, rejectedCandidates;
@@ -30,7 +41,7 @@ int getBearing(Mat &actual,
    Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
    try
    {
-      aruco::detectMarkers(actual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+      aruco::detectMarkers(actual_image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
    }
    catch (Exception &e)
    {
@@ -64,8 +75,8 @@ int getBearing(Mat &actual,
          return -1;
       }
 
-      bearing = Mat::zeros(3, 1, CV_64F);
-      ground_truth = Mat::zeros(3, 1, CV_64F);
+      store_bearing = Mat::zeros(3, 1, CV_64F);
+      store_ground_truth = Mat::zeros(3, 1, CV_64F);
 
       Mat temporal = Mat::zeros(4, 2, CV_32F);
       for (int i = 0; i < 4; i++)
@@ -89,74 +100,27 @@ int getBearing(Mat &actual,
       temp.at<double>(2, 0) = 1;
 
       Mat temp2 = state.params.K.inv() * temp;
-      temp = -temp2 / norm(temp2);
+      temp = temp2 / norm(temp2);
 
-      bearing.at<double>(0, 0) = temp.at<double>(2, 0);
-      bearing.at<double>(1, 0) = temp.at<double>(0, 0);
-      bearing.at<double>(2, 0) = temp.at<double>(1, 0);
+      store_bearing.at<double>(0, 0) = temp.at<double>(2, 0);
+      store_bearing.at<double>(1, 0) = temp.at<double>(0, 0);
+      store_bearing.at<double>(2, 0) = temp.at<double>(1, 0);
 
-      ros::NodeHandle nh;
-      string topic_sub = "/iris_" + to_string(drone_id) + "/ground_truth/position";
-      string topic_sub_to = "/iris_" + to_string(marker_id) + "/ground_truth/position";
+      // Ground truth
+      store_ground_truth.at<double>(0, 0) = pos_dron[marker_id-1].point.x - pos_dron[drone_id-1].point.x;
+      store_ground_truth.at<double>(1, 0) = pos_dron[marker_id-1].point.y - pos_dron[drone_id-1].point.y;
+      store_ground_truth.at<double>(2, 0) = pos_dron[marker_id-1].point.z - pos_dron[drone_id-1].point.z;
 
-      ros::Subscriber pos_sub = nh.subscribe<geometry_msgs::PointStamped>(topic_sub, 1, positionCallback, ros::TransportHints().tcpNoDelay());
-      ros::Subscriber pos_sub_to = nh.subscribe<geometry_msgs::PointStamped>(topic_sub_to, 1, positionCallback2, ros::TransportHints().tcpNoDelay());
-
-      bool flag = false;
-      bool p1bool = (pos_msg.point.x != 0 || pos_msg.point.y != 0 || pos_msg.point.z != 0);
-      bool p2bool = (pos_msg_to.point.x != 0 || pos_msg_to.point.y != 0 || pos_msg_to.point.z != 0);
-
-      cout << "P1: " << (p1bool ? "true" : "false") << " - " << pos_msg.point << endl;
-      cout << "P2: " << (p2bool ? "true" : "false") << " - " << pos_msg_to.point << endl;
-
-      while (!flag && !p1bool && !p2bool)
+      double norma = norm(store_ground_truth);
+      if (norma != 0)
       {
-         try
-         {
-            ground_truth.at<double>(0, 0) = pos_msg_to.point.x - pos_msg.point.x;
-            ground_truth.at<double>(1, 0) = pos_msg_to.point.y - pos_msg.point.y;
-            ground_truth.at<double>(2, 0) = pos_msg_to.point.z - pos_msg.point.z;
-
-            if (ground_truth.at<double>(0, 0) != 0 || ground_truth.at<double>(1, 0) != 0 || ground_truth.at<double>(2, 0) != 0)
-            {
-               flag = true;
-               ground_truth = ground_truth / norm(ground_truth);
-               /* cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
-               cout << "[INFO] Ground truth: " << ground_truth << endl;
-               cout << "[INFO] Position: " << pos_msg << endl;
-               cout << "[INFO] Position to: " << pos_msg_to << endl;
-               cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl; */
-               return 0;
-            }
-         }
-         catch (Exception &e)
-         {
-            cout << "Exception: " << e.what() << endl;
-         }
-         ros::spinOnce();
+         store_ground_truth = store_ground_truth / norma;
       }
 
       return 0;
    }
 }
 
-void positionCallback(const geometry_msgs::PointStamped::ConstPtr &msg)
-{
-   /* cout << "[INFO] PositionCallback" << endl; */
-   pos_msg.point.x = msg->point.x;
-   pos_msg.point.y = msg->point.y;
-   pos_msg.point.z = msg->point.z;
-   /* cout << "[INFO] Position: " << pos_msg << endl; */
-}
-
-void positionCallback2(const geometry_msgs::PointStamped::ConstPtr &msg)
-{
-   /* cout << "[INFO] PositionCallback2" << endl; */
-   pos_msg_to.point.x = msg->point.x;
-   pos_msg_to.point.y = msg->point.y;
-   pos_msg_to.point.z = msg->point.z;
-   /* cout << "[INFO] Position to: " << pos_msg_to << endl; */
-}
 
 Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4)
 {

@@ -11,3 +11,8 @@ seguimiento_1: 0
 seguimiento_2: 0
 seguimiento_3: 1
 seguimiento_4: 2
+
+bearing_1: [[]]
+bearing_2: [[]]
+bearing_3: [[1, 0, 0], [0, 1, 0]]
+bearing_4: [[1, 0, 0], [0, 1, 0]]

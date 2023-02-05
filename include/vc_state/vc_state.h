@@ -78,6 +78,7 @@ typedef struct vc_desired_configuration
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/features2d.hpp>
 #include <opencv2/video/tracking.hpp>
+#include <geometry_msgs/PointStamped.h>
 
 class vc_state
 {
@@ -173,11 +174,12 @@ int Kanade_Lucas_Tomasi(const Mat &img_old,
                         vc_state &state,
                         vc_homograpy_matching_result &matching_result);
 
-int getBearing(Mat &actual,
+int getBearing(Mat &actual_image,
                int marker_id,
-               Mat &bearing,
-               Mat &ground_truth,
+               Mat &store_bearing,
+               Mat &store_ground_truth,
                vc_state &state,
-               int drone_id);
+               int drone_id,
+               vector<geometry_msgs::PointStamped> &pos_dron);
 
 #endif

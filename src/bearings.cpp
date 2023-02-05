@@ -25,9 +25,11 @@ void IMGCallback2(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg);
 
-// array with functions
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4};
+
+geometry_msgs::PointStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4;
+vector<geometry_msgs::PointStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4};
 
 /****************** DECLARING OBJECTS TO RECEIVE MESSAGES ******************/
 sensor_msgs::ImagePtr image_msg;
@@ -106,22 +108,22 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		// image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
 		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
-		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		// image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
-		//image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
-		//image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
+		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
-		//image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
-		//image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
+		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
 		image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
@@ -332,18 +334,17 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
 	/* cout << "[INFO] Image received" << endl; */
 
-	Mat bearing, ground_truth;
-	if (getBearing(actual, seg3, bearing, ground_truth, states[2], 3) < 0 )
+	Mat store_bearing, store_ground_truth;
+	if (getBearing(actual, seg3, store_bearing, store_ground_truth, states[2], 3, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
 
 	cout << "Bearing with ground truth drone " << 2 + 1 << endl;
-	cout << ground_truth << endl;
+	cout << store_ground_truth << endl;
 
 	cout << "Bearing with bearing drone " << 2 + 1 << endl;
-	cout << bearing << endl;
-
+	cout << store_bearing << endl;
 }
 
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
@@ -351,18 +352,17 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
 	/* cout << "[INFO] Image received" << endl; */
 
-	Mat bearing, ground_truth;
-	if (getBearing(actual, seg4, bearing, ground_truth, states[3], 4) < 0 )
+	Mat store_bearing, store_ground_truth;
+	if (getBearing(actual, seg4, store_bearing, store_ground_truth, states[3], 4, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
 
 	cout << "Bearing with ground truth drone " << 3 + 1 << endl;
-	cout << ground_truth << endl;
+	cout << store_ground_truth << endl;
 
 	cout << "Bearing with bearing drone " << 3 + 1 << endl;
-	cout << bearing << endl;
-
+	cout << store_bearing << endl;
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -844,7 +844,7 @@ void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 
 void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function" << endl;
+	// cout << endl << "[INFO] poseCallback function for drone 1" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -863,11 +863,19 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 		cout << "[INFO] Setting initial position" << endl;
 		states[0].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
+
+	pos_dron[0].point.x = (float)msg->position.x;
+	pos_dron[0].point.y = (float)msg->position.y;
+	pos_dron[0].point.z = (float)msg->position.z;
+
+	pos_dron[0].header.seq++;
+	pos_dron[0].header.stamp = ros::Time::now();
+	pos_dron[0].header.frame_id = "world";
 }
 
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function" << endl;
+	// cout << endl << "[INFO] poseCallback function for drone 2" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -886,11 +894,19 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 		cout << "[INFO] Setting initial position" << endl;
 		states[1].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
+
+	pos_dron[1].point.x = (float)msg->position.x;
+	pos_dron[1].point.y = (float)msg->position.y;
+	pos_dron[1].point.z = (float)msg->position.z;
+
+	pos_dron[1].header.seq++;
+	pos_dron[1].header.stamp = ros::Time::now();
+	pos_dron[1].header.frame_id = "world";
 }
 
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function" << endl;
+	// cout << endl << "[INFO] poseCallback function for drone 3" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -909,11 +925,19 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 		cout << "[INFO] Setting initial position" << endl;
 		states[2].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
+
+	pos_dron[2].point.x = (float)msg->position.x;
+	pos_dron[2].point.y = (float)msg->position.y;
+	pos_dron[2].point.z = (float)msg->position.z;
+
+	pos_dron[2].header.seq++;
+	pos_dron[2].header.stamp = ros::Time::now();
+	pos_dron[2].header.frame_id = "world";
 }
 
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function" << endl;
+	// cout << endl << "[INFO] poseCallback function for drone 4" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -932,6 +956,14 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 		cout << "[INFO] Setting initial position" << endl;
 		states[3].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
+
+	pos_dron[3].point.x = (float)msg->position.x;
+	pos_dron[3].point.y = (float)msg->position.y;
+	pos_dron[3].point.z = (float)msg->position.z;
+
+	pos_dron[3].header.seq++;
+	pos_dron[3].header.stamp = ros::Time::now();
+	pos_dron[3].header.frame_id = "world";
 }
 
 void writeFile(vector<float> &vec, const string &name)
