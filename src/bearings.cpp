@@ -25,11 +25,19 @@ void IMGCallback2(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg);
 
+void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg);
+void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
+void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
+void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
+
+
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4};
+//vector<void (*)(const sensor_msgs::Image::ConstPtr &)> IMGCallbacks = {IMGCallback1, IMGCallback2, IMGCallback3, IMGCallback4};
+vector<void (*)(const sensor_msgs::Imu::ConstPtr &)> imuCallbacks = {imuCallback1, imuCallback2, imuCallback3, imuCallback4};
 
-geometry_msgs::PointStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4;
-vector<geometry_msgs::PointStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4};
+geometry_msgs::PoseStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4;
+vector<geometry_msgs::PoseStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4};
 
 /****************** DECLARING OBJECTS TO RECEIVE MESSAGES ******************/
 sensor_msgs::ImagePtr image_msg;
@@ -57,10 +65,12 @@ vector<bool> targets = {target1, target2, target3, target4};
 ros::Publisher pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4;
 ros::Subscriber pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4;
 ros::Subscriber position_sub_1, position_sub_2, position_sub_3, position_sub_4;
+ros::Subscriber imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4;
 
 vector<ros::Publisher> pos_pubs = {pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4};
 vector<ros::Subscriber> pos_subs = {pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4};
 vector<ros::Subscriber> position_subs = {position_sub_1, position_sub_2, position_sub_3, position_sub_4};
+vector<ros::Subscriber> imu_subs = {imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4};
 
 /****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
@@ -89,6 +99,15 @@ int main(int argc, char **argv)
 	gen.getParam("seguimiento_4", seg4);
 
 	cout << "\n[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True\n" : "False\n") << endl;
+	cout << "\n[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True\n" : "False\n") << endl;
+	cout << "\n[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
+	cout << "\n[INFO] seguimiento_1: " << seg1 << endl;
+	cout << "\n[INFO] seguimiento_2: " << seg2 << endl;
+	cout << "\n[INFO] seguimiento_3: " << seg3 << endl;
+	cout << "\n[INFO] seguimiento_4: " << seg4 << endl;
+
+	exit(-1);
+
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
@@ -153,6 +172,7 @@ int main(int argc, char **argv)
 	/****************** MOVING TO POSES ******************/
 	if (!SAVE_DESIRED_IMAGES)
 	{
+		// for to compute points in image
 		for (int i = 0; i < states.size(); i++)
 		{
 
@@ -173,10 +193,12 @@ int main(int argc, char **argv)
 							 states[i].desired_configuration.descriptors);
 		}
 
+		// for to suscribe and advertise
 		for (int i = 0; i < states.size(); i++)
 		{
 			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/iris_" + to_string(i + 1) + "/command/trajectory", 1);
 			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/iris_" + to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
+			imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/iris_" + to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
 			cout << "[INFO] Suscribed and advertised for Iris " << i + 1 << " trajectory and pose." << endl;
 		}
 	}
@@ -241,6 +263,7 @@ int main(int argc, char **argv)
 
 		/****************** SAVE DATA ******************/
 
+		// for to save data in array and check if the drone is in the target
 		for (int i = 0; i < states.size(); i++)
 		{
 			if (!states[i].in_target)
@@ -321,13 +344,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-/*
-	function: imageCallback
-	description: uses the msg image and converts it to and opencv image to obtain the kp and
-	descriptors, it is done if the drone has moved to the defined position. After that the resulting image and velocities are published.
-	params:
-		msg: ptr to the msg image.
-*/
 
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -475,7 +491,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 					 msg->encoding.c_str());
 	}
 }
-
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
@@ -583,7 +598,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 					 msg->encoding.c_str());
 	}
 }
-
 void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cout << "\n[INFO] ImageCallback function called for drone " << 2 + 1 << endl;
@@ -686,7 +700,6 @@ void imageCallback3(const sensor_msgs::Image::ConstPtr &msg)
 					 msg->encoding.c_str());
 	}
 }
-
 void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cout << "\n[INFO] ImageCallback function called for drone " << 3 + 1 << endl;
@@ -790,23 +803,7 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-/* void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
-{
-	cout << "\n[INFO] ImageCallback2 function" << endl;
 
-	try
-	{
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-		cout << "[INFO] Image received" << endl;
-
-		imshow("Camera", actual);
-		waitKey(1);
-	}
-	catch (cv_bridge::Exception &e)
-	{
-		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
-	}
-} */
 
 void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -814,33 +811,7 @@ void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 	return;
 }
 
-/*
-	Function: PoseCallback
-	description: get the ppose info from the groundtruth of the drone and uses it in simulation
-	params: message with pose info
-*/
-/* void poseCallback(const geometry_msgs::Pose::ConstPtr &msg)
-{
-	// cout << endl << "[INFO] poseCallback function" << endl;
 
-	// Creating quaternion
-	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
-	// Creatring rotation matrix ffrom quaternion
-	tf::Matrix3x3 mat(q);
-	// obtaining euler angles
-	double roll, pitch, yaw;
-	mat.getEulerYPR(yaw, pitch, roll);
-	// saving the data obtained
-	states[ACTUAL_DRON].Roll = (float)roll;
-	states[ACTUAL_DRON].Pitch = (float)pitch;
-
-	// setting the position if its the first time
-	if (!states[ACTUAL_DRON].initialized)
-	{
-		cout << "[INFO] Setting initial position" << endl;
-		states[ACTUAL_DRON].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
-	}
-} */
 
 void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -864,15 +835,14 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 		states[0].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
 
-	pos_dron[0].point.x = (float)msg->position.x;
-	pos_dron[0].point.y = (float)msg->position.y;
-	pos_dron[0].point.z = (float)msg->position.z;
+	pos_dron[0].pose.position.x = (float)msg->position.x;
+	pos_dron[0].pose.position.y = (float)msg->position.y;
+	pos_dron[0].pose.position.z = (float)msg->position.z;
 
 	pos_dron[0].header.seq++;
 	pos_dron[0].header.stamp = ros::Time::now();
 	pos_dron[0].header.frame_id = "world";
 }
-
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 {
 	// cout << endl << "[INFO] poseCallback function for drone 2" << endl;
@@ -895,15 +865,14 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 		states[1].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
 
-	pos_dron[1].point.x = (float)msg->position.x;
-	pos_dron[1].point.y = (float)msg->position.y;
-	pos_dron[1].point.z = (float)msg->position.z;
+	pos_dron[1].pose.position.x = (float)msg->position.x;
+	pos_dron[1].pose.position.y = (float)msg->position.y;
+	pos_dron[1].pose.position.z = (float)msg->position.z;
 
 	pos_dron[1].header.seq++;
 	pos_dron[1].header.stamp = ros::Time::now();
 	pos_dron[1].header.frame_id = "world";
 }
-
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 {
 	// cout << endl << "[INFO] poseCallback function for drone 3" << endl;
@@ -926,15 +895,14 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 		states[2].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
 
-	pos_dron[2].point.x = (float)msg->position.x;
-	pos_dron[2].point.y = (float)msg->position.y;
-	pos_dron[2].point.z = (float)msg->position.z;
+	pos_dron[2].pose.position.x = (float)msg->position.x;
+	pos_dron[2].pose.position.y = (float)msg->position.y;
+	pos_dron[2].pose.position.z = (float)msg->position.z;
 
 	pos_dron[2].header.seq++;
 	pos_dron[2].header.stamp = ros::Time::now();
 	pos_dron[2].header.frame_id = "world";
 }
-
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
 	// cout << endl << "[INFO] poseCallback function for drone 4" << endl;
@@ -957,14 +925,57 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 		states[3].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 	}
 
-	pos_dron[3].point.x = (float)msg->position.x;
-	pos_dron[3].point.y = (float)msg->position.y;
-	pos_dron[3].point.z = (float)msg->position.z;
+	pos_dron[3].pose.position.x = (float)msg->position.x;
+	pos_dron[3].pose.position.y = (float)msg->position.y;
+	pos_dron[3].pose.position.z = (float)msg->position.z;
 
 	pos_dron[3].header.seq++;
 	pos_dron[3].header.stamp = ros::Time::now();
 	pos_dron[3].header.frame_id = "world";
 }
+
+
+
+void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
+{
+	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
+	pos_dron[0].pose.orientation.y = (float)msg->orientation.y;
+	pos_dron[0].pose.orientation.z = (float)msg->orientation.z;
+	pos_dron[0].pose.orientation.w = (float)msg->orientation.w;
+
+	/* pos_dron[0].header.stamp.sec++; */
+}
+void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg)
+{
+	pos_dron[1].pose.orientation.x = (float)msg->orientation.x;
+	pos_dron[1].pose.orientation.y = (float)msg->orientation.y;
+	pos_dron[1].pose.orientation.z = (float)msg->orientation.z;
+	pos_dron[1].pose.orientation.w = (float)msg->orientation.w;
+
+	/* pos_dron[1].header.stamp.sec++; */
+}
+void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg)
+{
+	/* cout << "IMU 3" << endl; */
+	pos_dron[2].pose.orientation.x = (float)msg->orientation.x;
+	pos_dron[2].pose.orientation.y = (float)msg->orientation.y;
+	pos_dron[2].pose.orientation.z = (float)msg->orientation.z;
+	pos_dron[2].pose.orientation.w = (float)msg->orientation.w;
+
+	/* pos_dron[2].header.stamp.sec++; */
+}
+void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
+{
+	/* cout << "IMU 4" << endl; */
+	pos_dron[3].pose.orientation.x = (float)msg->orientation.x;
+	pos_dron[3].pose.orientation.y = (float)msg->orientation.y;
+	pos_dron[3].pose.orientation.z = (float)msg->orientation.z;
+	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
+
+	/* pos_dron[3].header.stamp.sec++; */
+}
+
+
 
 void writeFile(vector<float> &vec, const string &name)
 {
@@ -974,7 +985,6 @@ void writeFile(vector<float> &vec, const string &name)
 		myfile << vec[i] << endl;
 	myfile.close();
 }
-
 void writeMatrix(Mat &mat, const string &name)
 {
 	ofstream myfile;

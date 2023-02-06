@@ -3,6 +3,7 @@
 
 /****************** ROS LIBRARIES ******************/
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 #include <mav_msgs/conversions.h>
 #include "tf/transform_datatypes.h"
 #include <sensor_msgs/image_encodings.h>

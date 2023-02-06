@@ -79,6 +79,7 @@ typedef struct vc_desired_configuration
 #include <opencv2/features2d.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 
 class vc_state
 {
@@ -180,6 +181,6 @@ int getBearing(Mat &actual_image,
                Mat &store_ground_truth,
                vc_state &state,
                int drone_id,
-               vector<geometry_msgs::PointStamped> &pos_dron);
+               vector<geometry_msgs::PoseStamped> &pos_dron);
 
 #endif

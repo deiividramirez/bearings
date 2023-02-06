@@ -10,8 +10,8 @@ using namespace std;
 Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4);
 void Tipito(Mat &Matrix);
 
-geometry_msgs::PointStamped pos_msg;
-geometry_msgs::PointStamped pos_msg_to;
+geometry_msgs::PoseStamped pos_msg;
+geometry_msgs::PoseStamped pos_msg_to;
 
 int getBearing(Mat &actual_image,
                int marker_id,
@@ -19,7 +19,7 @@ int getBearing(Mat &actual_image,
                Mat &store_ground_truth,
                vc_state &state,
                int drone_id,
-               vector<geometry_msgs::PointStamped> &pos_dron)
+               vector<geometry_msgs::PoseStamped> &pos_dron)
 {
 
    for (int i = 0; i < pos_dron.size(); i++)
@@ -27,12 +27,28 @@ int getBearing(Mat &actual_image,
       if (pos_dron[i].header.seq == 0)
       {
          cout << "[INFO] Waiting for position of drone " << i << endl;
-         cout << pos_dron[i].header.seq << endl;
-         cout << pos_dron[i].point.x << endl;
-         cout << pos_dron[i].point.y << endl;
-         cout << pos_dron[i].point.z << endl;
+         /* cout << "Header seq: " << pos_dron[i].header.seq << endl;
+         cout << "x: " << pos_dron[i].pose.position.x << endl;
+         cout << "y: " << pos_dron[i].pose.position.y << endl;
+         cout << "z: " << pos_dron[i].pose.position.z << endl;
+         cout << "wx: " << pos_dron[i].pose.orientation.x << endl;
+         cout << "wy: " << pos_dron[i].pose.orientation.y << endl;
+         cout << "wz: " << pos_dron[i].pose.orientation.z << endl;
+         cout << "ww: " << pos_dron[i].pose.orientation.w << endl; */
          return -1;
       }
+      /* else
+      {
+         cout << "[INFO] Position of drone " << i << " received" << endl;
+         cout << "Header seq: " << pos_dron[i].header.seq << endl;
+         cout << "x: " << pos_dron[i].pose.position.x << endl;
+         cout << "y: " << pos_dron[i].pose.position.y << endl;
+         cout << "z: " << pos_dron[i].pose.position.z << endl;
+         cout << "wx: " << pos_dron[i].pose.orientation.x << endl;
+         cout << "wy: " << pos_dron[i].pose.orientation.y << endl;
+         cout << "wz: " << pos_dron[i].pose.orientation.z << endl;
+         cout << "ww: " << pos_dron[i].pose.orientation.w << endl;
+      } */
    }
 
    vector<int> markerIds;
@@ -107,9 +123,9 @@ int getBearing(Mat &actual_image,
       store_bearing.at<double>(2, 0) = temp.at<double>(1, 0);
 
       // Ground truth
-      store_ground_truth.at<double>(0, 0) = pos_dron[marker_id-1].point.x - pos_dron[drone_id-1].point.x;
-      store_ground_truth.at<double>(1, 0) = pos_dron[marker_id-1].point.y - pos_dron[drone_id-1].point.y;
-      store_ground_truth.at<double>(2, 0) = pos_dron[marker_id-1].point.z - pos_dron[drone_id-1].point.z;
+      store_ground_truth.at<double>(0, 0) = pos_dron[marker_id-1].pose.position.x - pos_dron[drone_id-1].pose.position.x;
+      store_ground_truth.at<double>(1, 0) = pos_dron[marker_id-1].pose.position.y - pos_dron[drone_id-1].pose.position.y;
+      store_ground_truth.at<double>(2, 0) = pos_dron[marker_id-1].pose.position.z - pos_dron[drone_id-1].pose.position.z;
 
       double norma = norm(store_ground_truth);
       if (norma != 0)
