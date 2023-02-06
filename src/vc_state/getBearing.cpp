@@ -14,7 +14,7 @@ geometry_msgs::PoseStamped pos_msg;
 geometry_msgs::PoseStamped pos_msg_to;
 
 int getBearing(Mat &actual_image,
-               int marker_id,
+               XmlRpc::XmlRpcValue marker_id,
                Mat &store_bearing,
                Mat &store_ground_truth,
                vc_state &state,
@@ -27,28 +27,8 @@ int getBearing(Mat &actual_image,
       if (pos_dron[i].header.seq == 0)
       {
          cout << "[INFO] Waiting for position of drone " << i << endl;
-         /* cout << "Header seq: " << pos_dron[i].header.seq << endl;
-         cout << "x: " << pos_dron[i].pose.position.x << endl;
-         cout << "y: " << pos_dron[i].pose.position.y << endl;
-         cout << "z: " << pos_dron[i].pose.position.z << endl;
-         cout << "wx: " << pos_dron[i].pose.orientation.x << endl;
-         cout << "wy: " << pos_dron[i].pose.orientation.y << endl;
-         cout << "wz: " << pos_dron[i].pose.orientation.z << endl;
-         cout << "ww: " << pos_dron[i].pose.orientation.w << endl; */
          return -1;
       }
-      /* else
-      {
-         cout << "[INFO] Position of drone " << i << " received" << endl;
-         cout << "Header seq: " << pos_dron[i].header.seq << endl;
-         cout << "x: " << pos_dron[i].pose.position.x << endl;
-         cout << "y: " << pos_dron[i].pose.position.y << endl;
-         cout << "z: " << pos_dron[i].pose.position.z << endl;
-         cout << "wx: " << pos_dron[i].pose.orientation.x << endl;
-         cout << "wy: " << pos_dron[i].pose.orientation.y << endl;
-         cout << "wz: " << pos_dron[i].pose.orientation.z << endl;
-         cout << "ww: " << pos_dron[i].pose.orientation.w << endl;
-      } */
    }
 
    vector<int> markerIds;
@@ -58,6 +38,7 @@ int getBearing(Mat &actual_image,
    try
    {
       aruco::detectMarkers(actual_image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+      cout <<" pasa aruco" << endl;
    }
    catch (Exception &e)
    {
@@ -72,71 +53,91 @@ int getBearing(Mat &actual_image,
    }
    else
    {
+      int indice;
 
-      int marker_index = -1;
-      for (int i = 0; i < markerIds.size(); i++)
+      cout << "[INFO] Called getBearing for drone " << drone_id << endl;
+
+      store_bearing = Mat::zeros(3, marker_id.size(), CV_64F);
+      store_ground_truth = Mat::zeros(3, marker_id.size(), CV_64F);
+
+      for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
       {
-         if (markerIds[i] == marker_id)
+         indice = -1;
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            cout << "[INFO] Marker " << marker_id << " detected" << endl;
-            /* cout << "[INFO] Marker corners: " << markerCorners[i] << endl; */
-            marker_index = i;
-            break;
+            if (markerIds[i] == (int)marker_id[marker_index])
+            {
+               cout << "[INFO] Marker " << marker_id[marker_index] << " detected" << endl;
+               // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
+               indice = i;
+               break;
+            }
          }
+
+         if (indice == -1)
+         {
+            cout << "[ERROR] Marker " << marker_id[marker_index] << " not detected" << endl;
+            return -1;
+         }
+
+         Mat temporal = Mat::zeros(4, 2, CV_32F);
+         for (int i = 0; i < 4; i++)
+         {
+            temporal.at<float>(i, 0) = markerCorners[indice][i].x;
+            temporal.at<float>(i, 1) = markerCorners[indice][i].y;
+         }
+
+         temporal.convertTo(temporal, CV_64F);
+
+         Mat p1 = temporal.row(0);
+         Mat p2 = temporal.row(1);
+         Mat p3 = temporal.row(2);
+         Mat p4 = temporal.row(3);
+
+         Mat pMedio = puntoMedio(p1, p2, p3, p4);
+
+         Mat temp = Mat(3, 1, CV_64F);
+         temp.at<double>(0, 0) = pMedio.at<double>(0, 0);
+         temp.at<double>(1, 0) = pMedio.at<double>(0, 1);
+         temp.at<double>(2, 0) = 1;
+
+         Mat temp2 = state.params.K.inv() * temp;
+         temp = temp2 / norm(temp2);
+
+         Mat bear_temp = Mat::zeros(3, 1, CV_64F);
+         Mat grou_temp = Mat::zeros(3, 1, CV_64F);
+
+         bear_temp.at<double>(0, 0) = temp.at<double>(2, 0);
+         bear_temp.at<double>(1, 0) = -temp.at<double>(0, 0);
+         bear_temp.at<double>(2, 0) = -temp.at<double>(1, 0);
+         /* double norma = norm(bear_temp);
+         if (norma != 0)
+         {
+            bear_temp = bear_temp / norma;
+         } */
+
+         // Ground truth
+         grou_temp.at<double>(0, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.x - pos_dron[drone_id - 1].pose.position.x;
+         grou_temp.at<double>(1, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.y - pos_dron[drone_id - 1].pose.position.y;
+         grou_temp.at<double>(2, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.z - pos_dron[drone_id - 1].pose.position.z;
+
+         double norma = norm(grou_temp);
+         if (norma != 0)
+         {
+            grou_temp = grou_temp / norma;
+         }
+
+         store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
+         store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
+         store_bearing.at<double>(2, marker_index) = bear_temp.at<double>(2, 0);
+
+         store_ground_truth.at<double>(0, marker_index) = grou_temp.at<double>(0, 0);
+         store_ground_truth.at<double>(1, marker_index) = grou_temp.at<double>(1, 0);
+         store_ground_truth.at<double>(2, marker_index) = grou_temp.at<double>(2, 0);
       }
-
-      if (marker_index == -1)
-      {
-         cout << "[ERROR] Marker " << marker_id << " not detected" << endl;
-         return -1;
-      }
-
-      store_bearing = Mat::zeros(3, 1, CV_64F);
-      store_ground_truth = Mat::zeros(3, 1, CV_64F);
-
-      Mat temporal = Mat::zeros(4, 2, CV_32F);
-      for (int i = 0; i < 4; i++)
-      {
-         temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
-         temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
-      }
-
-      temporal.convertTo(temporal, CV_64F);
-
-      Mat p1 = temporal.row(0);
-      Mat p2 = temporal.row(1);
-      Mat p3 = temporal.row(2);
-      Mat p4 = temporal.row(3);
-
-      Mat pMedio = puntoMedio(p1, p2, p3, p4);
-
-      Mat temp = Mat(3, 1, CV_64F);
-      temp.at<double>(0, 0) = pMedio.at<double>(0, 0);
-      temp.at<double>(1, 0) = pMedio.at<double>(0, 1);
-      temp.at<double>(2, 0) = 1;
-
-      Mat temp2 = state.params.K.inv() * temp;
-      temp = temp2 / norm(temp2);
-
-      store_bearing.at<double>(0, 0) = temp.at<double>(2, 0);
-      store_bearing.at<double>(1, 0) = temp.at<double>(0, 0);
-      store_bearing.at<double>(2, 0) = temp.at<double>(1, 0);
-
-      // Ground truth
-      store_ground_truth.at<double>(0, 0) = pos_dron[marker_id-1].pose.position.x - pos_dron[drone_id-1].pose.position.x;
-      store_ground_truth.at<double>(1, 0) = pos_dron[marker_id-1].pose.position.y - pos_dron[drone_id-1].pose.position.y;
-      store_ground_truth.at<double>(2, 0) = pos_dron[marker_id-1].pose.position.z - pos_dron[drone_id-1].pose.position.z;
-
-      double norma = norm(store_ground_truth);
-      if (norma != 0)
-      {
-         store_ground_truth = store_ground_truth / norma;
-      }
-
       return 0;
    }
 }
-
 
 Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4)
 {

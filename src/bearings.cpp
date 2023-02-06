@@ -30,10 +30,9 @@ void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
 
-
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4};
-//vector<void (*)(const sensor_msgs::Image::ConstPtr &)> IMGCallbacks = {IMGCallback1, IMGCallback2, IMGCallback3, IMGCallback4};
+// vector<void (*)(const sensor_msgs::Image::ConstPtr &)> IMGCallbacks = {IMGCallback1, IMGCallback2, IMGCallback3, IMGCallback4};
 vector<void (*)(const sensor_msgs::Imu::ConstPtr &)> imuCallbacks = {imuCallback1, imuCallback2, imuCallback3, imuCallback4};
 
 geometry_msgs::PoseStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4;
@@ -56,7 +55,7 @@ vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matc
 Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old4, img_points4;
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0;
 int SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
-int seg1, seg2, seg3, seg4;
+XmlRpc::XmlRpcValue seg1, seg2, seg3, seg4;
 
 bool target1, target2, target3, target4;
 vector<bool> targets = {target1, target2, target3, target4};
@@ -98,16 +97,13 @@ int main(int argc, char **argv)
 	gen.getParam("seguimiento_3", seg3);
 	gen.getParam("seguimiento_4", seg4);
 
-	cout << "\n[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True\n" : "False\n") << endl;
-	cout << "\n[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True\n" : "False\n") << endl;
-	cout << "\n[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
-	cout << "\n[INFO] seguimiento_1: " << seg1 << endl;
-	cout << "\n[INFO] seguimiento_2: " << seg2 << endl;
-	cout << "\n[INFO] seguimiento_3: " << seg3 << endl;
-	cout << "\n[INFO] seguimiento_4: " << seg4 << endl;
-
-	exit(-1);
-
+	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
+	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
+	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
+	cout << "[INFO] seguimiento_1: " << seg1 << endl;
+	cout << "[INFO] seguimiento_2: " << seg2 << endl;
+	cout << "[INFO] seguimiento_3: " << seg3 << endl;
+	cout << "[INFO] seguimiento_4: " << seg4 << endl;
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
@@ -344,7 +340,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
@@ -355,12 +350,14 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
+	else
+	{
+		cout << "Bearing with ground truth drone " << 2 + 1 << endl;
+		cout << store_ground_truth << endl;
 
-	cout << "Bearing with ground truth drone " << 2 + 1 << endl;
-	cout << store_ground_truth << endl;
-
-	cout << "Bearing with bearing drone " << 2 + 1 << endl;
-	cout << store_bearing << endl;
+		cout << "Bearing with bearing drone " << 2 + 1 << endl;
+		cout << store_bearing << endl;
+	}
 }
 
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
@@ -373,12 +370,14 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
+	else
+	{
+		cout << "Bearing with ground truth drone " << 3 + 1 << endl;
+		cout << store_ground_truth << endl;
 
-	cout << "Bearing with ground truth drone " << 3 + 1 << endl;
-	cout << store_ground_truth << endl;
-
-	cout << "Bearing with bearing drone " << 3 + 1 << endl;
-	cout << store_bearing << endl;
+		cout << "Bearing with bearing drone " << 3 + 1 << endl;
+		cout << store_bearing << endl;
+	}
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -803,15 +802,11 @@ void imageCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-
-
 void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 {
 	/* cout << "\n[INFO] doNothing function" << endl; */
 	return;
 }
-
-
 
 void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -934,8 +929,6 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	pos_dron[3].header.frame_id = "world";
 }
 
-
-
 void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
 {
 	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
@@ -974,8 +967,6 @@ void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
 
 	/* pos_dron[3].header.stamp.sec++; */
 }
-
-
 
 void writeFile(vector<float> &vec, const string &name)
 {

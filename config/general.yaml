@@ -9,8 +9,8 @@ cam_drone_4: 1
 
 seguimiento_1: [0]
 seguimiento_2: [0]
-seguimiento_3: [1]
-seguimiento_4: [2]
+seguimiento_3: [1, 2]
+seguimiento_4: [1, 2]
 
 bearing_1: [[]]
 bearing_2: [[]]

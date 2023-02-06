@@ -44,7 +44,7 @@ int compute_descriptors(const Mat &img,
 	if (goodMatches.size() == 0)
 	{
 		cout << "[ERROR] There are no good matches" << endl;
-		exit(-1);
+		ros::shutdown();
 	}
 
 	/************************************************************* Getting descriptors */
