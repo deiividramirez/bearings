@@ -30,6 +30,8 @@ void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
 
+Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs);
+
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4};
 // vector<void (*)(const sensor_msgs::Image::ConstPtr &)> IMGCallbacks = {IMGCallback1, IMGCallback2, IMGCallback3, IMGCallback4};
@@ -53,9 +55,20 @@ vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matc
 
 /****************** AUXILIAR GLOBAL VARIABLES ******************/
 Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old4, img_points4;
+
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0;
 int SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
+
+double Kp, Kv;
+
 XmlRpc::XmlRpcValue seg1, seg2, seg3, seg4;
+vector<XmlRpc::XmlRpcValue> segmentsXML = {seg1, seg2, seg3, seg4};
+
+XmlRpc::XmlRpcValue bearing1, bearing2, bearing3, bearing4;
+vector<XmlRpc::XmlRpcValue> bearingsXML = {bearing1, bearing2, bearing3, bearing4};
+
+Mat bearing1_points, bearing2_points, bearing3_points, bearing4_points;
+vector<Mat> bearings = {bearing1_points, bearing2_points, bearing3_points, bearing4_points};
 
 bool target1, target2, target3, target4;
 vector<bool> targets = {target1, target2, target3, target4};
@@ -96,6 +109,24 @@ int main(int argc, char **argv)
 	gen.getParam("seguimiento_2", seg2);
 	gen.getParam("seguimiento_3", seg3);
 	gen.getParam("seguimiento_4", seg4);
+	
+	gen.getParam("seguimiento_1", segmentsXML[0]);
+	gen.getParam("seguimiento_2", segmentsXML[1]);
+	gen.getParam("seguimiento_3", segmentsXML[2]);
+	gen.getParam("seguimiento_4", segmentsXML[3]);
+	
+	gen.getParam("bearing_1", bearingsXML[0]);
+	gen.getParam("bearing_2", bearingsXML[1]);
+	gen.getParam("bearing_3", bearingsXML[2]);
+	gen.getParam("bearing_4", bearingsXML[3]);
+
+	gen.getParam("Kp", Kp);
+	gen.getParam("Kv", Kv);
+
+	for (int i = 0; i < bearings.size(); i++)
+	{
+		bearings[i] = convertBearing(bearingsXML[i], segmentsXML[i]);
+	}
 
 	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
@@ -124,22 +155,22 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		// image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
-		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
-		image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
+		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
+		//image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
 		// image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
-		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
-		image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
+		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
+		//image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
 		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
-		image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
+		//image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
-		image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
+		//image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
 
@@ -250,12 +281,12 @@ int main(int argc, char **argv)
 			ros::shutdown();
 		}
 
-		if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
+		/* if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
 		{
 			contGEN++;
 			rate.sleep();
 			continue;
-		} // if we havent get the new pose for all the drones
+		} // if we havent get the new pose for all the drones */
 
 		/****************** SAVE DATA ******************/
 
@@ -343,41 +374,53 @@ int main(int argc, char **argv)
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
-	/* cout << "[INFO] Image received" << endl; */
 
-	Mat store_bearing, store_ground_truth;
-	if (getBearing(actual, seg3, store_bearing, store_ground_truth, states[2], 3, pos_dron) < 0)
+	Mat actual_bearing, bearing_ground_truth;
+	if (getBearing(actual, seg3, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
 	else
 	{
 		cout << "Bearing with ground truth drone " << 2 + 1 << endl;
-		cout << store_ground_truth << endl;
+		cout << bearing_ground_truth << endl;
 
-		cout << "Bearing with bearing drone " << 2 + 1 << endl;
-		cout << store_bearing << endl;
+		cout << "bearings[2] = " << bearings[2] << endl;
+		if (bearingControl(actual_bearing, bearing_ground_truth, bearings[2], states, segmentsXML[2], 3, Kp, Kv) < 0)
+		{
+			cout << "[ERROR] Bearing control failed" << endl;
+		}
+		else
+		{
+			cout << "[INFO] Bearing control success" << endl;
+		}
 	}
 }
 
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
-	/* cout << "[INFO] Image received" << endl; */
 
-	Mat store_bearing, store_ground_truth;
-	if (getBearing(actual, seg4, store_bearing, store_ground_truth, states[3], 4, pos_dron) < 0)
+	Mat actual_bearing, bearing_ground_truth;
+	if (getBearing(actual, seg4, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
 	}
 	else
 	{
 		cout << "Bearing with ground truth drone " << 3 + 1 << endl;
-		cout << store_ground_truth << endl;
+		cout << bearing_ground_truth << endl;
 
-		cout << "Bearing with bearing drone " << 3 + 1 << endl;
-		cout << store_bearing << endl;
-	}
+		cout << "bearings[3] = " << bearings[3] << endl;
+		if (bearingControl(actual_bearing, bearing_ground_truth, bearings[3], states, segmentsXML[3], 4, Kp, Kv) < 0)
+		{
+			cout << "[ERROR] Bearing control failed" << endl;
+		}
+		else
+		{
+			cout << "[INFO] Bearing control success" << endl;
+		}
+	} 
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -966,6 +1009,34 @@ void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
 	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
 
 	/* pos_dron[3].header.stamp.sec++; */
+}
+
+Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs)
+{
+	Mat bearingMat = Mat::zeros(3, 3, CV_32F);
+	if (bearing.size() > 0 && segs.size() > 0)
+	{
+		Mat bearingMat = Mat::zeros(3, segs.size(), CV_64F);
+		if (bearing.getType() == XmlRpc::XmlRpcValue::TypeArray)
+		{
+			// cout << "bearing is array" << endl;
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < segs.size(); j++)
+				{
+					std::ostringstream ostr;
+					ostr << bearing[segs.size() * i + j];
+					std::istringstream istr(ostr.str());
+					istr >> bearingMat.at<double>(i, j);
+				}
+			}
+		}
+		return bearingMat;
+	}
+	else
+	{
+		return Mat();
+	}
 }
 
 void writeFile(vector<float> &vec, const string &name)

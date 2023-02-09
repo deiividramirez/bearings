@@ -55,7 +55,7 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
   this->Y = this->Y + this->Kv * this->Vy * this->dt;
   this->Z = this->Z + this->Kv * this->Vz * this->dt;
   this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
-  /* cout << "X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl; */
+  // cout << "X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl;
 
   Eigen::VectorXd position;
   position.resize(3);
@@ -64,10 +64,10 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
   position(1) = this->Y;
   position(2) = this->Z;
 
-  this->Vx = 0;
+  /* this->Vx = 0;
   this->Vy = 0;
   this->Vz = 0;
-  this->Vyaw = 0;
+  this->Vyaw = 0; */
 
   return make_pair(position, this->Yaw);
 }

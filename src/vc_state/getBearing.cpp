@@ -31,6 +31,28 @@ int getBearing(Mat &actual_image,
       }
    }
 
+   store_ground_truth = Mat::zeros(3, marker_id.size(), CV_64F);
+   Mat grou_temp = Mat::zeros(3, 1, CV_64F);
+   
+   for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
+   {
+
+      // Ground truth
+      grou_temp.at<double>(0, 0) = pos_dron[drone_id - 1].pose.position.x - pos_dron[(int)marker_id[marker_index] - 1].pose.position.x;
+      grou_temp.at<double>(1, 0) = pos_dron[drone_id - 1].pose.position.y - pos_dron[(int)marker_id[marker_index] - 1].pose.position.y;
+      grou_temp.at<double>(2, 0) = pos_dron[drone_id - 1].pose.position.z - pos_dron[(int)marker_id[marker_index] - 1].pose.position.z;
+
+      double norma = norm(grou_temp);
+      if (norma != 0)
+      {
+         grou_temp = grou_temp / norma;
+      }
+
+      store_ground_truth.at<double>(0, marker_index) = grou_temp.at<double>(0, 0);
+      store_ground_truth.at<double>(1, marker_index) = grou_temp.at<double>(1, 0);
+      store_ground_truth.at<double>(2, marker_index) = grou_temp.at<double>(2, 0);
+   }
+
    vector<int> markerIds;
    vector<vector<Point2f>> markerCorners, rejectedCandidates;
    Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
@@ -38,7 +60,7 @@ int getBearing(Mat &actual_image,
    try
    {
       aruco::detectMarkers(actual_image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      cout <<" pasa aruco" << endl;
+      cout << " pasa aruco" << endl;
    }
    catch (Exception &e)
    {
@@ -58,7 +80,6 @@ int getBearing(Mat &actual_image,
       cout << "[INFO] Called getBearing for drone " << drone_id << endl;
 
       store_bearing = Mat::zeros(3, marker_id.size(), CV_64F);
-      store_ground_truth = Mat::zeros(3, marker_id.size(), CV_64F);
 
       for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
       {
@@ -105,35 +126,19 @@ int getBearing(Mat &actual_image,
          temp = temp2 / norm(temp2);
 
          Mat bear_temp = Mat::zeros(3, 1, CV_64F);
-         Mat grou_temp = Mat::zeros(3, 1, CV_64F);
 
-         bear_temp.at<double>(0, 0) = temp.at<double>(2, 0);
-         bear_temp.at<double>(1, 0) = -temp.at<double>(0, 0);
-         bear_temp.at<double>(2, 0) = -temp.at<double>(1, 0);
+         bear_temp.at<double>(0, 0) = -temp.at<double>(2, 0);
+         bear_temp.at<double>(1, 0) = temp.at<double>(0, 0);
+         bear_temp.at<double>(2, 0) = temp.at<double>(1, 0);
          /* double norma = norm(bear_temp);
          if (norma != 0)
          {
             bear_temp = bear_temp / norma;
          } */
 
-         // Ground truth
-         grou_temp.at<double>(0, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.x - pos_dron[drone_id - 1].pose.position.x;
-         grou_temp.at<double>(1, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.y - pos_dron[drone_id - 1].pose.position.y;
-         grou_temp.at<double>(2, 0) = pos_dron[(int)marker_id[marker_index] - 1].pose.position.z - pos_dron[drone_id - 1].pose.position.z;
-
-         double norma = norm(grou_temp);
-         if (norma != 0)
-         {
-            grou_temp = grou_temp / norma;
-         }
-
          store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
          store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
          store_bearing.at<double>(2, marker_index) = bear_temp.at<double>(2, 0);
-
-         store_ground_truth.at<double>(0, marker_index) = grou_temp.at<double>(0, 0);
-         store_ground_truth.at<double>(1, marker_index) = grou_temp.at<double>(1, 0);
-         store_ground_truth.at<double>(2, marker_index) = grou_temp.at<double>(2, 0);
       }
       return 0;
    }
@@ -146,7 +151,6 @@ Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4)
    pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
    return pMedio;
 }
-
 string type2str(int type)
 {
    string r;
@@ -187,7 +191,6 @@ string type2str(int type)
 
    return r;
 }
-
 void Tipito(Mat &Matrix)
 {
    string ty = type2str(Matrix.type());

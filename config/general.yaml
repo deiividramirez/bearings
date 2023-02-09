@@ -12,7 +12,14 @@ seguimiento_2: [0]
 seguimiento_3: [1, 2]
 seguimiento_4: [1, 2]
 
-bearing_1: [[]]
-bearing_2: [[]]
-bearing_3: [[1, 0, 0], [0, 1, 0]]
-bearing_4: [[1, 0, 0], [0, 1, 0]]
+bearing_1: []
+bearing_2: []
+bearing_3: [.91,   .91,
+            -.37,  .37,
+            -.18, -.18]
+bearing_4: [.91,  .91,
+            -.37, .37,
+            .18,  .18]
+
+Kp: 6.5
+Kv: 0.3

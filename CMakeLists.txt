@@ -212,6 +212,7 @@ src/vc_state/GUO.cpp
 src/vc_state/saveDesired.cpp
 src/vc_state/vc_state.cpp
 src/vc_state/getBearing.cpp
+src/vc_state/bearingControl.cpp
 
 
 #src/vc_state/posesCallback.cpp

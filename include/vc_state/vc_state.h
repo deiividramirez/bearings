@@ -183,4 +183,13 @@ int getBearing(Mat &actual_image,
                int drone_id,
                vector<geometry_msgs::PoseStamped> &pos_dron);
 
+int bearingControl(Mat actual_bearing, 
+                   Mat position,
+                   Mat desired_bearings,
+                   vector<vc_state> &drones,
+                   XmlRpc::XmlRpcValue &marker_ids,
+                   int drone_id,
+                   double Kp, 
+                   double Kv);
+
 #endif
