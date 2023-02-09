@@ -55,8 +55,8 @@
           </noise>
           <lens>
             <intrinsics>
-              <fx>500</fx>
-              <fy>500</fy>
+              <fx>700</fx>
+              <fy>700</fy>
               <cx>960</cx>
               <cy>540</cy>
               <s>0</s>

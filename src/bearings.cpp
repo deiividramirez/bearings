@@ -154,11 +154,11 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		// image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
 		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
 		//image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
-		// image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
 		//image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
@@ -379,6 +379,10 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 	if (getBearing(actual, seg3, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
+		states[2].Vx = 0;
+		states[2].Vy = 0;
+		states[2].Vz = 0;
+		states[2].Vyaw = 0;
 	}
 	else
 	{
@@ -405,6 +409,11 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	if (getBearing(actual, seg4, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
 	{
 		cout << "[ERROR] No bearing found" << endl;
+		states[3].Vx = 0;
+		states[3].Vy = 0;
+		states[3].Vz = 0;
+		states[3].Vyaw = 0;
+
 	}
 	else
 	{

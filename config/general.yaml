@@ -7,8 +7,8 @@ cam_drone_2: 1
 cam_drone_3: 1
 cam_drone_4: 1
 
-seguimiento_1: [0]
-seguimiento_2: [0]
+seguimiento_1: 0
+seguimiento_2: 0
 seguimiento_3: [1, 2]
 seguimiento_4: [1, 2]
 
@@ -21,5 +21,5 @@ bearing_4: [.91,  .91,
             -.37, .37,
             .18,  .18]
 
-Kp: 6.5
+Kp: 4
 Kv: 0.3

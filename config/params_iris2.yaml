@@ -1,7 +1,7 @@
 # The camera intrinsic parameters matrix
 # 3x3 matrix
-camera_intrinsic_parameters: [500,   0,    960,
-                              0,    500,   540,
+camera_intrinsic_parameters: [700,   0,    960,
+                              0,    700,   540,
                               0,     0,     1]
 
 # Sampling time
