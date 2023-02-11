@@ -127,6 +127,16 @@ public:
     //         int (*controller )[1];
 };
 
+// Create the Struct which be able to
+// store the information about the points
+typedef struct vecDist
+{
+    int i;        // index i
+    int j;        // index j p_i * p_j
+    double dist;  // distance between p2_i and p2_j
+    double dist2; // distance between p1_i and p1_j
+} vecDist;
+
 /****************** FUNCTIONS TO USE ******************/
 
 /****************** MAIN CONTROL FOR IMAGE BASED VISUAL SERVOING ******************/
@@ -166,7 +176,7 @@ int aruco_detector(const Mat &actual,
                    Mat &img_points,
                    vc_state &state,
                    vc_homograpy_matching_result &matching_result,
-                   XmlRpc::XmlRpcValue marker_id);
+                   XmlRpc::XmlRpcValue marker_idXLM);
 
 int Kanade_Lucas_Tomasi(const Mat &img_old,
                         const Mat &img_new,
@@ -183,13 +193,13 @@ int getBearing(Mat &actual_image,
                int drone_id,
                vector<geometry_msgs::PoseStamped> &pos_dron);
 
-int bearingControl(Mat actual_bearing, 
+int bearingControl(Mat actual_bearing,
                    Mat position,
                    Mat desired_bearings,
                    vector<vc_state> &drones,
                    XmlRpc::XmlRpcValue &marker_ids,
                    int drone_id,
-                   double Kp, 
+                   double Kp,
                    double Kv);
 
 #endif

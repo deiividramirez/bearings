@@ -14,14 +14,14 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg);
 void imageCallback3(const sensor_msgs::Image::ConstPtr &msg);
 void imageCallback4(const sensor_msgs::Image::ConstPtr &msg);
 
-void poseCallback(const geometry_msgs::Pose::ConstPtr &msg);
+// void poseCallback(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg);
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg);
 
-void IMGCallback1(const sensor_msgs::Image::ConstPtr &msg);
-void IMGCallback2(const sensor_msgs::Image::ConstPtr &msg);
+// void IMGCallback1(const sensor_msgs::Image::ConstPtr &msg);
+// void IMGCallback2(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg);
 
@@ -94,7 +94,10 @@ int main(int argc, char **argv)
 	for (int i = 0; i < 4; i++)
 		states[i].load(nhs[i]);
 
-	image_transport::ImageTransport it(nh);
+	image_transport::ImageTransport it1(nh);
+	image_transport::ImageTransport it2(nh2);
+	image_transport::ImageTransport it3(nh3);
+	image_transport::ImageTransport it4(nh4);
 	image_transport::Subscriber image_sub_1f, image_sub_1b,
 		 image_sub_2f, image_sub_2b,
 		 image_sub_3f, image_sub_3b,
@@ -139,38 +142,38 @@ int main(int argc, char **argv)
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
 	{
-		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, saveDesired1f);
-		image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, saveDesired1b);
+		image_sub_1f = it1.subscribe("/iris_1/camera_front_camera/image_raw", 1, saveDesired1f);
+		image_sub_1b = it1.subscribe("/iris_1/camera_under_camera/image_raw", 1, saveDesired1b);
 
-		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, saveDesired2f);
-		image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, saveDesired2b);
+		image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, saveDesired2f);
+		image_sub_2b = it2.subscribe("/iris_2/camera_under_camera/image_raw", 1, saveDesired2b);
 
-		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, saveDesired3f);
-		image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, saveDesired3b);
+		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, saveDesired3f);
+		image_sub_3b = it3.subscribe("/iris_3/camera_under_camera/image_raw", 1, saveDesired3b);
 
-		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, saveDesired4f);
-		image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, saveDesired4b);
+		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, saveDesired4f);
+		image_sub_4b = it4.subscribe("/iris_4/camera_under_camera/image_raw", 1, saveDesired4b);
 	}
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
-		// image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
-		// image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
+		image_sub_1f = it1.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		// image_sub_1f = it1.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_1b = it1.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
-		// image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
-		// image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		// image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_2b = it2.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
-		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
-		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
-		// image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
+		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
+		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_3b = it3.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
-		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
-		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
-		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
-		// image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
+		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
+		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_4b = it4.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
 
@@ -266,15 +269,6 @@ int main(int argc, char **argv)
 		// get a msg
 		ros::spinOnce();
 
-		/* for (int i = 0; i < states.size(); i++)
-		{
-			auto new_pose = states[i].position();
-			X[i].push_back(new_pose[0]);
-			Y[i].push_back(new_pose[1]);
-			Z[i].push_back(new_pose[2]);
-			cout << "[INFO] Iris " << i + 1 << " position: " << new_pose[0] << ", " << new_pose[1] << ", " << new_pose[2] << endl;
-		} */
-
 		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
 		{
 			cout << "\n[INFO] Images have been saved." << endl;
@@ -285,62 +279,70 @@ int main(int argc, char **argv)
 		{
 			contGEN++;
 			rate.sleep();
+			cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
 			continue;
 		} // if we havent get the new pose for all the drones
-
-		/****************** SAVE DATA ******************/
-
-		// for to save data in array and check if the drone is in the target
-		for (int i = 0; i < states.size(); i++)
+		else
 		{
-			if (!states[i].in_target)
-			{
-				time[i].push_back(states[i].t);
-				errors[i].push_back((float)matching_results[i].mean_feature_error);
-				errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
-				vel_x[i].push_back(states[i].Vx);
-				vel_y[i].push_back(states[i].Vy);
-				vel_z[i].push_back(states[i].Vz);
-				vel_yaw[i].push_back(states[i].Vyaw);
-				lambda[i].push_back(states[i].lambda);
+			cout << "\n[INFO] All the drones have been initialized." << endl;
 
-				if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
+			/****************** SAVE DATA ******************/
+
+			// for to save data in array and check if the drone is in the target
+			for (int i = 0; i < states.size(); i++)
+			{
+				if (!states[i].in_target)
 				{
-					cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
-					states[i].in_target = true;
+					time[i].push_back(states[i].t);
+					errors[i].push_back((float)matching_results[i].mean_feature_error);
+					errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
+					vel_x[i].push_back(states[i].Vx);
+					vel_y[i].push_back(states[i].Vy);
+					vel_z[i].push_back(states[i].Vz);
+					vel_yaw[i].push_back(states[i].Vyaw);
+					lambda[i].push_back(states[i].lambda);
+
+					X[i].push_back(pos_dron[i].pose.position.x);
+					Y[i].push_back(pos_dron[i].pose.position.y);
+					Z[i].push_back(pos_dron[i].pose.position.z);
+
+					if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
+					{
+						cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
+						states[i].in_target = true;
+						/* if (SHOW_IMAGES)
+						{
+							waitKey(0);
+						} */
+						break;
+					}
+				}
+				else
+				{
+					cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
 					/* if (SHOW_IMAGES)
 					{
 						waitKey(0);
 					} */
 					break;
 				}
+
+				// Publish image of the matching
+				// cout << "\n[INFO] Publishing image" << endl;
+				// image_pub.publish(image_msg);
+
+				// Update state with the current control
+				auto new_pose = states[i].update();
+
+				// Prepare msg
+				msg.header.stamp = ros::Time::now();
+				mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
+
+				// Publish msg
+				pos_pubs[i].publish(msg);
 			}
-			else
-			{
-				cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
-				/* if (SHOW_IMAGES)
-				{
-					waitKey(0);
-				} */
-				break;
-			}
-
-			// Publish image of the matching
-			// cout << "\n[INFO] Publishing image" << endl;
-			// image_pub.publish(image_msg);
-
-			// Update state with the current control
-			auto new_pose = states[i].update();
-
-			// Prepare msg
-			msg.header.stamp = ros::Time::now();
-			mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
-
-			// Publish msg
-			pos_pubs[i].publish(msg);
 		}
 
-		rate.sleep();
 		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 1000)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
@@ -350,6 +352,9 @@ int main(int argc, char **argv)
 		{
 			contGEN++;
 		}
+
+		rate.sleep();
+		ros::spinOnce();
 	}
 
 	// save data
@@ -373,6 +378,8 @@ int main(int argc, char **argv)
 
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
+	cout << endl
+		  << "--------------------> EMPIEZA <--------------------" << endl;
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 	Mat actual_bearing, bearing_ground_truth;
@@ -415,6 +422,8 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 }
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
+	cout << endl
+		  << "--------------------> EMPIEZA <--------------------" << endl;
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 	Mat actual_bearing, bearing_ground_truth;
@@ -458,110 +467,119 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
-	cout << "\n[INFO] ImageCallback function called for drone " << 0 + 1 << endl;
-	try
+	if (states[0].initialized)
 	{
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
-		cout << "[INFO] Image received" << endl;
-
-		if (contIMG1 < 3)
+		cout << endl
+			  << "--------------------> EMPIEZA <--------------------" << endl;
+		cout << "\n[INFO] ImageCallback function called for drone " << 0 + 1 << endl;
+		try
 		{
-			contIMG1++;
-			cout << "\n[INFO] Detecting keypoints" << endl;
+			Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
+			cout << "[INFO] Image received" << endl;
 
-			if (states[0].params.camara != 1)
+			if (contIMG1++ < 3)
 			{
-				cout << "[INFO] Detecting points with ORB" << endl;
-				if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
-				{
-					cout << "[ERROR] No keypoints with matches were found" << endl;
-					return;
-				}
+				// 	cout << "\n[INFO] Detecting keypoints" << endl;
+
+				// 	if (states[0].params.camara != 1)
+				// 	{
+				// 		cout << "[INFO] Detecting points with ORB" << endl;
+				// 		if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
+				// 		{
+				// 			cout << "[ERROR] No keypoints with matches were found" << endl;
+				// 			return;
+				// 		}
+				// 	}
+				// 	else
+				// 	{
+				// 		cout << "[INFO] Detecting points with ArUco" << endl;
+				// 		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
+				// 		{
+				// 			cout << "[ERROR] No ArUco were found." << endl;
+				// 			// ros::shutdown();
+				// 		}
+				// 	}
+				// 	// cout << "[INFO] img_points1: " << img_points1 << endl;
+				// 	// cout << "[INFO] matching_result.p1: " << endl
+				// 	// 	  << matching_results[0].p1 << endl;
+				// 	// cout << "[INFO] matching_result.p2: " << endl
+				// 	// 	  << matching_results[0].p2 << endl
+				// 	// 	  << endl;
+
+				// 	img_old1 = actual;
+				// 	img_new = actual;
 			}
 			else
 			{
-				cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
+				// img_new = actual;
+
+				if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
+				{
+					cout << "[INFO] Calling control law." << endl;
+					if (GUO(actual, states[0], matching_results[0]) < 0)
+					{
+						cout << "[ERROR] Controller failed" << endl;
+						return;
+					}
+					else
+					{
+						cout << "[INFO] Controller part has been executed" << endl;
+					}
+				}
+				else
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
-					ros::shutdown();
+					// ros::shutdown();
+					states[0].Vx = 0;
+					states[0].Vy = 0;
+					states[0].Vz = 0;
+					states[0].Vyaw = 0;
 				}
-			}
-			// cout << "[INFO] img_points1: " << img_points1 << endl;
-			// cout << "[INFO] matching_result.p1: " << endl
-			// 	  << matching_results[0].p1 << endl;
-			// cout << "[INFO] matching_result.p2: " << endl
-			// 	  << matching_results[0].p2 << endl
-			// 	  << endl;
 
-			img_old1 = actual;
-			img_new = actual;
-		}
-		else
-		{
-			img_new = actual;
+				cout << "POSICIÓN: " << pos_dron[0] << endl;
+				// Mat desired_temp, new_points;
+				// if (Kanade_Lucas_Tomasi(img_old1, img_new, desired_temp, img_points1, states[0], matching_results[0]) < 0)
+				// {
+				// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
+				// 	return;
+				// }
+				// else
+				// {
+				// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
+				// }
 
-			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
-			{
-				cout << "[ERROR] No ArUco were found." << endl;
-				ros::shutdown();
-			}
-
-			cout << "[INFO] Calling control law." << endl;
-			if (GUO(actual, states[0], matching_results[0]) < 0)
-			{
-				cout << "[ERROR] Controller failed" << endl;
-				return;
-			}
-			else
-			{
-				cout << "[INFO] Controller part has been executed" << endl;
+				// if (SHOW_IMAGES)
+				// {
+				// 	imshow("Frontal camera", img_new);
+				// 	imshow("Desired", desired_temp);
+				// 	waitKey(1);
+				// }
 			}
 
-			Mat desired_temp, new_points;
-			if (Kanade_Lucas_Tomasi(img_old1, img_new, desired_temp, img_points1, states[0], matching_results[0]) < 0)
-			{
-				cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-				return;
-			}
-			else
-			{
-				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-			}
+			// if (SAVE_IMAGES)
+			// {
+			// 	string saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
+			// 	imwrite(workspace + saveIMG, img_new);
+			// 	cout << "[INFO] << Image saved >>" << saveIMG << endl;
+			// }
+			// else
+			// {
+			// 	string saveIMG = "/src/bearings/src/data/img/1_1.jpg";
+			// 	imwrite(workspace + saveIMG, img_new);
+			// 	cout << "[INFO] << Image saved >>" << saveIMG << endl;
+			// }
 
-			if (SHOW_IMAGES)
-			{
-				imshow("Frontal camera", img_new);
-				imshow("Desired", desired_temp);
-				waitKey(1);
-			}
-		}
+			/************************************************************* Prepare message */
+			// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
+			// image_msg->header.frame_id = "matching_image";
+			// image_msg->width = matching_results[0].img_matches.cols;
+			// image_msg->height = matching_results[0].img_matches.rows;
+			// image_msg->is_bigendian = false;
+			// image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
+			// image_msg->header.stamp = ros::Time::now();
 
-		if (SAVE_IMAGES)
-		{
-			string saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
-			imwrite(workspace + saveIMG, img_new);
-			cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-		else
-		{
-			string saveIMG = "/src/bearings/src/data/img/1_1.jpg";
-			imwrite(workspace + saveIMG, img_new);
-			cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
+			/* cout << "[INFO] Matching published" << endl; */
 
-		/************************************************************* Prepare message */
-		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
-		image_msg->header.frame_id = "matching_image";
-		image_msg->width = matching_results[0].img_matches.cols;
-		image_msg->height = matching_results[0].img_matches.rows;
-		image_msg->is_bigendian = false;
-		image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
-		image_msg->header.stamp = ros::Time::now();
-
-		/* cout << "[INFO] Matching published" << endl; */
-
-		if (states[0].initialized)
 			cout << "[VELS] Vx: " << states[0].Vx
 				  << ", Vy: " << states[0].Vy
 				  << ", Vz: " << states[0].Vz
@@ -571,16 +589,20 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				  << "\n==> average error: " << matching_results[0].mean_feature_error
 				  << "<==" << endl
 				  << "===================================================================\n\n";
-	}
-	catch (cv_bridge::Exception &e)
-	{
-		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-					 msg->encoding.c_str());
+		}
+		catch (cv_bridge::Exception &e)
+		{
+			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
+						 msg->encoding.c_str());
+		}
 	}
 }
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
+	cout << endl
+		  << "--------------------> EMPIEZA <--------------------" << endl;
 	cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
+
 	try
 	{
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
@@ -606,7 +628,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
-					ros::shutdown();
+					// ros::shutdown();
 				}
 			}
 			// cout << "[INFO] img_points2: " << img_points2 << endl;
@@ -624,7 +646,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
 			{
 				cout << "[ERROR] No ArUco were found." << endl;
-				ros::shutdown();
+				// ros::shutdown();
 			}
 
 			cout << "[INFO] Calling control law." << endl;
@@ -676,13 +698,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		/************************************************************* Prepare message */
-		image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
-		image_msg->header.frame_id = "matching_image";
-		image_msg->width = matching_results[1].img_matches.cols;
-		image_msg->height = matching_results[1].img_matches.rows;
-		image_msg->is_bigendian = false;
-		image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
-		image_msg->header.stamp = ros::Time::now();
+		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
+		// image_msg->header.frame_id = "matching_image";
+		// image_msg->width = matching_results[1].img_matches.cols;
+		// image_msg->height = matching_results[1].img_matches.rows;
+		// image_msg->is_bigendian = false;
+		// image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
+		// image_msg->header.stamp = ros::Time::now();
 
 		/* cout << "[INFO] Matching published" << endl; */
 
@@ -916,7 +938,8 @@ void doNothing(const sensor_msgs::Image::ConstPtr &msg)
 
 void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function for drone 1" << endl;
+	// cout << endl
+	// 	  << "[INFO] poseCallback function for drone 1" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -946,7 +969,8 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 }
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function for drone 2" << endl;
+	// cout << endl
+	// 	  << "[INFO] poseCallback function for drone 2" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -976,7 +1000,8 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 }
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function for drone 3" << endl;
+	// cout << endl
+	// 	  << "[INFO] poseCallback function for drone 3" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
@@ -1006,7 +1031,8 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 }
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl << "[INFO] poseCallback function for drone 4" << endl;
+	// cout << endl
+	// 	  << "[INFO] poseCallback function for drone 4" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
