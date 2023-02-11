@@ -166,7 +166,7 @@ int aruco_detector(const Mat &actual,
                    Mat &img_points,
                    vc_state &state,
                    vc_homograpy_matching_result &matching_result,
-                   int marker_id);
+                   XmlRpc::XmlRpcValue marker_id);
 
 int Kanade_Lucas_Tomasi(const Mat &img_old,
                         const Mat &img_new,

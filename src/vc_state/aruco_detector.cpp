@@ -8,7 +8,7 @@ int aruco_detector(const Mat &actual,
                    Mat &img_points,
                    vc_state &state,
                    vc_homograpy_matching_result &matching_result,
-                   int marker_id)
+                   XmlRpc::XmlRpcValue marker_id)
 {
    vector<int> markerIds;
    vector<vector<Point2f>> markerCorners, rejectedCandidates;
@@ -41,37 +41,44 @@ int aruco_detector(const Mat &actual,
       cout << endl;
 
       int marker_index = -1;
-      for (int i = 0; i < markerIds.size(); i++)
+
+      for (int32_t marker_index = 0; marker_index < markerIds.size(); marker_index++)
       {
-         if (markerIds[i] == marker_id)
+
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            cout << "[INFO] Marker " << marker_id << " detected" << endl;
-            cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
-            marker_index = i;
-            break;
+            if (markerIds[i] == (int)marker_id[marker_index])
+            {
+               cout << "[INFO] Marker " << marker_id << " detected" << endl;
+               cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
+               marker_index = i;
+               break;
+            }
          }
-      }
-      if (marker_index == -1)
-      {
-         cout << "[ERROR] Marker " << marker_id << " not detected" << endl;
-         return -1;
-      }
+         if (marker_index == -1)
+         {
+            cout << "[ERROR] Marker " << marker_id << " not detected" << endl;
+            return -1;
+         }
+         
+         ros::Duration(0.5).sleep();
 
-      Mat temporal = Mat::zeros(4, 2, CV_32F);
-      temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
-      temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
-      temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
-      temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-      temporal.convertTo(matching_result.p2, CV_64F);
-      temporal.convertTo(img_points, CV_32F);
+         Mat temporal = Mat::zeros(4, 2, CV_32F);
+         temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
+         temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
+         temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
+         temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
+         temporal.convertTo(matching_result.p2, CV_64F);
+         temporal.convertTo(img_points, CV_32F);
 
-      aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      temporal = Mat::zeros(4, 2, CV_32F);
-      temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
-      temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
-      temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
-      temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-      temporal.convertTo(matching_result.p1, CV_64F);
+         aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+         temporal = Mat::zeros(4, 2, CV_32F);
+         temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
+         temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
+         temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
+         temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
+         temporal.convertTo(matching_result.p1, CV_64F);
+      }
    }
    return 0;
 }

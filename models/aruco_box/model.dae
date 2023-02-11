@@ -3,10 +3,10 @@
   <asset>
     <contributor>
       <author>Blender User</author>
-      <authoring_tool>Blender 2.82.7</authoring_tool>
+      <authoring_tool>Blender 3.4.1 commit date:2022-12-19, commit time:17:00, hash:55485cb379f7</authoring_tool>
     </contributor>
-    <created>2023-01-05T11:41:14</created>
-    <modified>2023-01-05T11:41:14</modified>
+    <created>2023-02-10T19:12:27</created>
+    <modified>2023-02-10T19:12:27</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -78,14 +78,14 @@
   <library_effects>
     <effect id="Material-effect">
       <profile_COMMON>
-        <newparam sid="_x6_0_png_001-surface">
+        <newparam sid="_x6_1000-98_png-surface">
           <surface type="2D">
-            <init_from>_x6_0_png_001</init_from>
+            <init_from>_x6_1000-98_png</init_from>
           </surface>
         </newparam>
-        <newparam sid="_x6_0_png_001-sampler">
+        <newparam sid="_x6_1000-98_png-sampler">
           <sampler2D>
-            <source>_x6_0_png_001-surface</source>
+            <source>_x6_1000-98_png-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -94,7 +94,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <texture texture="_x6_0_png_001-sampler" texcoord="UVMap"/>
+              <texture texture="_x6_1000-98_png-sampler" texcoord="UVMap"/>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -105,8 +105,8 @@
     </effect>
   </library_effects>
   <library_images>
-    <image id="_x6_0_png_001" name="_x6_0_png_001">
-      <init_from>6x6_0.png.001.png</init_from>
+    <image id="_x6_1000-98_png" name="_x6_1000-98_png">
+      <init_from>6x6_1000-98.png</init_from>
     </image>
   </library_images>
   <library_materials>
@@ -138,7 +138,7 @@
           </technique_common>
         </source>
         <source id="Cube-mesh-map-0">
-          <float_array id="Cube-mesh-map-0-array" count="72">0.775773 0.6682645 0.721033 0.7230045 0.721033 0.6682645 0.721033 0.7230045 0.6662929 0.7777445 0.6662929 0.7230045 -0.01091039 -0.004188299 1.005141 1.005149 -0.007552862 1.008507 0.7342929 0.6602645 0.6795529 0.7150045 0.6795529 0.6602645 0.001205563 0.008770048 0.9920409 0.9904989 0.005759418 0.9950527 0.7589945 0.6435625 0.6683314 0.7342255 0.6683314 0.6435625 0.775773 0.6682645 0.775773 0.7230045 0.721033 0.7230045 0.721033 0.7230045 0.721033 0.7777445 0.6662929 0.7777445 -0.01091039 -0.004188299 1.001783 -0.007546067 1.005141 1.005149 0.7342929 0.6602645 0.7342929 0.7150045 0.6795529 0.7150045 0.001205563 0.008770048 0.9874871 0.004216253 0.9920409 0.9904989 0.7589945 0.6435625 0.7589945 0.7342255 0.6683314 0.7342255</float_array>
+          <float_array id="Cube-mesh-map-0-array" count="72">0.7285749 0.7290977 0.6738349 0.7838377 0.6738349 0.7290977 0.6738349 0.7838377 0.6662929 0.7777445 0.6662929 0.7230045 -0.01091039 -0.004188299 1.005141 1.005149 -0.007552862 1.008507 0.7264266 0.7195244 0.6716865 0.7742644 0.6716865 0.7195244 0.001205563 0.008770048 0.9920409 0.9904989 0.005759418 0.9950527 0.7296267 0.7038713 0.6389636 0.7945342 0.6389636 0.7038713 0.7285749 0.7290977 0.7285749 0.7838377 0.6738349 0.7838377 0.6738349 0.7838377 0.721033 0.7777445 0.6662929 0.7777445 -0.01091039 -0.004188299 1.001783 -0.007546067 1.005141 1.005149 0.7264266 0.7195244 0.7264266 0.7742644 0.6716865 0.7742644 0.001205563 0.008770048 0.9874871 0.004216253 0.9920409 0.9904989 0.7296267 0.7038713 0.7296267 0.7945342 0.6389636 0.7945342</float_array>
           <technique_common>
             <accessor source="#Cube-mesh-map-0-array" count="36" stride="2">
               <param name="S" type="float"/>

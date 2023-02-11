@@ -154,11 +154,11 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
 		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
 		//image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
-		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
 		//image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
@@ -281,12 +281,12 @@ int main(int argc, char **argv)
 			ros::shutdown();
 		}
 
-		/* if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
+		if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
 		{
 			contGEN++;
 			rate.sleep();
 			continue;
-		} // if we havent get the new pose for all the drones */
+		} // if we havent get the new pose for all the drones
 
 		/****************** SAVE DATA ******************/
 
@@ -400,7 +400,6 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 	}
 }
-
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
 	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
@@ -509,7 +508,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 		if (SAVE_IMAGES)
 		{
-			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG1++) + ".jpg";
+			string saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
 			imwrite(workspace + saveIMG, img_new);
 			cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
@@ -606,17 +605,22 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 			}
 
-			if (SHOW_IMAGES)
+			if (!SHOW_IMAGES)
 			{
-				imshow("Frontal camera", img_new);
-				imshow("Desired", desired_temp);
+				namedWindow("Desired_2", WINDOW_NORMAL);
+				cv::resizeWindow("Desired_2", 640, 360);
+				imshow("Desired_2", desired_temp);
+
+				namedWindow("Frontal camera_2", WINDOW_NORMAL);
+				cv::resizeWindow("Frontal camera_2", 640, 360);
+				imshow("Frontal camera_2", img_new);
 				waitKey(1);
 			}
 		}
 
 		if (SAVE_IMAGES)
 		{
-			string saveIMG = "/src/bearings/src/data/img/" + to_string(contIMG2++) + ".jpg";
+			string saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2++) + ".jpg";
 			imwrite(workspace + saveIMG, img_new);
 			cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}

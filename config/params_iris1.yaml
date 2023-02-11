@@ -15,14 +15,6 @@ gainv: .5
 # Para el control #2
 # gain_v: .4
 
-# POSICIÓN DESEADA : (X, Y, Z, Qx, Qy, Qz)
-# X = -1.5
-# Y = 0
-# Z = 1
-# Qx = 0
-# Qy = 0
-# Qz = 0
-
 # Gain on angular velocities
 gainw: 1
 
