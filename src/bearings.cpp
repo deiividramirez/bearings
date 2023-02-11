@@ -109,12 +109,12 @@ int main(int argc, char **argv)
 	gen.getParam("seguimiento_2", seg2);
 	gen.getParam("seguimiento_3", seg3);
 	gen.getParam("seguimiento_4", seg4);
-	
+
 	gen.getParam("seguimiento_1", segmentsXML[0]);
 	gen.getParam("seguimiento_2", segmentsXML[1]);
 	gen.getParam("seguimiento_3", segmentsXML[2]);
 	gen.getParam("seguimiento_4", segmentsXML[3]);
-	
+
 	gen.getParam("bearing_1", bearingsXML[0]);
 	gen.getParam("bearing_2", bearingsXML[1]);
 	gen.getParam("bearing_3", bearingsXML[2]);
@@ -155,22 +155,22 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
-		//image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
-		//image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_1f = it.subscribe("/iris_1/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_1b = it.subscribe("/iris_1/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
-		//image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
-		//image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_2f = it.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
+		// image_sub_2b = it.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
 		// image_sub_3f = it.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
-		//image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_3b = it.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
 		image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 		// image_sub_4f = it.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
-		//image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
+		// image_sub_4b = it.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
 	}
 	ros::Rate rate(30);
 
@@ -373,7 +373,7 @@ int main(int argc, char **argv)
 
 void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 {
-	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 	Mat actual_bearing, bearing_ground_truth;
 	if (getBearing(actual, seg3, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
@@ -399,10 +399,23 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] Bearing control success" << endl;
 		}
 	}
+
+	if (SAVE_IMAGES)
+	{
+		string saveIMG = "/src/bearings/src/data/img/3_" + to_string(contIMG3++) + ".jpg";
+		imwrite(workspace + saveIMG, actual);
+		cout << "[INFO] << Image saved >>" << saveIMG << endl;
+	}
+	else
+	{
+		string saveIMG = "/src/bearings/src/data/img/3_1.jpg";
+		imwrite(workspace + saveIMG, actual);
+		cout << "[INFO] << Image saved >>" << saveIMG << endl;
+	}
 }
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
-	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image, img_new;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 	Mat actual_bearing, bearing_ground_truth;
 	if (getBearing(actual, seg4, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
@@ -412,7 +425,6 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		states[3].Vy = 0;
 		states[3].Vz = 0;
 		states[3].Vyaw = 0;
-
 	}
 	else
 	{
@@ -428,7 +440,20 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			cout << "[INFO] Bearing control success" << endl;
 		}
-	} 
+	}
+
+	if (SAVE_IMAGES)
+	{
+		string saveIMG = "/src/bearings/src/data/img/4_" + to_string(contIMG4++) + ".jpg";
+		imwrite(workspace + saveIMG, actual);
+		cout << "[INFO] << Image saved >>" << saveIMG << endl;
+	}
+	else
+	{
+		string saveIMG = "/src/bearings/src/data/img/4_1.jpg";
+		imwrite(workspace + saveIMG, actual);
+		cout << "[INFO] << Image saved >>" << saveIMG << endl;
+	}
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -463,11 +488,11 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				}
 			}
 			// cout << "[INFO] img_points1: " << img_points1 << endl;
-			cout << "[INFO] matching_result.p1: " << endl
-				  << matching_results[0].p1 << endl;
-			cout << "[INFO] matching_result.p2: " << endl
-				  << matching_results[0].p2 << endl
-				  << endl;
+			// cout << "[INFO] matching_result.p1: " << endl
+			// 	  << matching_results[0].p1 << endl;
+			// cout << "[INFO] matching_result.p2: " << endl
+			// 	  << matching_results[0].p2 << endl
+			// 	  << endl;
 
 			img_old1 = actual;
 			img_new = actual;
@@ -475,6 +500,12 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		else
 		{
 			img_new = actual;
+
+			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
+			{
+				cout << "[ERROR] No ArUco were found." << endl;
+				ros::shutdown();
+			}
 
 			cout << "[INFO] Calling control law." << endl;
 			if (GUO(actual, states[0], matching_results[0]) < 0)
@@ -509,6 +540,12 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		if (SAVE_IMAGES)
 		{
 			string saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			string saveIMG = "/src/bearings/src/data/img/1_1.jpg";
 			imwrite(workspace + saveIMG, img_new);
 			cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
@@ -583,6 +620,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			img_new = actual;
 
+			cout << "[INFO] Detecting points with ArUco" << endl;
+			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
+			{
+				cout << "[ERROR] No ArUco were found." << endl;
+				ros::shutdown();
+			}
+
 			cout << "[INFO] Calling control law." << endl;
 			if (GUO(actual, states[1], matching_results[1]) < 0)
 			{
@@ -614,13 +658,19 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				namedWindow("Frontal camera_2", WINDOW_NORMAL);
 				cv::resizeWindow("Frontal camera_2", 640, 360);
 				imshow("Frontal camera_2", img_new);
-				waitKey(1);
+				waitKey(0);
 			}
 		}
 
 		if (SAVE_IMAGES)
 		{
 			string saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2++) + ".jpg";
+			imwrite(workspace + saveIMG, img_new);
+			cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			string saveIMG = "/src/bearings/src/data/img/2_1.jpg";
 			imwrite(workspace + saveIMG, img_new);
 			cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}

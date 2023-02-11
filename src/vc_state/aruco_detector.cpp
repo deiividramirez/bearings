@@ -42,14 +42,14 @@ int aruco_detector(const Mat &actual,
 
       int marker_index = -1;
 
-      for (int32_t marker_index = 0; marker_index < markerIds.size(); marker_index++)
+      for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
       {
 
          for (int i = 0; i < markerIds.size(); i++)
          {
             if (markerIds[i] == (int)marker_id[marker_index])
             {
-               cout << "[INFO] Marker " << marker_id << " detected" << endl;
+               cout << "[INFO] Marker " << marker_id[marker_index] << " detected" << endl;
                cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
                marker_index = i;
                break;
@@ -57,11 +57,9 @@ int aruco_detector(const Mat &actual,
          }
          if (marker_index == -1)
          {
-            cout << "[ERROR] Marker " << marker_id << " not detected" << endl;
+            cout << "[ERROR] Marker " << marker_id[marker_index] << " not detected" << endl;
             return -1;
          }
-         
-         ros::Duration(0.5).sleep();
 
          Mat temporal = Mat::zeros(4, 2, CV_32F);
          temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
