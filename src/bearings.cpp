@@ -165,12 +165,12 @@ int main(int argc, char **argv)
 		// image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, doNothing);
 		// image_sub_2b = it2.subscribe("/iris_2/camera_under_camera/image_raw", 1, doNothing);
 
-		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
+		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
 		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, doNothing);
 		// image_sub_3b = it3.subscribe("/iris_3/camera_under_camera/image_raw", 1, doNothing);
 
-		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
+		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, doNothing);
 		// image_sub_4b = it4.subscribe("/iris_4/camera_under_camera/image_raw", 1, doNothing);
@@ -395,7 +395,14 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		cout << bearing_ground_truth << endl;
 
 		cout << "bearings[2] = " << bearings[2] << endl;
-		if (bearingControl(actual_bearing, bearing_ground_truth, bearings[2], states, segmentsXML[2], 3, Kp, Kv) < 0)
+		if (bearingControl(actual_bearing, 
+								bearing_ground_truth, 
+								bearings[2], 
+								states, 
+								segmentsXML[2], 
+								3, 
+								states[2].params.gainv,
+								states[2].params.gainw) < 0)
 		{
 			cout << "[ERROR] Bearing control failed" << endl;
 		}
@@ -439,7 +446,14 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		cout << bearing_ground_truth << endl;
 
 		cout << "bearings[3] = " << bearings[3] << endl;
-		if (bearingControl(actual_bearing, bearing_ground_truth, bearings[3], states, segmentsXML[3], 4, Kp, Kv) < 0)
+		if (bearingControl(actual_bearing, 
+								bearing_ground_truth, 
+								bearings[3], 
+								states, 
+								segmentsXML[3], 
+								4, 
+								states[3].params.gainv, 
+								states[3].params.gainw) < 0)
 		{
 			cout << "[ERROR] Bearing control failed" << endl;
 		}

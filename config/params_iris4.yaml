@@ -8,15 +8,10 @@ camera_intrinsic_parameters: [700,   0,    960,
 dt: 0.01
 
 # Gain on linear velocities
-############################################################
-# Para el control #1
-gainv: .5
-############################################################
-# Para el control #2
-# gain_v: .4
+gainv: 4
 
 # Gain on angular velocities
-gainw: 1
+gainw: .3
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
