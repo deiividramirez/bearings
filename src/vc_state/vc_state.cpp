@@ -54,8 +54,12 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
   this->X = this->X + this->Kv * this->Vx * this->dt;
   this->Y = this->Y + this->Kv * this->Vy * this->dt;
   this->Z = this->Z + this->Kv * this->Vz * this->dt;
-  this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
-  // cout << "X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl;
+  // this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
+  this->Yaw = this->Yaw - this->Kw * this->Yaw * this->dt;
+  // cout << "SENDING THIS POS >> X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl;
+  // cout << "Vx: " << this->Vx << " Vy:" << this->Vy << " Vz:" << this->Vz << endl;
+
+  // ros::Duration(0.1).sleep();
 
   Eigen::VectorXd position;
   position.resize(3);
@@ -72,14 +76,15 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
   return make_pair(position, this->Yaw);
 }
 
-std::vector<double> vc_state::position()
-{
-  std::vector<double> position;
-  position.push_back(this->X);
-  position.push_back(this->Y);
-  position.push_back(this->Z);
-  return position;
-}
+// std::vector<double> vc_state::position()
+// {
+//   std::vector<double> position;
+//   position.push_back(this->X);
+//   position.push_back(this->Y);
+//   position.push_back(this->Z);
+//   return position;
+// }
+
 void vc_state::initialize(const float &x, const float &y, const float &z, const float &yaw)
 {
   this->X = x;

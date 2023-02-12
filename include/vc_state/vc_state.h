@@ -124,7 +124,6 @@ public:
                     const float &y,
                     const float &z,
                     const float &yaw);
-    //         int (*controller )[1];
 };
 
 // Create the Struct which be able to

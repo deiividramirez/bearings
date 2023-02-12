@@ -43,7 +43,7 @@ int aruco_detector(const Mat &actual,
          {
             if (markerIds_Detected[i] == (int)marker_idXLM[indexesXLM])
             {
-               cout << "[ERROR] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
+               cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
                marker_index = i;
                break;
             }
@@ -63,41 +63,57 @@ int aruco_detector(const Mat &actual,
          temporal.convertTo(img_points, CV_32F);
          temporal.release();
 
-         if ((int)marker_idXLM[0] == 98)
-         {
-            cout << "SI ES 98" << endl;
-            cout << matching_result.p2 << endl;
-            cout << markerCorners_Detectec[marker_index] << endl;
+         // if ((int)marker_idXLM[0] == 98 || (int)marker_idXLM[0] == 99)
+         // {
+         //    cout << "SI ES 98" << endl;
+         //    cout << matching_result.p2 << endl;
+         //    cout << markerCorners_Detectec[marker_index] << endl;
 
-            Mat imageCopy;
-            actual.copyTo(imageCopy);
-            // draw just the corners
-            for (int i = 0; i < markerCorners_Detectec.size(); i++)
-            {
-               for (int j = 0; j < markerCorners_Detectec[i].size(); j++)
-               {
-                  if (i == marker_index)
-                  {
-                     circle(imageCopy, markerCorners_Detectec[i][j], 5, Scalar(0, 0, 255), 2);
-                     cout << "BGR: "
-                          << "RED " << markerCorners_Detectec[i][j] << endl;
-                  }
-                  else
-                  {
-                     circle(imageCopy, markerCorners_Detectec[i][j], 5, Scalar(0, 255, 0), 2);
-                     cout << "BGR: "
-                          << "GREEN" << endl;
-                  }
-               }
-            }
+         //    Mat imageCopy;
+         //    actual.copyTo(imageCopy);
+         //    // draw just the corners
+         //    for (int i = 0; i < markerCorners_Detectec.size(); i++)
+         //    {
+         //       for (int j = 0; j < markerCorners_Detectec[i].size(); j++)
+         //       {
+         //          if (i == marker_index)
+         //          {
+         //             circle(imageCopy, markerCorners_Detectec[i][j], 5, Scalar(0, 0, 255), 2);
+         //             cout << "BGR: "
+         //                  << "RED " << markerCorners_Detectec[i][j] << endl;
+         //          }
+         //          else
+         //          {
+         //             circle(imageCopy, markerCorners_Detectec[i][j], 5, Scalar(0, 255, 0), 2);
+         //             cout << "BGR: "
+         //                  << "GREEN" << endl;
+         //          }
+         //       }
+         //    }
 
-            namedWindow("image", WINDOW_NORMAL);
-            cv::resizeWindow("image", 960, 540);
-            imshow("image", imageCopy);
-            waitKey(1);
-         }
+         //    namedWindow("image", WINDOW_NORMAL);
+         //    resizeWindow("image", 960, 540);
+         //    imshow("image", imageCopy);
+         //    waitKey(1);
+         // }
 
          aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners_Detectec, markerIds_Detected, parameters, rejectedCandidates);
+
+         for (int i = 0; i < markerIds_Detected.size(); i++)
+         {
+            if (markerIds_Detected[i] == (int)marker_idXLM[indexesXLM])
+            {
+               cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
+               marker_index = i;
+               break;
+            }
+         }
+         if (marker_index == -1)
+         {
+            cout << "[ERROR] All markers in " << marker_idXLM << " not in " << marker_idXLM[indexesXLM] << endl;
+            return -1;
+         }
+
          temporal = Mat::zeros(4, 2, CV_32F);
          temporal.at<Point2f>(0, 0) = Point2f(markerCorners_Detectec[marker_index][0].x, markerCorners_Detectec[marker_index][0].y);
          temporal.at<Point2f>(1, 0) = Point2f(markerCorners_Detectec[marker_index][1].x, markerCorners_Detectec[marker_index][1].y);

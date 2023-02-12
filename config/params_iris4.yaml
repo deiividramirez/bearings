@@ -30,7 +30,7 @@ fastThreshold: 20
 flann_ratio: 0.7
 
 ############################################################
-# Cambio de control 1 o 2.
+# Cambio de control 1 (1/dist) o 2 (dist).
 control: 1
 
 ############################################################
