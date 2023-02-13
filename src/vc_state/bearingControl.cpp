@@ -21,6 +21,7 @@ int bearingControl(Mat actual_bearing,
       int opc = 0;
       if (opc == 1)
       {
+         // Control with position
          temp = desired_bearings.col(i);
          temp2.at<double>(0, 0) = states[drone_id - 1].Vx - states[(int)marker_ids[i] - 1].Vx;
          temp2.at<double>(1, 0) = states[drone_id - 1].Vy - states[(int)marker_ids[i] - 1].Vy;
@@ -29,14 +30,26 @@ int bearingControl(Mat actual_bearing,
       }
       else
       {
+         // Control with bearing
          temp = actual_bearing.col(i);
-         suma = suma - projOrtog(temp) * (Kp * desired_bearings.col(i));
+         suma = suma - projOrtog(temp) * (desired_bearings.col(i));
       }
    }
 
-   states[drone_id - 1].Vx = suma.at<double>(0, 0);
-   states[drone_id - 1].Vy = suma.at<double>(1, 0);
-   states[drone_id - 1].Vz = suma.at<double>(2, 0);
+   // Error calculation
+   states[drone_id - 1].error = norm(desired_bearings + actual_bearing);
+
+   // Variable lambda - gain
+   double l0 = 5 * Kp, linf = Kp, lprima = 1;
+   double lambda_temp = (l0 - linf) * exp(-(lprima * states[drone_id - 1].error) / (l0 - linf)) + linf;
+
+   cout << endl
+        << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
+
+   // Update the velocity
+   states[drone_id - 1].Vx = lambda_temp * suma.at<double>(0, 0);
+   states[drone_id - 1].Vy = lambda_temp * suma.at<double>(1, 0);
+   states[drone_id - 1].Vz = lambda_temp * suma.at<double>(2, 0);
 
    cout << ">>>> [ " << states[drone_id - 1].Vx << " " << states[drone_id - 1].Vy << " " << states[drone_id - 1].Vz << " ]<<<<" << endl;
 

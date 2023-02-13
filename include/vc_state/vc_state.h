@@ -99,6 +99,8 @@ public:
     float t = 0;
     float lambda = 0;
 
+    float error = 0;
+
     bool in_target = false;
 
     // Image proessing parameters
