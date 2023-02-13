@@ -60,7 +60,6 @@ int getBearing(Mat &actual_image,
    try
    {
       aruco::detectMarkers(actual_image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      cout << " pasa aruco" << endl;
    }
    catch (Exception &e)
    {
@@ -77,7 +76,7 @@ int getBearing(Mat &actual_image,
    {
       int indice;
 
-      cout << "[INFO] Called getBearing for drone " << drone_id << endl;
+      // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
 
       store_bearing = Mat::zeros(3, marker_id.size(), CV_64F);
 

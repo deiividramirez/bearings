@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
+					// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
 					break;
 				}
 
@@ -260,7 +260,7 @@ int main(int argc, char **argv)
 		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 1000)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
-			break;
+			ros::shutdown();
 		}
 		else
 		{
@@ -310,10 +310,10 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		if (getBearing(actual, seg3, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
 		{
 			cout << "[ERROR] No bearing found" << endl;
-			states[2].Vx = 0;
-			states[2].Vy = 0;
-			states[2].Vz = 0;
-			states[2].Vyaw = 0;
+			// states[2].Vx = 0;
+			// states[2].Vy = 0;
+			// states[2].Vz = 0;
+			// states[2].Vyaw = 0;
 		}
 		else
 		{
@@ -335,7 +335,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Bearing control success" << endl;
-				cout << "[INFO] Error: " << states[2].error << endl;
+				// cout << "[INFO] Error: " << states[2].error << endl;
 			}
 		}
 
@@ -354,13 +354,13 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		cout << "[VELS] Vx: " << states[1].Vx
-			  << ", Vy: " << states[1].Vy
-			  << ", Vz: " << states[1].Vz
-			  << "\nVroll: " << states[1].Vroll
-			  << ", Vpitch: " << states[1].Vpitch
-			  << ", Wyaw: " << states[1].Vyaw
-			  << "\n==> Error: " << matching_results[1].mean_feature_error
+		cout << "[VELS] Vx: " << states[2].Vx
+			  << ", Vy: " << states[2].Vy
+			  << ", Vz: " << states[2].Vz
+			  << "\nVroll: " << states[2].Vroll
+			  << ", Vpitch: " << states[2].Vpitch
+			  << ", Wyaw: " << states[2].Vyaw
+			  << "\n==> Error: " << states[2].error
 			  << "<==" << endl
 			  << endl;
 		//   << "===================================================================\n\n";
@@ -387,10 +387,10 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		if (getBearing(actual, seg4, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
 		{
 			cout << "[ERROR] No bearing found" << endl;
-			states[3].Vx = 0;
-			states[3].Vy = 0;
-			states[3].Vz = 0;
-			states[3].Vyaw = 0;
+			// states[3].Vx = 0;
+			// states[3].Vy = 0;
+			// states[3].Vz = 0;
+			// states[3].Vyaw = 0;
 		}
 		else
 		{
@@ -413,7 +413,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Bearing control success" << endl;
-				cout << "[INFO] Error: " << states[3].error << endl;
+				// cout << "[INFO] Error: " << states[3].error << endl;
 			}
 		}
 
@@ -432,13 +432,13 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		cout << "[VELS] Vx: " << states[1].Vx
-			  << ", Vy: " << states[1].Vy
-			  << ", Vz: " << states[1].Vz
-			  << "\nVroll: " << states[1].Vroll
-			  << ", Vpitch: " << states[1].Vpitch
-			  << ", Wyaw: " << states[1].Vyaw
-			  << "\n==> Error: " << matching_results[1].mean_feature_error
+		cout << "[VELS] Vx: " << states[3].Vx
+			  << ", Vy: " << states[3].Vy
+			  << ", Vz: " << states[3].Vz
+			  << "\nVroll: " << states[3].Vroll
+			  << ", Vpitch: " << states[3].Vpitch
+			  << ", Wyaw: " << states[3].Vyaw
+			  << "\n==> Error: " << states[3].error
 			  << "<==" << endl
 			  << endl;
 		//   << "===================================================================\n\n";
@@ -516,10 +516,10 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					// ros::shutdown();
-					states[0].Vx = 0;
-					states[0].Vy = 0;
-					states[0].Vz = 0;
-					states[0].Vyaw = 0;
+					// states[0].Vx = 0;
+					// states[0].Vy = 0;
+					// states[0].Vz = 0;
+					// states[0].Vyaw = 0;
 				}
 
 				// cout << "POSICIÓN: " << pos_dron[0] << endl;
@@ -655,10 +655,10 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				{
 					cout << "[ERROR] No ArUco were found." << endl;
 					// ros::shutdown();
-					states[1].Vx = 0;
-					states[1].Vy = 0;
-					states[1].Vz = 0;
-					states[1].Vroll = 0;
+					// states[1].Vx = 0;
+					// states[1].Vy = 0;
+					// states[1].Vz = 0;
+					// states[1].Vroll = 0;
 				}
 
 				// Mat desired_temp, new_points;
