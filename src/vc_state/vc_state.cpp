@@ -56,8 +56,10 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
   this->Z = this->Z + this->Kv * this->Vz * this->dt;
   // this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
   this->Yaw = this->Yaw - this->Kw * this->Yaw * this->dt;
-  // cout << "SENDING THIS POS >> X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl;
-  // cout << "Vx: " << this->Vx << " Vy:" << this->Vy << " Vz:" << this->Vz << endl;
+  cout << endl
+       << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
+       << "SENDING THIS POS >> X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl
+       << "Vx: " << this->Vx << " Vy:" << this->Vy << " Vz:" << this->Vz << endl;
 
   // ros::Duration(0.1).sleep();
 

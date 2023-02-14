@@ -8,7 +8,7 @@ camera_intrinsic_parameters: [700,   0,    960,
 dt: 0.01
 
 # Gain on linear velocities
-gainv: 2
+gainv: 1.6
 
 # Gain on angular velocities
 gainw: .3

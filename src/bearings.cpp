@@ -142,34 +142,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/****************** DATA FOR GRAPHICS ******************/
-
-	vector<float> vel_x1, vel_x2, vel_x3, vel_x4;
-	vector<float> vel_y1, vel_y2, vel_y3, vel_y4;
-	vector<float> vel_z1, vel_z2, vel_z3, vel_z4;
-	vector<float> vel_yaw1, vel_yaw2, vel_yaw3, vel_yaw4;
-	vector<float> errors1, errors2, errors3, errors4;
-	vector<float> errors_pix1, errors_pix2, errors_pix3, errors_pix4;
-	vector<float> time1, time2, time3, time4;
-	vector<float> lambda1, lambda2, lambda3, lambda4;
-	vector<float> x1, x2, x3, x4;
-	vector<float> y1, y2, y3, y4;
-	vector<float> z1, z2, z3, z4;
-
-	vector<vector<float>> vel_x = {vel_x1, vel_x2, vel_x3, vel_x4};
-	vector<vector<float>> vel_y = {vel_y1, vel_y2, vel_y3, vel_y4};
-	vector<vector<float>> vel_z = {vel_z1, vel_z2, vel_z3, vel_z4};
-	vector<vector<float>> vel_yaw = {vel_yaw1, vel_yaw2, vel_yaw3, vel_yaw4};
-	vector<vector<float>> errors = {errors1, errors2, errors3, errors4};
-	vector<vector<float>> errors_pix = {errors_pix1, errors_pix2, errors_pix3, errors_pix4};
-	vector<vector<float>> time = {time1, time2, time3, time4};
-	vector<vector<float>> lambda = {lambda1, lambda2, lambda3, lambda4};
-	vector<vector<float>> X = {x1, x2, x3, x4};
-	vector<vector<float>> Y = {y1, y2, y3, y4};
-	vector<vector<float>> Z = {z1, z2, z3, z4};
 
 	/****************** CREATE MESSAGE ******************/
-	trajectory_msgs::MultiDOFJointTrajectory msg;
 	string file_folder = "/src/bearings/src/data/out/";
 
 	bool first_time = true;
@@ -177,21 +151,12 @@ int main(int argc, char **argv)
 	/****************** STARTING CYCLE ******************/
 	while (ros::ok())
 	{
-		// get a msg
-		ros::spinOnce();
-
-		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
-		{
-			cout << "\n[INFO] Images have been saved." << endl;
-			ros::shutdown();
-		}
-
 		if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
 		{
 			contGEN++;
 			rate.sleep();
 			cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
-			continue;
+			// continue;
 		} // if we havent get the new pose for all the drones
 		else
 		{
@@ -201,60 +166,7 @@ int main(int argc, char **argv)
 				cout << "\n[INFO] All the drones have been initialized." << endl;
 			}
 
-			// FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
-			for (int i = 0; i < states.size(); i++)
-			{
-				if (!states[i].in_target)
-				{
-					time[i].push_back(states[i].t);
-					if (i == 2 || i == 3)
-					{
-						errors[i].push_back((float)states[i].error);
-						errors_pix[i].push_back((float)states[i].error);
-					}
-					else
-					{
-						errors[i].push_back((float)matching_results[i].mean_feature_error);
-						errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
-					}
-					vel_x[i].push_back(states[i].Vx);
-					vel_y[i].push_back(states[i].Vy);
-					vel_z[i].push_back(states[i].Vz);
-					vel_yaw[i].push_back(states[i].Vyaw);
-					lambda[i].push_back(states[i].lambda);
-
-					X[i].push_back(pos_dron[i].pose.position.x);
-					Y[i].push_back(pos_dron[i].pose.position.y);
-					Z[i].push_back(pos_dron[i].pose.position.z);
-
-					if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
-					{
-						cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
-						states[i].in_target = true;
-						break;
-					}
-				}
-				else
-				{
-					// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
-					break;
-				}
-
-				// Publish image of the matching
-				// cout << "\n[INFO] Publishing image" << endl;
-				// image_pub.publish(image_msg);
-
-				// UPDATE STATE WITH THE CURRENT CONTROL
-				auto new_pose = states[i].update();
-
-				// PREPARE MESSAGE
-				msg.header.stamp = ros::Time::now();
-				mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
-
-				// PUBLISH MESSAGE FOR TRAYECTORY
-				pos_pubs[i].publish(msg);
-				rate.sleep();
-			}
+			rate.sleep();
 		}
 
 		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 1000)
@@ -266,6 +178,15 @@ int main(int argc, char **argv)
 		{
 			contGEN++;
 		}
+
+		// get a msg
+		ros::spinOnce();
+
+		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
+		{
+			cout << "\n[INFO] Images have been saved." << endl;
+			ros::shutdown();
+		}
 	}
 
 	// SAVING DATA FOR PYTHON PLOTING
@@ -273,7 +194,7 @@ int main(int argc, char **argv)
 	{
 		writeFile(errors[i], workspace + file_folder + "out_errors_" + to_string(i + 1) + ".txt");
 		writeFile(errors_pix[i], workspace + file_folder + "out_errors_pix_" + to_string(i + 1) + ".txt");
-		writeFile(time[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
+		writeFile(times[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
 		writeFile(vel_x[i], workspace + file_folder + "out_Vx_" + to_string(i + 1) + ".txt");
 		writeFile(vel_y[i], workspace + file_folder + "out_Vy_" + to_string(i + 1) + ".txt");
 		writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
@@ -363,8 +284,12 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			  << "\n==> Error: " << states[2].error
 			  << "<==" << endl
 			  << endl;
+
+		cout << "Bearing real: " << bearing_ground_truth << endl;
 		//   << "===================================================================\n\n";
 	}
+
+	saveStuff(2);
 }
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -441,8 +366,12 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			  << "\n==> Error: " << states[3].error
 			  << "<==" << endl
 			  << endl;
+
+		cout << "Bearing real: " << bearing_ground_truth << endl;
 		//   << "===================================================================\n\n";
 	}
+
+	saveStuff(3);
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -585,6 +514,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 						 msg->encoding.c_str());
 		}
 	}
+
+	saveStuff(0);
 }
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -727,6 +658,8 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 						 msg->encoding.c_str());
 		}
 	}
+
+	saveStuff(1);
 }
 
 /*************** FOR POSES ***************/
@@ -893,6 +826,61 @@ void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
 	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
 
 	/* pos_dron[3].header.stamp.sec++; */
+}
+
+void saveStuff(int i)
+{
+	// FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
+	if (!states[i].in_target)
+	{
+		times[i].push_back(states[i].t);
+		if (i == 2 || i == 3)
+		{
+			errors[i].push_back((float)states[i].error);
+			errors_pix[i].push_back((float)states[i].error);
+		}
+		else
+		{
+			errors[i].push_back((float)matching_results[i].mean_feature_error);
+			errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
+		}
+		vel_x[i].push_back(states[i].Vx);
+		vel_y[i].push_back(states[i].Vy);
+		vel_z[i].push_back(states[i].Vz);
+		vel_yaw[i].push_back(states[i].Vyaw);
+		lambda[i].push_back(states[i].lambda);
+
+		X[i].push_back(pos_dron[i].pose.position.x);
+		Y[i].push_back(pos_dron[i].pose.position.y);
+		Z[i].push_back(pos_dron[i].pose.position.z);
+
+		if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
+		{
+			cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
+			states[i].in_target = true;
+			// break;
+		}
+	}
+	else
+	{
+		// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
+		// break;
+	}
+
+	// Publish image of the matching
+	// cout << "\n[INFO] Publishing image" << endl;
+	// image_pub.publish(image_msg);
+
+	// UPDATE STATE WITH THE CURRENT CONTROL
+	auto new_pose = states[i].update();
+
+	// PREPARE MESSAGE
+	trajectory_msgs::MultiDOFJointTrajectory msg;
+	msg.header.stamp = ros::Time::now();
+	mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
+
+	// PUBLISH MESSAGE FOR TRAYECTORY
+	pos_pubs[i].publish(msg);
 }
 
 /*************** CONVERT YALM TO OPENCV MAT ***************/

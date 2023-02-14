@@ -58,6 +58,8 @@ void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
 void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
 
+void saveStuff(int drone_id);
+
 /****************** FOR CONVERT FROM YALM TO OPENCV MAT ******************/
 Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs);
 
@@ -115,3 +117,28 @@ vector<ros::Publisher> pos_pubs = {pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4};
 vector<ros::Subscriber> pos_subs = {pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4};
 vector<ros::Subscriber> position_subs = {position_sub_1, position_sub_2, position_sub_3, position_sub_4};
 vector<ros::Subscriber> imu_subs = {imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4};
+
+/****************** DATA FOR GRAPHICS ******************/
+vector<float> vel_x1, vel_x2, vel_x3, vel_x4;
+vector<float> vel_y1, vel_y2, vel_y3, vel_y4;
+vector<float> vel_z1, vel_z2, vel_z3, vel_z4;
+vector<float> vel_yaw1, vel_yaw2, vel_yaw3, vel_yaw4;
+vector<float> errors1, errors2, errors3, errors4;
+vector<float> errors_pix1, errors_pix2, errors_pix3, errors_pix4;
+vector<float> time1, time2, time3, time4;
+vector<float> lambda1, lambda2, lambda3, lambda4;
+vector<float> arr_x1, arr_x2, arr_x3, arr_x4;
+vector<float> arr_y1, arr_y2, arr_y3, arr_y4;
+vector<float> arr_z1, arr_z2, arr_z3, arr_z4;
+
+vector<vector<float>> vel_x = {vel_x1, vel_x2, vel_x3, vel_x4};
+vector<vector<float>> vel_y = {vel_y1, vel_y2, vel_y3, vel_y4};
+vector<vector<float>> vel_z = {vel_z1, vel_z2, vel_z3, vel_z4};
+vector<vector<float>> vel_yaw = {vel_yaw1, vel_yaw2, vel_yaw3, vel_yaw4};
+vector<vector<float>> errors = {errors1, errors2, errors3, errors4};
+vector<vector<float>> errors_pix = {errors_pix1, errors_pix2, errors_pix3, errors_pix4};
+vector<vector<float>> times = {time1, time2, time3, time4};
+vector<vector<float>> lambda = {lambda1, lambda2, lambda3, lambda4};
+vector<vector<float>> X = {arr_x1, arr_x2, arr_x3, arr_x4};
+vector<vector<float>> Y = {arr_y1, arr_y2, arr_y3, arr_y4};
+vector<vector<float>> Z = {arr_z1, arr_z2, arr_z3, arr_z4};

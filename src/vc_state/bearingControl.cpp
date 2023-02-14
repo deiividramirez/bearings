@@ -40,12 +40,13 @@ int bearingControl(Mat actual_bearing,
    states[drone_id - 1].error = norm(desired_bearings + actual_bearing);
 
    // Variable lambda - gain
-   double l0 = 7
-    * Kp, linf = Kp, lprima = 15;
+   double l0 = 3 * Kp, linf = Kp, lprima = 1;
    double lambda_temp = (l0 - linf) * exp(-(lprima * states[drone_id - 1].error) / (l0 - linf)) + linf;
 
    cout << endl
         << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
+
+   states[drone_id - 1].lambda = lambda_temp;
 
    // Update the velocity
    states[drone_id - 1].Vx = lambda_temp * suma.at<double>(0, 0);
