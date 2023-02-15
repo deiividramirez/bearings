@@ -142,7 +142,6 @@ int main(int argc, char **argv)
 		}
 	}
 
-
 	/****************** CREATE MESSAGE ******************/
 	string file_folder = "/src/bearings/src/data/out/";
 
@@ -203,6 +202,8 @@ int main(int argc, char **argv)
 		writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
 		writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
 		writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
+
+		cout << "[INFO] Data saved for drone " << i + 1 << endl;
 	}
 
 	return 0;
@@ -287,9 +288,8 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 
 		cout << "Bearing real: " << bearing_ground_truth << endl;
 		//   << "===================================================================\n\n";
+		saveStuff(2);
 	}
-
-	saveStuff(2);
 }
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -369,9 +369,8 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 
 		cout << "Bearing real: " << bearing_ground_truth << endl;
 		//   << "===================================================================\n\n";
+		saveStuff(3);
 	}
-
-	saveStuff(3);
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -463,12 +462,17 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 				// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 				// }
 
-				// if (SHOW_IMAGES)
-				// {
-				// 	imshow("Frontal camera", actual);
-				// 	imshow("Desired", desired_temp);
-				// 	waitKey(1);
-				// }
+				if (SHOW_IMAGES)
+				{
+					// namedWindow("Desired_1", WINDOW_NORMAL);
+					// cv::resizeWindow("Desired_1", 960, 540);
+					// imshow("Desired_1", desired_temp);
+
+					namedWindow("Frontal camera_1", WINDOW_NORMAL);
+					cv::resizeWindow("Frontal camera_1", 960, 540);
+					imshow("Frontal camera_1", actual);
+					waitKey(1);
+				}
 			}
 
 			// Saving images
@@ -496,26 +500,14 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			// image_msg->header.stamp = ros::Time::now();
 
 			/* cout << "[INFO] Matching published" << endl; */
-
-			cout << "[VELS] Vx: " << states[0].Vx
-				  << ", Vy: " << states[0].Vy
-				  << ", Vz: " << states[0].Vz
-				  << "\nVroll: " << states[0].Vroll
-				  << ", Vpitch: " << states[0].Vpitch
-				  << ", Wyaw: " << states[0].Vyaw
-				  << "\n==> Error: " << matching_results[0].mean_feature_error
-				  << "<==" << endl
-				  << endl;
-			//   << "===================================================================\n\n";
 		}
 		catch (cv_bridge::Exception &e)
 		{
 			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
 						 msg->encoding.c_str());
 		}
+		saveStuff(0);
 	}
-
-	saveStuff(0);
 }
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -603,17 +595,17 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 				// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 				// }
 
-				// if (!SHOW_IMAGES)
-				// {
-				// 	namedWindow("Desired_2", WINDOW_NORMAL);
-				// 	cv::resizeWindow("Desired_2", 960, 540);
-				// 	imshow("Desired_2", desired_temp);
+				if (SHOW_IMAGES)
+				{
+					// namedWindow("Desired_2", WINDOW_NORMAL);
+					// cv::resizeWindow("Desired_2", 960, 540);
+					// imshow("Desired_2", desired_temp);
 
-				// 	namedWindow("Frontal camera_2", WINDOW_NORMAL);
-				// 	cv::resizeWindow("Frontal camera_2", 960, 540);
-				// 	imshow("Frontal camera_2", actual);
-				// 	waitKey(0);
-				// }
+					namedWindow("Frontal camera_2", WINDOW_NORMAL);
+					cv::resizeWindow("Frontal camera_2", 960, 540);
+					imshow("Frontal camera_2", actual);
+					waitKey(1);
+				}
 			}
 
 			string saveIMG;
@@ -640,26 +632,14 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			// image_msg->header.stamp = ros::Time::now();
 
 			/* cout << "[INFO] Matching published" << endl; */
-
-			cout << "[VELS] Vx: " << states[1].Vx
-				  << ", Vy: " << states[1].Vy
-				  << ", Vz: " << states[1].Vz
-				  << "\nVroll: " << states[1].Vroll
-				  << ", Vpitch: " << states[1].Vpitch
-				  << ", Wyaw: " << states[1].Vyaw
-				  << "\n==> Error: " << matching_results[1].mean_feature_error
-				  << "<==" << endl
-				  << endl;
-			//   << "===================================================================\n\n";
 		}
 		catch (cv_bridge::Exception &e)
 		{
 			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
 						 msg->encoding.c_str());
 		}
+		saveStuff(1);
 	}
-
-	saveStuff(1);
 }
 
 /*************** FOR POSES ***************/
@@ -833,6 +813,18 @@ void saveStuff(int i)
 	// FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
 	if (!states[i].in_target)
 	{
+		cout << "[VELS] Vx: " << states[i].Vx
+			  << ", Vy: " << states[i].Vy
+			  << ", Vz: " << states[i].Vz
+			  << "\nVroll: " << states[i].Vroll
+			  << ", Vpitch: " << states[i].Vpitch
+			  << ", Wyaw: " << states[i].Vyaw
+			  //   << "\n==> Error: " << matching_results[i].mean_feature_error
+			  //   << "\n==> Error: " << states[i].error
+			  << "\n==> Error: " << ((states[i].error == 0) ? matching_results[i].mean_feature_error : states[i].error)
+			  << "<==" << endl
+			  << endl;
+
 		times[i].push_back(states[i].t);
 		if (i == 2 || i == 3)
 		{
@@ -844,6 +836,9 @@ void saveStuff(int i)
 			errors[i].push_back((float)matching_results[i].mean_feature_error);
 			errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
 		}
+
+		states[i].Vyaw = -states[i].Yaw;
+
 		vel_x[i].push_back(states[i].Vx);
 		vel_y[i].push_back(states[i].Vy);
 		vel_z[i].push_back(states[i].Vz);
@@ -854,33 +849,33 @@ void saveStuff(int i)
 		Y[i].push_back(pos_dron[i].pose.position.y);
 		Z[i].push_back(pos_dron[i].pose.position.z);
 
-		if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
-		{
-			cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
-			states[i].in_target = true;
-			// break;
-		}
+		// if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
+		// {
+		// 	cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
+		// 	states[i].in_target = true;
+		// 	// break;
+		// }
+
+		// Publish image of the matching
+		// cout << "\n[INFO] Publishing image" << endl;
+		// image_pub.publish(image_msg);
+
+		// UPDATE STATE WITH THE CURRENT CONTROL
+		auto new_pose = states[i].update();
+
+		// PREPARE MESSAGE
+		trajectory_msgs::MultiDOFJointTrajectory msg;
+		msg.header.stamp = ros::Time::now();
+		mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
+
+		// PUBLISH MESSAGE FOR TRAYECTORY
+		pos_pubs[i].publish(msg);
 	}
 	else
 	{
 		// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
 		// break;
 	}
-
-	// Publish image of the matching
-	// cout << "\n[INFO] Publishing image" << endl;
-	// image_pub.publish(image_msg);
-
-	// UPDATE STATE WITH THE CURRENT CONTROL
-	auto new_pose = states[i].update();
-
-	// PREPARE MESSAGE
-	trajectory_msgs::MultiDOFJointTrajectory msg;
-	msg.header.stamp = ros::Time::now();
-	mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
-
-	// PUBLISH MESSAGE FOR TRAYECTORY
-	pos_pubs[i].publish(msg);
 }
 
 /*************** CONVERT YALM TO OPENCV MAT ***************/

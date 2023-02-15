@@ -22,8 +22,70 @@ elif len(sys.argv) == 3:
     lider = sys.argv[1]
     dron = sys.argv[2]
 else:
-    print("Usage: python3 aux_plot.py [dron]")
-    print("Usage: python3 aux_plot.py [if lider 1 else 0)] [dron]")
+
+    fig, ax = plt.subplots(3, 4, figsize=(15, 5))
+    fig3d, ax3d = plt.subplots(1, 1, figsize=(5, 5), subplot_kw=dict(projection='3d'))
+
+    for dron in range(1,5):
+        err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
+        err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
+        time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
+        vx = np.loadtxt(f"{path}/out/out_Vx_{dron}.txt")
+        vy = np.loadtxt(f"{path}/out/out_Vy_{dron}.txt")
+        vz = np.loadtxt(f"{path}/out/out_Vz_{dron}.txt")
+        vyaw = np.loadtxt(f"{path}/out/out_Vyaw_{dron}.txt")
+        lamb = np.loadtxt(f"{path}/out/out_lambda_{dron}.txt")
+
+        NUM = 0
+        try:
+            if len(vx) < 3:
+                exit()
+        except:
+            exit()
+        for i in range(2, len(vx)):
+            if np.linalg.norm(vx[i]-vx[i-1]) > 1e-3:
+                NUM = i
+                break
+        
+        ax[0][dron-1].title.set_text(f"Drone {dron}")
+        ax[0][dron-1].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
+        if dron == 2 or dron == 1:
+            err_pix = err_pix / max(err_pix)
+            ax[0][dron-1].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
+        box = ax[0][dron-1].get_position()
+        ax[0][dron-1].set_position([box.x0, box.y0, box.width * 0.99, box.height])
+        ax[0][dron-1].legend(loc='center left', bbox_to_anchor=(1, 0.5), shadow=True)
+        ax[0][dron-1].set_ylabel('Error Promedio')
+
+        ax[1][dron-1].plot(time[NUM:], vx[NUM:], label='$V_x$')
+        ax[1][dron-1].plot(time[NUM:], vy[NUM:], label='$V_y$')
+        ax[1][dron-1].plot(time[NUM:], vz[NUM:], label='$V_z$')
+        ax[1][dron-1].plot(time[NUM:], vyaw[NUM:], label='$W_z$')
+        ax[1][dron-1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax[1][dron-1].set_ylabel('Velocidades')
+
+        ax[2][dron-1].plot(time[NUM:], lamb[NUM:], "r")
+        ax[2][dron-1].set_ylabel('Lambda')
+        ax[2][dron-1].set_xlabel('Tiempo (s)')
+
+    plt.tight_layout()
+    plt.savefig(f"{path}/out_velocidades_all.png",
+                bbox_inches='tight', pad_inches=0.1)
+
+    ax3d.title.set_text(f"Posiciones")
+    for dron in range(1,5):
+        x = np.loadtxt(f"{path}/out/out_X_{dron}.txt")
+        y = np.loadtxt(f"{path}/out/out_Y_{dron}.txt")
+        z = np.loadtxt(f"{path}/out/out_Z_{dron}.txt")
+        ax3d.scatter(x, y, z, linewidth=0.5, label=f"Drone {dron}", marker="<", alpha=.5)
+    
+    ax3d.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax3d.view_init(elev=30, azim=71, roll=0)
+
+    plt.tight_layout()
+    plt.savefig(f"{path}/out_posiciones_all.png",
+                bbox_inches='tight', pad_inches=0.1)
+    plt.show()
     exit()
 
 err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
@@ -126,22 +188,26 @@ if lider == "1":
                 bbox_inches='tight', pad_inches=0.1)
 
 else:
-    fig, ax = plt.subplots(2, 1, figsize=(5, 5))
+    fig, ax = plt.subplots(3, 1, figsize=(5, 8))
 
-    ax[0].plot(time[NUM:], vx[NUM:], label='$V_x$')
-    ax[0].plot(time[NUM:], vy[NUM:], label='$V_y$')
-    ax[0].plot(time[NUM:], vz[NUM:], label='$V_z$')
-    ax[0].plot(time[NUM:], vyaw[NUM:], label='$W_z$')
+    ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
+    box = ax[0].get_position()
+    ax[0].set_position([box.x0, box.y0, box.width * 0.99, box.height])
     ax[0].legend(loc='center left', bbox_to_anchor=(1, 0.5), shadow=True)
-    ax[0].set_ylabel('Velocidades')
+    ax[0].set_ylabel('Error Promedio')
 
-    ax[1].plot(time[NUM:], lamb[NUM:], "r")
-    ax[1].set_ylabel('Lambda')
-    ax[1].set_xlabel('Tiempo (s)')
+    ax[1].plot(time[NUM:], vx[NUM:], label='$V_x$')
+    ax[1].plot(time[NUM:], vy[NUM:], label='$V_y$')
+    ax[1].plot(time[NUM:], vz[NUM:], label='$V_z$')
+    ax[1].plot(time[NUM:], vyaw[NUM:], label='$W_z$')
+    ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax[1].set_ylabel('Velocidades')
+
+    ax[2].plot(time[NUM:], lamb[NUM:], "r")
+    ax[2].set_ylabel('Lambda')
+    ax[2].set_xlabel('Tiempo (s)')
 
     plt.tight_layout()
     plt.savefig(f"{path}/out_velocidades_{dron}.png",
                 bbox_inches='tight', pad_inches=0.1)
-
-
 plt.show()
