@@ -68,7 +68,7 @@ else:
         ax[2][dron-1].set_ylabel('Lambda')
         ax[2][dron-1].set_xlabel('Tiempo (s)')
 
-    plt.tight_layout()
+    fig.tight_layout()
     plt.savefig(f"{path}/out_velocidades_all.png",
                 bbox_inches='tight', pad_inches=0.1)
 
@@ -82,7 +82,7 @@ else:
     ax3d.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax3d.view_init(elev=30, azim=71, roll=0)
 
-    plt.tight_layout()
+    fig3d.tight_layout()
     plt.savefig(f"{path}/out_posiciones_all.png",
                 bbox_inches='tight', pad_inches=0.1)
     plt.show()

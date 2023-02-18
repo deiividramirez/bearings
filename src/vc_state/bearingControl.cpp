@@ -28,11 +28,15 @@ int bearingControl(Mat actual_bearing,
          temp2.at<double>(2, 0) = states[drone_id - 1].Vz - states[(int)marker_ids[i] - 1].Vz;
          suma = suma - projOrtog(temp) * (Kp * position.col(i) + Kv * temp2);
       }
-      else
+      else if (opc == 0)
       {
          // Control with bearing
          temp = actual_bearing.col(i);
          suma = suma - projOrtog(temp) * (desired_bearings.col(i));
+      }
+      else
+      {
+         suma = suma + (-actual_bearing.col(i) - desired_bearings.col(i));
       }
    }
 
@@ -46,6 +50,7 @@ int bearingControl(Mat actual_bearing,
    cout << endl
         << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
 
+   lambda_temp = 3;
    states[drone_id - 1].lambda = lambda_temp;
 
    // Update the velocity
