@@ -130,6 +130,9 @@ vector<float> lambda1, lambda2, lambda3, lambda4;
 vector<float> arr_x1, arr_x2, arr_x3, arr_x4;
 vector<float> arr_y1, arr_y2, arr_y3, arr_y4;
 vector<float> arr_z1, arr_z2, arr_z3, arr_z4;
+vector<float> integral_x1, integral_x2, integral_x3, integral_x4;
+vector<float> integral_y1, integral_y2, integral_y3, integral_y4;
+vector<float> integral_z1, integral_z2, integral_z3, integral_z4;
 
 vector<vector<float>> vel_x = {vel_x1, vel_x2, vel_x3, vel_x4};
 vector<vector<float>> vel_y = {vel_y1, vel_y2, vel_y3, vel_y4};
@@ -142,3 +145,6 @@ vector<vector<float>> lambda = {lambda1, lambda2, lambda3, lambda4};
 vector<vector<float>> X = {arr_x1, arr_x2, arr_x3, arr_x4};
 vector<vector<float>> Y = {arr_y1, arr_y2, arr_y3, arr_y4};
 vector<vector<float>> Z = {arr_z1, arr_z2, arr_z3, arr_z4};
+vector<vector<float>> integral_x = {integral_x1, integral_x2, integral_x3, integral_x4};
+vector<vector<float>> integral_y = {integral_y1, integral_y2, integral_y3, integral_y4};
+vector<vector<float>> integral_z = {integral_z1, integral_z2, integral_z3, integral_z4};

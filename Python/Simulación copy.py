@@ -159,7 +159,7 @@ t = np.linspace(0, tmax, 5*lider_iz_ac.shape[0])
 
 # Ganancias del controlador
 Kp = 5
-Kv = .25
+Kv = .8
 
 # Simulación con Euler
 vnew = np.zeros((n, d))
@@ -176,23 +176,24 @@ for num, tt in enumerate(t):
             #     if i != j:
             #         sumaP += ortProj(gijA[i, j, :])
 
-            suma = np.zeros(d)
+            suma1 = np.zeros(d)
+            suma2 = np.zeros(d)
+            deriv = np.zeros(d)
             for j in range(n):
                 if i != j and np.any(gijA[i, j, :] != 0):
-                    # suma += ortProj(normalize(x[j]-x[i])) @ (v[j, :] - v[i, :])
+                    # deriv += ortProj(normalize(x[j]-x[i])) @ (v[j, :] - v[i, :]) / np.linalg.norm(x[j]-x[i])
                     
                     # BEARING-ONLY FORMATION TRACKING CONTROL OF MULTIAGENT SYSTEMS - SHIYU ZHAO
-                    suma += normalize(x[j]-x[i]) - gijA[i, j, :]
-
-
-                    suma -= ortProj(normalize(x[j]-x[i])) @ (gijA[i, j, :])
+                    suma1 += normalize(x[j]-x[i]) - gijA[i, j, :]
+                    suma2 -= ortProj(normalize(x[j]-x[i])) @ (gijA[i, j, :])
 
                     error[i] += np.linalg.norm(normalize(x[j] - x[i]) - gijA[i, j, :])
 
                 # print(f"Error {i},{j}: {errorc}, {normalize(x[j]-x[i])}, {gijA[i, j, :]}")
 
-            temp[i, :] = (tempv[-1][i, :] + dt * suma)
-            vB[i, :] = Kp*suma + Kv*temp[i, :]
+            temp[i, :] = (tempv[-1][i, :] + dt * suma1)
+            # vB[i, :] = Kp*(suma1 + suma2) + Kv*temp[i, :]
+            vB[i, :] = Kp*(suma1 + suma2) + 1 * deriv + Kv*temp[i, :]
             # vB[i, :] = Kp * suma 
         else:
             if i == P2:
@@ -210,7 +211,7 @@ for num, tt in enumerate(t):
             v[i, :] = vB[i, :]
             vnew[i, :] = vB[i, :]
         else:
-            v[i, :] = 2.5
+            v[i, :] = .5
     x = x + dt * v
 
     arrx.append(x)

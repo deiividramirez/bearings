@@ -23,7 +23,7 @@ elif len(sys.argv) == 3:
     dron = sys.argv[2]
 else:
 
-    fig, ax = plt.subplots(3, 4, figsize=(15, 5))
+    fig, ax = plt.subplots(4, 4, figsize=(15, 5), sharex=True)
     fig3d, ax3d = plt.subplots(1, 1, figsize=(5, 5), subplot_kw=dict(projection='3d'))
 
     for dron in range(1,5):
@@ -35,6 +35,16 @@ else:
         vz = np.loadtxt(f"{path}/out/out_Vz_{dron}.txt")
         vyaw = np.loadtxt(f"{path}/out/out_Vyaw_{dron}.txt")
         lamb = np.loadtxt(f"{path}/out/out_lambda_{dron}.txt")
+        intx = np.loadtxt(f"{path}/out/out_integral_x_{dron}.txt")
+        inty = np.loadtxt(f"{path}/out/out_integral_y_{dron}.txt")
+        intz = np.loadtxt(f"{path}/out/out_integral_z_{dron}.txt")
+
+        print(f"""
+Drone {dron}
+Tiempo total -> {time[-1]}
+Error final -> {err[-1]}
+Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
+        """)
 
         NUM = 0
         try:
@@ -52,6 +62,8 @@ else:
         if dron == 2 or dron == 1:
             err_pix = err_pix / max(err_pix)
             ax[0][dron-1].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
+        ax[0][dron-1].plot([time[NUM], time[-1]], [0, 0], "k:", label="y=0", alpha=.5)
+        ax[0][dron-1].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k:", label=f"y={err[-1]:.2f}", alpha=.5)
         box = ax[0][dron-1].get_position()
         ax[0][dron-1].set_position([box.x0, box.y0, box.width * 0.99, box.height])
         ax[0][dron-1].legend(loc='center left', bbox_to_anchor=(1, 0.5), shadow=True)
@@ -67,6 +79,12 @@ else:
         ax[2][dron-1].plot(time[NUM:], lamb[NUM:], "r")
         ax[2][dron-1].set_ylabel('Lambda')
         ax[2][dron-1].set_xlabel('Tiempo (s)')
+
+        ax[3][dron-1].plot(time[NUM:], intx[NUM:], label='$I_x$')
+        ax[3][dron-1].plot(time[NUM:], inty[NUM:], label='$I_y$')
+        ax[3][dron-1].plot(time[NUM:], intz[NUM:], label='$I_z$')
+        ax[3][dron-1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax[3][dron-1].set_ylabel('Integrales')
 
     fig.tight_layout()
     plt.savefig(f"{path}/out_velocidades_all.png",

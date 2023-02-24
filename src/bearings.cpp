@@ -154,7 +154,10 @@ int main(int argc, char **argv)
 		{
 			contGEN++;
 			rate.sleep();
-			cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+			if (!SAVE_DESIRED_IMAGES)
+			{
+				cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+			}
 			// continue;
 		} // if we havent get the new pose for all the drones
 		else
@@ -202,6 +205,13 @@ int main(int argc, char **argv)
 		writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
 		writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
 		writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
+		// writeFile(YAW[i], workspace + file_folder + "out_YAW_" + to_string(i + 1) + ".txt");
+		// writeFile(roll[i], workspace + file_folder + "out_roll_" + to_string(i + 1) + ".txt");
+		// writeFile(pitch[i], workspace + file_folder + "out_pitch_" + to_string(i + 1) + ".txt");
+		writeFile(integral_x[i], workspace + file_folder + "out_integral_x_" + to_string(i + 1) + ".txt");
+		writeFile(integral_y[i], workspace + file_folder + "out_integral_y_" + to_string(i + 1) + ".txt");
+		writeFile(integral_z[i], workspace + file_folder + "out_integral_z_" + to_string(i + 1) + ".txt");
+
 
 		cout << "[INFO] Data saved for drone " << i + 1 << endl;
 	}
@@ -844,6 +854,10 @@ void saveStuff(int i)
 		vel_z[i].push_back(states[i].Vz);
 		vel_yaw[i].push_back(states[i].Vyaw);
 		lambda[i].push_back(states[i].lambda);
+
+		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
+		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
+		integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
 
 		X[i].push_back(pos_dron[i].pose.position.x);
 		Y[i].push_back(pos_dron[i].pose.position.y);

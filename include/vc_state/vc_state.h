@@ -101,6 +101,8 @@ public:
 
     float error = 0;
 
+    Mat integral_error = Mat::zeros(3, 1, CV_64F);
+
     bool in_target = false;
 
     // Image proessing parameters
