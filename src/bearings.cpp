@@ -201,7 +201,9 @@ int main(int argc, char **argv)
 		writeFile(vel_y[i], workspace + file_folder + "out_Vy_" + to_string(i + 1) + ".txt");
 		writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
 		writeFile(vel_yaw[i], workspace + file_folder + "out_Vyaw_" + to_string(i + 1) + ".txt");
-		writeFile(lambda[i], workspace + file_folder + "out_lambda_" + to_string(i + 1) + ".txt");
+		writeFile(lambda_kp[i], workspace + file_folder + "out_lambda_kp_" + to_string(i + 1) + ".txt");
+		writeFile(lambda_kv[i], workspace + file_folder + "out_lambda_kv_" + to_string(i + 1) + ".txt");
+		writeFile(lambda_kd[i], workspace + file_folder + "out_lambda_kd_" + to_string(i + 1) + ".txt");
 		writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
 		writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
 		writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
@@ -829,8 +831,8 @@ void saveStuff(int i)
 			  << "\nVroll: " << states[i].Vroll
 			  << ", Vpitch: " << states[i].Vpitch
 			  << ", Wyaw: " << states[i].Vyaw
-			  //   << "\n==> Error: " << matching_results[i].mean_feature_error
-			  //   << "\n==> Error: " << states[i].error
+		   //   << "\n==> Error: " << matching_results[i].mean_feature_error
+			//   << "\n==> Error: " << states[i].error
 			  << "\n==> Error: " << ((states[i].error == 0) ? matching_results[i].mean_feature_error : states[i].error)
 			  << "<==" << endl
 			  << endl;
@@ -845,6 +847,8 @@ void saveStuff(int i)
 		{
 			errors[i].push_back((float)matching_results[i].mean_feature_error);
 			errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
+			// cout << "[INFO] Error: " << matching_results[i].mean_feature_error << endl;
+			cout << "[INFO] Error pix: " << matching_results[i].mean_feature_error_pix << endl;
 		}
 
 		states[i].Vyaw = -states[i].Yaw;
@@ -853,7 +857,9 @@ void saveStuff(int i)
 		vel_y[i].push_back(states[i].Vy);
 		vel_z[i].push_back(states[i].Vz);
 		vel_yaw[i].push_back(states[i].Vyaw);
-		lambda[i].push_back(states[i].lambda);
+		lambda_kp[i].push_back(states[i].lambda_kp);
+		lambda_kv[i].push_back(states[i].lambda_kv);
+		lambda_kd[i].push_back(states[i].lambda_kd);
 
 		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
 		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));

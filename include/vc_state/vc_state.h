@@ -97,7 +97,9 @@ public:
     float Kw = 1.0;
     float dt = 0.025;
     float t = 0;
-    float lambda = 0;
+    float lambda_kp = 0;
+    float lambda_kv = 0;
+    float lambda_kd = 0;
 
     float error = 0;
 

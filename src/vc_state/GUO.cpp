@@ -82,6 +82,7 @@ int GUO(Mat img,                                      // Image to be processed
 
         double l0 = 5 * lambda, linf = lambda, lprima = 1;
         double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
+        state.lambda_kp = lambda_temp;
 
         U_temp = -lambda_temp * Lo * ERROR;
 
@@ -93,7 +94,6 @@ int GUO(Mat img,                                      // Image to be processed
         // cout << "[CONTROL] U = " << U.t() << endl;
 
         // Send the control law to the camera
-        state.lambda = lambda_temp;
         if (state.params.camara == 1)
         {
                 state.Vx = -(float)U.at<double>(2, 0);

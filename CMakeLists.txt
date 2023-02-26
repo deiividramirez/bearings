@@ -220,5 +220,4 @@ src/vc_state/bearingControl.cpp
 target_link_libraries(bearings ${catkin_LIBRARIES})
 
 SET(CATKIN_WORSKPACE "$ENV{HOME}/catkin_ws")
-
 target_compile_definitions(bearings PUBLIC WORKSPACE="${CATKIN_WORSKPACE}")
