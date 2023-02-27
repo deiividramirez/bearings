@@ -84,7 +84,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         for i in ["kp", "kv", "kd"]:
             try:
                 lamb = np.loadtxt(f"{path}/out/out_lambda_{i}_{dron}.txt")
-                if np.sum(lamb) > 0:
+                if np.any(lamb != 0):
                     ax[2][dron-1].plot(time[NUM:], lamb[NUM:],
                                        label="$\lambda_{"+i+"}$")
             except:

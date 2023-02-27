@@ -60,10 +60,10 @@ int bearingControl(Mat actual_bearing,
    states[drone_id - 1].error = norm(desired_bearings + actual_bearing);
 
    // Variable lambda - gain
-   double l0_Kp = 4 * Kp, linf_Kp = Kp, lprima_Kp = 90;
+   double l0_Kp = 4 * Kp, linf_Kp = Kp, lprima_Kp = 75;
    double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(lprima_Kp * states[drone_id - 1].error) / (l0_Kp - linf_Kp)) + linf_Kp;
 
-   double l0_Kv = 4 * Kv, linf_Kv = Kv, lprima_Kv = 90;
+   double l0_Kv = 4 * Kv, linf_Kv = Kv, lprima_Kv = 75;
    double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(lprima_Kv * states[drone_id - 1].error) / (l0_Kv - linf_Kv)) + linf_Kv;
 
    cout << endl
