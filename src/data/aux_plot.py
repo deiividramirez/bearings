@@ -120,6 +120,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     plt.show()
     exit()
 
+print(f"Drones {dron} - Lider {lider}")
 err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
 err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
 time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
@@ -127,7 +128,7 @@ vx = np.loadtxt(f"{path}/out/out_Vx_{dron}.txt")
 vy = np.loadtxt(f"{path}/out/out_Vy_{dron}.txt")
 vz = np.loadtxt(f"{path}/out/out_Vz_{dron}.txt")
 vyaw = np.loadtxt(f"{path}/out/out_Vyaw_{dron}.txt")
-lamb = np.loadtxt(f"{path}/out/out_lambda_{dron}.txt")
+lamb = np.loadtxt(f"{path}/out/out_lambda_kp_{dron}.txt")
 
 NUM = 0
 try:
@@ -136,7 +137,7 @@ try:
 except:
     exit()
 for i in range(2, len(vx)):
-    if np.linalg.norm(vx[i]-vx[i-1]) > 1e-3:
+    if np.linalg.norm(vx[i]-vx[i-1]) > 1e-3 and err[i] < 10e5:
         NUM = i
         break
 
@@ -178,6 +179,8 @@ if lider == "1":
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
     err_pix = err_pix / max(err_pix)
     ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
+    ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
+    ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
     box = ax[0].get_position()
     ax[0].set_position([box.x0, box.y0, box.width * 0.99, box.height])
     ax[0].legend(loc='center left', bbox_to_anchor=(1, 0.5), shadow=True)
@@ -223,6 +226,8 @@ else:
     fig, ax = plt.subplots(3, 1, figsize=(5, 8))
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
+    ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
+    ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
     box = ax[0].get_position()
     ax[0].set_position([box.x0, box.y0, box.width * 0.99, box.height])
     ax[0].legend(loc='center left', bbox_to_anchor=(1, 0.5), shadow=True)

@@ -5,10 +5,10 @@
    width="500mm"
    height="500mm"
    version="1.1"
-   id="svg131"
-   sodipodi:docname="6x6_1000-97.svg"
+   id="svg54"
+   sodipodi:docname="6x6_4.svg"
    inkscape:version="1.2.2 (1:1.2.2+202212051550+b0a8486541)"
-   inkscape:export-filename="6x6_1000-97.png"
+   inkscape:export-filename="6x6_4.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -16,9 +16,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs135" />
+     id="defs58" />
   <sodipodi:namedview
-     id="namedview133"
+     id="namedview56"
      pagecolor="#ffffff"
      bordercolor="#000000"
      borderopacity="0.25"
@@ -28,226 +28,206 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.20280412"
-     inkscape:cx="628.68545"
-     inkscape:cy="1102.0486"
+     inkscape:zoom="0.31805074"
+     inkscape:cx="910.23212"
+     inkscape:cy="1102.0254"
      inkscape:window-width="1848"
      inkscape:window-height="1016"
      inkscape:window-x="72"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg131" />
+     inkscape:current-layer="svg54" />
   <rect
      style="fill:#ffffff;stroke-width:0.00423333"
-     id="rect378"
-     width="9.2471752"
-     height="8.8088217"
-     x="-0.50097561"
-     y="-0.35485774" />
+     id="rect244"
+     width="8.8113756"
+     height="8.6915836"
+     x="-0.35937634"
+     y="-0.33275589" />
   <g
-     id="g270">
+     id="g190"
+     transform="matrix(0.83999999,0,0,0.83999999,0.64000001,0.64000001)">
     <rect
        x="0"
        y="0"
        width="8"
        height="8"
        fill="#000000"
-       id="rect73" />
+       id="rect2" />
+    <rect
+       width="1.5"
+       height="1"
+       x="1"
+       y="1"
+       fill="#ffffff"
+       id="rect4" />
+    <rect
+       width="1"
+       height="1.5"
+       x="1"
+       y="1"
+       fill="#ffffff"
+       id="rect6" />
     <rect
        width="1"
        height="1"
        x="2"
        y="1"
        fill="#ffffff"
-       id="rect75" />
+       id="rect8" />
     <rect
-       width="1.5"
+       width="1"
        height="1"
        x="4"
        y="1"
        fill="#ffffff"
-       id="rect77" />
-    <rect
-       width="1.5"
-       height="1"
-       x="5"
-       y="1"
-       fill="#ffffff"
-       id="rect79" />
-    <rect
-       width="1"
-       height="1.5"
-       x="5"
-       y="1"
-       fill="#ffffff"
-       id="rect81" />
+       id="rect10" />
     <rect
        width="1"
        height="1"
        x="6"
        y="1"
        fill="#ffffff"
-       id="rect83" />
+       id="rect12" />
     <rect
        width="1"
-       height="1.5"
-       x="6"
-       y="1"
-       fill="#ffffff"
-       id="rect85" />
-    <rect
-       width="1.5"
        height="1"
-       x="5"
+       x="1"
        y="2"
        fill="#ffffff"
-       id="rect87" />
+       id="rect14" />
     <rect
-       width="1"
-       height="1"
-       x="6"
-       y="2"
-       fill="#ffffff"
-       id="rect89" />
-    <rect
-       width="1"
+       width="1.5"
        height="1"
        x="2"
        y="3"
        fill="#ffffff"
-       id="rect91" />
+       id="rect16" />
     <rect
        width="1"
        height="1.5"
        x="2"
        y="3"
        fill="#ffffff"
-       id="rect93" />
-    <rect
-       width="1.5"
-       height="1"
-       x="1"
-       y="4"
-       fill="#ffffff"
-       id="rect95" />
-    <rect
-       width="1"
-       height="1.5"
-       x="1"
-       y="4"
-       fill="#ffffff"
-       id="rect97" />
-    <rect
-       width="1"
-       height="1"
-       x="2"
-       y="4"
-       fill="#ffffff"
-       id="rect99" />
-    <rect
-       width="1"
-       height="1.5"
-       x="2"
-       y="4"
-       fill="#ffffff"
-       id="rect101" />
-    <rect
-       width="1.5"
-       height="1"
-       x="4"
-       y="4"
-       fill="#ffffff"
-       id="rect103" />
-    <rect
-       width="1"
-       height="1.5"
-       x="4"
-       y="4"
-       fill="#ffffff"
-       id="rect105" />
-    <rect
-       width="1"
-       height="1"
-       x="5"
-       y="4"
-       fill="#ffffff"
-       id="rect107" />
-    <rect
-       width="1"
-       height="1.5"
-       x="5"
-       y="4"
-       fill="#ffffff"
-       id="rect109" />
-    <rect
-       width="1.5"
-       height="1"
-       x="1"
-       y="5"
-       fill="#ffffff"
-       id="rect111" />
-    <rect
-       width="1"
-       height="1.5"
-       x="1"
-       y="5"
-       fill="#ffffff"
-       id="rect113" />
-    <rect
-       width="1.5"
-       height="1"
-       x="2"
-       y="5"
-       fill="#ffffff"
-       id="rect115" />
+       id="rect18" />
     <rect
        width="1.5"
        height="1"
        x="3"
-       y="5"
+       y="3"
        fill="#ffffff"
-       id="rect117" />
+       id="rect20" />
     <rect
        width="1.5"
        height="1"
        x="4"
-       y="5"
+       y="3"
        fill="#ffffff"
-       id="rect119" />
+       id="rect22" />
     <rect
        width="1"
        height="1.5"
        x="4"
-       y="5"
+       y="3"
        fill="#ffffff"
-       id="rect121" />
+       id="rect24" />
     <rect
        width="1.5"
        height="1"
        x="5"
-       y="5"
+       y="3"
        fill="#ffffff"
-       id="rect123" />
+       id="rect26" />
+    <rect
+       width="1"
+       height="1.5"
+       x="5"
+       y="3"
+       fill="#ffffff"
+       id="rect28" />
     <rect
        width="1"
        height="1"
        x="6"
-       y="5"
+       y="3"
        fill="#ffffff"
-       id="rect125" />
+       id="rect30" />
     <rect
        width="1"
        height="1"
+       x="2"
+       y="4"
+       fill="#ffffff"
+       id="rect32" />
+    <rect
+       width="1"
+       height="1.5"
+       x="2"
+       y="4"
+       fill="#ffffff"
+       id="rect34" />
+    <rect
+       width="1.5"
+       height="1"
+       x="4"
+       y="4"
+       fill="#ffffff"
+       id="rect36" />
+    <rect
+       width="1"
+       height="1"
+       x="5"
+       y="4"
+       fill="#ffffff"
+       id="rect38" />
+    <rect
+       width="1.5"
+       height="1"
        x="1"
+       y="5"
+       fill="#ffffff"
+       id="rect40" />
+    <rect
+       width="1.5"
+       height="1"
+       x="2"
+       y="5"
+       fill="#ffffff"
+       id="rect42" />
+    <rect
+       width="1"
+       height="1.5"
+       x="2"
+       y="5"
+       fill="#ffffff"
+       id="rect44" />
+    <rect
+       width="1"
+       height="1"
+       x="3"
+       y="5"
+       fill="#ffffff"
+       id="rect46" />
+    <rect
+       width="1"
+       height="1"
+       x="2"
        y="6"
        fill="#ffffff"
-       id="rect127" />
+       id="rect48" />
     <rect
        width="1"
        height="1"
        x="4"
        y="6"
        fill="#ffffff"
-       id="rect129" />
+       id="rect50" />
+    <rect
+       width="1"
+       height="1"
+       x="6"
+       y="6"
+       fill="#ffffff"
+       id="rect52" />
   </g>
 </svg>

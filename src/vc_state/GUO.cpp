@@ -80,7 +80,7 @@ int GUO(Mat img,                                      // Image to be processed
         //         U_temp = -2 * lambda * Lo * ERROR;
         // }
 
-        double l0 = 5 * lambda, linf = lambda, lprima = 1;
+        double l0 = 4 * lambda, linf = lambda, lprima = 10;
         double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
         state.lambda_kp = lambda_temp;
 
@@ -175,7 +175,7 @@ int distances(Mat p1,                      // Points in the target image
         for (int i = 0; i < NUM; i++)
         {
                 // for (int j = 0; j < NUM; j++)
-                for (int j = 0; j < i; j++)
+                for (int j = 0; j < NUM; j++)
                 {
                         if (i != j)
                         {

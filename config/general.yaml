@@ -7,19 +7,25 @@ cam_drone_2: 1
 cam_drone_3: 1
 cam_drone_4: 1
 
-seguimiento_1: [98]
-seguimiento_2: [99]
+seguimiento_1: [97]
+seguimiento_2: [96]
 seguimiento_3: [1, 2]
 seguimiento_4: [1, 2]
 
 bearing_1: []
 bearing_2: []
-bearing_3: [ .8,  .97,
-            -.6,  .24,
-              0,   0]
-bearing_4: [ .97, .8,
-            -.24, .6,
-               0,  0   ]
+bearing_3: [ .93,  .75,
+              0,   .6,
+             .37,  .3]
+bearing_4: [ .75, .93,
+             -.6,  0,
+              .3, .37   ]
+# bearing_3: [ .8,  .97,
+#             -.6,  .24,
+#               0,   0]
+# bearing_4: [ .97, .8,
+#             -.24, .6,
+#                0,  0   ]
 # bearing_3: [.88,  .78,
 #             -.47,  .62,
 #             .12, .1]

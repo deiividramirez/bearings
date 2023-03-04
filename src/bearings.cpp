@@ -78,10 +78,10 @@ int main(int argc, char **argv)
 
 		image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 
-		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
+		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
 
-		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
+		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 	}
 	ros::Rate rate(30);
@@ -191,31 +191,33 @@ int main(int argc, char **argv)
 		}
 	}
 
-	// SAVING DATA FOR PYTHON PLOTING
-	for (int i = 0; i < states.size(); i++)
+	if (!SAVE_DESIRED_IMAGES)
 	{
-		writeFile(errors[i], workspace + file_folder + "out_errors_" + to_string(i + 1) + ".txt");
-		writeFile(errors_pix[i], workspace + file_folder + "out_errors_pix_" + to_string(i + 1) + ".txt");
-		writeFile(times[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
-		writeFile(vel_x[i], workspace + file_folder + "out_Vx_" + to_string(i + 1) + ".txt");
-		writeFile(vel_y[i], workspace + file_folder + "out_Vy_" + to_string(i + 1) + ".txt");
-		writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
-		writeFile(vel_yaw[i], workspace + file_folder + "out_Vyaw_" + to_string(i + 1) + ".txt");
-		writeFile(lambda_kp[i], workspace + file_folder + "out_lambda_kp_" + to_string(i + 1) + ".txt");
-		writeFile(lambda_kv[i], workspace + file_folder + "out_lambda_kv_" + to_string(i + 1) + ".txt");
-		writeFile(lambda_kd[i], workspace + file_folder + "out_lambda_kd_" + to_string(i + 1) + ".txt");
-		writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
-		writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
-		writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
-		// writeFile(YAW[i], workspace + file_folder + "out_YAW_" + to_string(i + 1) + ".txt");
-		// writeFile(roll[i], workspace + file_folder + "out_roll_" + to_string(i + 1) + ".txt");
-		// writeFile(pitch[i], workspace + file_folder + "out_pitch_" + to_string(i + 1) + ".txt");
-		writeFile(integral_x[i], workspace + file_folder + "out_integral_x_" + to_string(i + 1) + ".txt");
-		writeFile(integral_y[i], workspace + file_folder + "out_integral_y_" + to_string(i + 1) + ".txt");
-		writeFile(integral_z[i], workspace + file_folder + "out_integral_z_" + to_string(i + 1) + ".txt");
+		// SAVING DATA FOR PYTHON PLOTING
+		for (int i = 0; i < states.size(); i++)
+		{
+			writeFile(errors[i], workspace + file_folder + "out_errors_" + to_string(i + 1) + ".txt");
+			writeFile(errors_pix[i], workspace + file_folder + "out_errors_pix_" + to_string(i + 1) + ".txt");
+			writeFile(times[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
+			writeFile(vel_x[i], workspace + file_folder + "out_Vx_" + to_string(i + 1) + ".txt");
+			writeFile(vel_y[i], workspace + file_folder + "out_Vy_" + to_string(i + 1) + ".txt");
+			writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
+			writeFile(vel_yaw[i], workspace + file_folder + "out_Vyaw_" + to_string(i + 1) + ".txt");
+			writeFile(lambda_kp[i], workspace + file_folder + "out_lambda_kp_" + to_string(i + 1) + ".txt");
+			writeFile(lambda_kv[i], workspace + file_folder + "out_lambda_kv_" + to_string(i + 1) + ".txt");
+			writeFile(lambda_kd[i], workspace + file_folder + "out_lambda_kd_" + to_string(i + 1) + ".txt");
+			writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
+			writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
+			writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
+			// writeFile(YAW[i], workspace + file_folder + "out_YAW_" + to_string(i + 1) + ".txt");
+			// writeFile(roll[i], workspace + file_folder + "out_roll_" + to_string(i + 1) + ".txt");
+			// writeFile(pitch[i], workspace + file_folder + "out_pitch_" + to_string(i + 1) + ".txt");
+			writeFile(integral_x[i], workspace + file_folder + "out_integral_x_" + to_string(i + 1) + ".txt");
+			writeFile(integral_y[i], workspace + file_folder + "out_integral_y_" + to_string(i + 1) + ".txt");
+			writeFile(integral_z[i], workspace + file_folder + "out_integral_z_" + to_string(i + 1) + ".txt");
 
-
-		cout << "[INFO] Data saved for drone " << i + 1 << endl;
+			cout << "[INFO] Data saved for drone " << i + 1 << endl;
+		}
 	}
 
 	return 0;
@@ -236,7 +238,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 	if (states[2].initialized)
 	{
 		cout << endl
-			  << "--------------------> BEGIN IMGCallback3 for Drone 3<--------------------" << endl;
+			  << "=============> BEGIN IMGCallback3 for Drone 3<=============" << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 		// Getting the bearings from camera's drone
@@ -316,7 +318,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	if (states[3].initialized)
 	{
 		cout << endl
-			  << "--------------------> BEGIN IMGCallback4 for Drone 4<--------------------" << endl;
+			  << "=============> BEGIN IMGCallback4 for Drone 4<=============" << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 		// Getting the bearings from camera's drone
@@ -396,128 +398,143 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	if (states[0].initialized && !states[0].in_target)
 	{
 		cout << endl
-			  << "--------------------> BEGIN IMGCallback for Drone 1<--------------------" << endl;
+			  << "=============> BEGIN IMGCallback for Drone 1<=============" << endl;
 		// cout << "\n[INFO] ImageCallback for drone " << 0 + 1 << endl;
 
-		try
+		// try
+		// {
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+		// cout << "[INFO] Image received" << endl;
+
+		// if (contIMG1++ < 3)
+		// {
+		// 	cout << "\n[INFO] Detecting keypoints" << endl;
+
+		// 	if (states[0].params.camara != 1)
+		// 	{
+		// 		cout << "[INFO] Detecting points with ORB" << endl;
+		// 		if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
+		// 		{
+		// 			cout << "[ERROR] No keypoints with matches were found" << endl;
+		// 			return;
+		// 		}
+		// 	}
+		// 	else
+		// 	{
+		// 		cout << "[INFO] Detecting points with ArUco" << endl;
+		// 		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
+		// 		{
+		// 			cout << "[ERROR] No ArUco were found." << endl;
+		// 			// ros::shutdown();
+		// 		}
+		// 	}
+		// 	// cout << "[INFO] img_points1: " << img_points1 << endl;
+		// 	// cout << "[INFO] matching_result.p1: " << endl
+		// 	// 	  << matching_results[0].p1 << endl;
+		// 	// cout << "[INFO] matching_result.p2: " << endl
+		// 	// 	  << matching_results[0].p2 << endl
+		// 	// 	  << endl;
+
+		// 	img_old1 = actual;
+		// }
+		// else
+		// {
+		// Detecting keypoints from ArUco markers
+		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
 		{
-			Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-			// cout << "[INFO] Image received" << endl;
-
-			if (contIMG1++ < 3)
+			// Executing control law by GUO
+			// cout << "[INFO] Calling control law." << endl;
+			if (GUO(actual, states[0], matching_results[0]) < 0)
 			{
-				// 	cout << "\n[INFO] Detecting keypoints" << endl;
-
-				// 	if (states[0].params.camara != 1)
-				// 	{
-				// 		cout << "[INFO] Detecting points with ORB" << endl;
-				// 		if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
-				// 		{
-				// 			cout << "[ERROR] No keypoints with matches were found" << endl;
-				// 			return;
-				// 		}
-				// 	}
-				// 	else
-				// 	{
-				// 		cout << "[INFO] Detecting points with ArUco" << endl;
-				// 		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
-				// 		{
-				// 			cout << "[ERROR] No ArUco were found." << endl;
-				// 			// ros::shutdown();
-				// 		}
-				// 	}
-				// 	// cout << "[INFO] img_points1: " << img_points1 << endl;
-				// 	// cout << "[INFO] matching_result.p1: " << endl
-				// 	// 	  << matching_results[0].p1 << endl;
-				// 	// cout << "[INFO] matching_result.p2: " << endl
-				// 	// 	  << matching_results[0].p2 << endl
-				// 	// 	  << endl;
-
-				// 	img_old1 = actual;
+				cout << "[ERROR] Controller failed" << endl;
+				return;
 			}
 			else
 			{
-				// Detecting keypoints from ArUco markers
-				if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
-				{
-					// Executing control law by GUO
-					// cout << "[INFO] Calling control law." << endl;
-					if (GUO(actual, states[0], matching_results[0]) < 0)
-					{
-						cout << "[ERROR] Controller failed" << endl;
-						return;
-					}
-					else
-					{
-						// cout << "[INFO] Controller part has been executed" << endl;
-					}
-				}
-				else
-				{
-					cout << "[ERROR] No ArUco were found." << endl;
-					// ros::shutdown();
-					// states[0].Vx = 0;
-					// states[0].Vy = 0;
-					// states[0].Vz = 0;
-					// states[0].Vyaw = 0;
-				}
-
-				// cout << "POSICIÓN: " << pos_dron[0] << endl;
-				// Mat desired_temp, new_points;
-				// if (Kanade_Lucas_Tomasi(img_old1, actual, desired_temp, img_points1, states[0], matching_results[0]) < 0)
-				// {
-				// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-				// 	return;
-				// }
-				// else
-				// {
-				// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-				// }
-
-				if (SHOW_IMAGES)
-				{
-					// namedWindow("Desired_1", WINDOW_NORMAL);
-					// cv::resizeWindow("Desired_1", 960, 540);
-					// imshow("Desired_1", desired_temp);
-
-					namedWindow("Frontal camera_1", WINDOW_NORMAL);
-					cv::resizeWindow("Frontal camera_1", 960, 540);
-					imshow("Frontal camera_1", actual);
-					waitKey(1);
-				}
+				// cout << "[INFO] Controller part has been executed" << endl;
 			}
-
-			// Saving images
-			string saveIMG;
-			if (SAVE_IMAGES)
-			{
-				saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
-				imwrite(workspace + saveIMG, actual);
-				// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-			}
-			else
-			{
-				saveIMG = "/src/bearings/src/data/img/1_1.jpg";
-				imwrite(workspace + saveIMG, actual);
-				// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-			}
-
-			/************************************************************* Prepare message */
-			// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
-			// image_msg->header.frame_id = "matching_image";
-			// image_msg->width = matching_results[0].img_matches.cols;
-			// image_msg->height = matching_results[0].img_matches.rows;
-			// image_msg->is_bigendian = false;
-			// image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
-			// image_msg->header.stamp = ros::Time::now();
-
-			/* cout << "[INFO] Matching published" << endl; */
 		}
-		catch (cv_bridge::Exception &e)
+		else
 		{
-			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-						 msg->encoding.c_str());
+			cout << "[ERROR] No ArUco were found." << endl;
+			// ros::shutdown();
+			// states[0].Vx = 0;
+			// states[0].Vy = 0;
+			// states[0].Vz = 0;
+			// states[0].Vyaw = 0;
 		}
+
+		// cout << "POSICIÓN: " << pos_dron[0] << endl;
+		// Mat desired_temp, new_points;
+		// if (Kanade_Lucas_Tomasi(img_old1, actual, desired_temp, img_points1, states[0], matching_results[0]) < 0)
+		// {
+		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
+		// 	return;
+		// }
+		// else
+		// {
+		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
+		// }
+
+		if (!SHOW_IMAGES)
+		{
+			Mat desired_temp, new_points;
+			states[0].desired_configuration.img.copyTo(desired_temp);
+
+			for (int i = 0; i < matching_results[0].p1.rows; i++)
+			{
+				circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+				circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+
+				// cout << "p1: " << matching_results[0].p1.at<double>(i, 0) << " " << matching_results[0].p1.at<double>(i, 1) << endl;
+				// cout << "p2: " << matching_results[0].p2.at<double>(i, 0) << " " << matching_results[0].p2.at<double>(i, 1) << endl;
+			}
+
+			// exit(-1);
+
+			namedWindow("Desired_1", WINDOW_NORMAL);
+			cv::resizeWindow("Desired_1", 960, 540);
+			imshow("Desired_1", desired_temp);
+
+			namedWindow("Frontal camera_1", WINDOW_NORMAL);
+			cv::resizeWindow("Frontal camera_1", 960, 540);
+			imshow("Frontal camera_1", actual);
+			waitKey(1);
+		}
+		// }
+
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/1_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		/************************************************************* Prepare message */
+		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
+		// image_msg->header.frame_id = "matching_image";
+		// image_msg->width = matching_results[0].img_matches.cols;
+		// image_msg->height = matching_results[0].img_matches.rows;
+		// image_msg->is_bigendian = false;
+		// image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
+		// image_msg->header.stamp = ros::Time::now();
+
+		/* cout << "[INFO] Matching published" << endl; */
+		// }
+		// catch (cv_bridge::Exception &e)
+		// {
+		// 	ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
+		// 				 msg->encoding.c_str());
+		// }
 		saveStuff(0);
 	}
 }
@@ -532,7 +549,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 	if (states[1].initialized && !states[1].in_target)
 	{
 		cout << endl
-			  << "--------------------> BEGIN imageCallback2 for drone 2 <--------------------" << endl;
+			  << "=============> BEGIN imageCallback2 for drone 2 <=============" << endl;
 		// cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
 
 		try
@@ -831,8 +848,8 @@ void saveStuff(int i)
 			  << "\nVroll: " << states[i].Vroll
 			  << ", Vpitch: " << states[i].Vpitch
 			  << ", Wyaw: " << states[i].Vyaw
-		   //   << "\n==> Error: " << matching_results[i].mean_feature_error
-			//   << "\n==> Error: " << states[i].error
+			  //   << "\n==> Error: " << matching_results[i].mean_feature_error
+			  //   << "\n==> Error: " << states[i].error
 			  << "\n==> Error: " << ((states[i].error == 0) ? matching_results[i].mean_feature_error : states[i].error)
 			  << "<==" << endl
 			  << endl;

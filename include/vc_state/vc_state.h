@@ -93,13 +93,10 @@ public:
     /* Control parameters  */
     float Vx = 0.0, Vy = 0.0, Vz = 0.0;
     float Vyaw = 0.0, Vroll = 0.0, Vpitch = 0.0;
-    float Kv = 1.0;
-    float Kw = 1.0;
+    float Kv = 1.0, Kw = 1.0;
     float dt = 0.025;
     float t = 0;
-    float lambda_kp = 0;
-    float lambda_kv = 0;
-    float lambda_kd = 0;
+    float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
 
     float error = 0;
 
@@ -114,11 +111,11 @@ public:
 
     //  Best approximations
     bool selected = false;
-    cv::Mat t_best;
-    cv::Mat R_best; // to save the rot and trans
+    // cv::Mat t_best;
+    // cv::Mat R_best; // to save the rot and trans
 
     /* ROS pub */
-    ros::Publisher ros_pub;
+    // ros::Publisher ros_pub;
 
     // Methods
     vc_state();
