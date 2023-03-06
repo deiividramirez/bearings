@@ -12,9 +12,13 @@ import os
 from pathlib import Path
 path = Path(__file__).parent.absolute()
 
-for file in os.listdir(f"{path}/img"):
+imgs = os.listdir(f"{path}/img")
+nottodelete = 0
+
+for file in imgs:
     if (file.split("_")[1].split(".")[0]) != "1":
         os.remove(os.path.join(f"{path}/img/", file))
-        print(os.path.join(f"{path}/img/", file))
+    else:
+        nottodelete += 1
 
-print(f"All files in '{path}/img' have been removed.")
+print(f"{len(imgs)-nottodelete} files have been removed from '{path}/img'.")

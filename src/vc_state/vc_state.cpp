@@ -36,12 +36,14 @@ void vc_state::load(const ros::NodeHandle &nh)
   this->params.flann_ratio = nh.param(std::string("flann_ratio"), 0.7);
   this->params.control = nh.param(std::string("control"), 1);
   this->params.camara = nh.param(std::string("camara"), 1);
-  this->params.gainv = nh.param(std::string("gainv"), 1.0);
-  this->params.gainw = nh.param(std::string("gainw"), 1.0);
+  // this->params.gainv = nh.param(std::string("gainv"), 1.0);
+  // this->params.gainw = nh.param(std::string("gainw"), 1.0);
 
   // Load gain parameters
   this->Kv = nh.param(std::string("gainv"), 0.0);
   this->Kw = nh.param(std::string("gainw"), 0.0);
+  this->Kv_max = nh.param(std::string("gainv_max"), 0.0);
+  this->Kw_max = nh.param(std::string("gainw_max"), 0.0);
 
   // Load sampling time parameter
   this->dt = nh.param(std::string("dt"), 0.01);

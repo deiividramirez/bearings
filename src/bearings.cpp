@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 	}
-	ros::Rate rate(60);
+	ros::Rate rate(30);
 
 	/****************** OPENING DESIRED IMAGES ******************/
 	if (!SAVE_DESIRED_IMAGES)
@@ -262,9 +262,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 									 bearings[2],
 									 states,
 									 segmentsXML[2],
-									 3,
-									 states[2].params.gainv,
-									 states[2].params.gainw) < 0)
+									 3) < 0)
 			{
 				cout << "[ERROR] Bearing control failed" << endl;
 			}
@@ -343,9 +341,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 									 bearings[3],
 									 states,
 									 segmentsXML[3],
-									 4,
-									 states[3].params.gainv,
-									 states[3].params.gainw) < 0)
+									 4) < 0)
 			{
 				cout << "[ERROR] Bearing control failed" << endl;
 			}
@@ -476,28 +472,19 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 		// }
 
-		Mat desired_temp, new_points;
-		states[0].desired_configuration.img.copyTo(desired_temp);
+		// Mat desired_temp, new_points;
+		// states[0].desired_configuration.img.copyTo(desired_temp);
 
 		for (int i = 0; i < matching_results[0].p1.rows; i++)
 		{
-			circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-
-			// cout << "p1: " << matching_results[0].p1.at<double>(i, 0) << " " << matching_results[0].p1.at<double>(i, 1) << endl;
-			// cout << "p2: " << matching_results[0].p2.at<double>(i, 0) << " " << matching_results[0].p2.at<double>(i, 1) << endl;
+			// circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			// circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 		}
 
 		if (SHOW_IMAGES)
 		{
-			// exit(-1);
-
-			namedWindow("Desired_1", WINDOW_NORMAL);
-			cv::resizeWindow("Desired_1", 960, 540);
-			imshow("Desired_1", desired_temp);
-
 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_1", 960, 540);
 			imshow("Frontal camera_1", actual);
@@ -625,26 +612,19 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 		// }
 
-		Mat desired_temp, new_points;
-		states[1].desired_configuration.img.copyTo(desired_temp);
+		// Mat desired_temp, new_points;
+		// states[1].desired_configuration.img.copyTo(desired_temp);
 
 		for (int i = 0; i < matching_results[1].p1.rows; i++)
 		{
-			circle(desired_temp, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			circle(desired_temp, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-
-			// cout << "p1: " << matching_results[1].p1.at<double>(i, 0) << " " << matching_results[1].p1.at<double>(i, 1) << endl;
-			// cout << "p2: " << matching_results[1].p2.at<double>(i, 0) << " " << matching_results[1].p2.at<double>(i, 1) << endl;
+			// circle(desired_temp, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			// circle(desired_temp, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 		}
 
 		if (SHOW_IMAGES)
 		{
-			namedWindow("Desired_2", WINDOW_NORMAL);
-			cv::resizeWindow("Desired_2", 960, 540);
-			imshow("Desired_2", desired_temp);
-
 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_2", 960, 540);
 			imshow("Frontal camera_2", actual);

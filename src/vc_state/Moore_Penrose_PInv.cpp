@@ -13,7 +13,7 @@ Mat Moore_Penrose_PInv(Mat L,double & det){
     det = determinant(Ls);
     // std::cout << "DB2.2.3"<< std::endl;
     // std::cout << "DB2.2.4"<< std::endl;
-    if (det > 1e-6){
+    if (det > 1e-8){
         return Ls.inv()*Lt;
     }
     else{

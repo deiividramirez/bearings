@@ -32,55 +32,38 @@ int GUO(Mat img,                                      // Image to be processed
         distances(p1s, p2s, distancias, state.params);
         // sort(distancias.begin(), distancias.end(), mayorQue);
 
-        // Choosing the gain for the control law
-        float lambda = state.params.gainv;
 
         // Get interaction matrix and error vector with distances
         L = Lvl(p2s, distancias, state.params);
-        Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F), ERROR_PIX = Mat::zeros(distancias.size(), 1, CV_64F);
+        Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F), ERROR_PIX = Mat::zeros(matching_result.p2.rows, 1, CV_64F);
 
         // for (int i = 0; i < 16; i++)
         for (int i = 0; i < distancias.size(); i++)
         {
                 ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
-                ERROR_PIX.at<double>(i, 0) = (double)norm(matching_result.p1.row(distancias[i].i) - matching_result.p2.row(distancias[i].i));
-                // cout << i << " Distancia: " << distancias[i].dist << " Distancia2: " << distancias[i].dist2 << endl;
-                // if ()
-                // cout << "Pixeles: " << matching_result.p1.row(distancias[i].i) << " - " << matching_result.p2.row(distancias[i].j) << " -> " << norm(matching_result.p1.row(distancias[i].i) - matching_result.p2.row(distancias[i].j)) << endl;
+        }
+        for (int i = 0; i < matching_result.p2.rows; i++)
+        {
+                ERROR_PIX.at<double>(i, 0) = (double) norm(matching_result.p2.row(distancias[i].i) - matching_result.p1.row(distancias[i].i));
+                cout << matching_result.p2.row(distancias[i].i) << " == " << matching_result.p1.row(distancias[i].i) << endl;
         }
 
-        // Mat a = Mat(matching_result.p1);
-        // Mat b = Mat(matching_result.p2);
-        // matching_result.mean_feature_error = norm(a, b) / ((double)matching_result.p1.rows);
-
-        matching_result.mean_feature_error = norm(ERROR, NORM_L2);
+        matching_result.mean_feature_error = norm(ERROR, NORM_L1);
         matching_result.mean_feature_error_pix = norm(ERROR_PIX, NORM_L2);
 
         cout << "[INFO] Error actual: " << matching_result.mean_feature_error << endl;
 
-        // Mat a = Mat(matching_result.p1);
-        // Mat b = Mat(matching_result.p2);
-        // matching_result.mean_feature_error = norm(a, b) / ((double)matching_result.p1.rows);
         // Get the Penrose pseudo-inverse of the interaction matrix
         double det = 0.0;
         Lo = Moore_Penrose_PInv(L, det);
-        if (det < 1e-6)
+        if (det < 1e-8)
         {
                 cout << "[ERROR] DET = ZERO --> det = " << det << endl;
                 return -1;
         }
 
-        // Get the control law with dimentions 3x1 in translation
-        // if (matching_result.mean_feature_error > 0.1)
-        // {
-        //         U_temp = -lambda * Lo * ERROR;
-        // }
-        // else
-        // {
-        //         U_temp = -2 * lambda * Lo * ERROR;
-        // }
-
-        double l0 = 4 * lambda, linf = lambda, lprima = 1;
+        // Choosing the gain for the control law
+        double l0 = state.Kv_max, linf = state.Kv, lprima = 1;
         double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
         state.lambda_kp = lambda_temp;
 
@@ -106,6 +89,7 @@ int GUO(Mat img,                                      // Image to be processed
                 state.Vy = (float)U.at<double>(0, 0);
                 state.Vz = (float)U.at<double>(2, 0);
         }
+        
         // state.Vroll  = (float) U.at<double>(3,0);
         // state.Vpitch = (float) U.at<double>(4,0);
         state.Vyaw = (float)U.at<double>(5, 0);
@@ -174,8 +158,8 @@ int distances(Mat p1,                      // Points in the target image
 
         for (int i = 0; i < NUM; i++)
         {
-                // for (int j = 0; j < NUM; j++)
                 for (int j = 0; j < NUM; j++)
+                // for (int j = 0; j < i; j++)
                 {
                         if (i != j)
                         {
@@ -270,7 +254,7 @@ Mat Lvl(Mat p2s,                    // Points of the actual image in the sphere
                         cout << "[Error] Control parameter not valid" << endl;
                         return L;
                 }
-                temp = s * ( (pi * ortoProj(pj)) + (pj * ortoProj(pi)) );
+                temp = s * ((pi * ortoProj(pj)) + (pj * ortoProj(pi)));
                 temp.copyTo(L.row(i));
         }
         temp.release();

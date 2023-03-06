@@ -43,7 +43,7 @@ int aruco_detector(const Mat &actual,
          {
             if (markerIds_Detected[i] == (int)marker_idXLM[indexesXLM])
             {
-               cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
+               // cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
                marker_index = i;
                break;
             }
@@ -103,7 +103,7 @@ int aruco_detector(const Mat &actual,
          {
             if (markerIds_Detected[i] == (int)marker_idXLM[indexesXLM])
             {
-               cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " in " << marker_idXLM[indexesXLM] << " detected." << endl;
+               cout << "[INFO] Marker " << marker_idXLM[indexesXLM] << " have been detected." << endl;
                marker_index = i;
                break;
             }

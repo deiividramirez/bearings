@@ -7,7 +7,7 @@ cam_drone_2: 1
 cam_drone_3: 1
 cam_drone_4: 1
 
-seguimiento_1: [97]
+seguimiento_1: [99]
 seguimiento_2: [96]
 seguimiento_3: [1, 2]
 seguimiento_4: [1, 2]

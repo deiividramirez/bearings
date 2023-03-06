@@ -120,7 +120,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     plt.show()
     exit()
 
-print(f"Drones {dron} - Lider {lider}")
+# print(f"Drones {dron} - Lider {lider}")
 err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
 err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
 time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
@@ -143,7 +143,7 @@ for i in range(2, len(vx)):
 
 
 print(f"""
-INFORMACIÓN DEL EXPERIMENTO
+INFORMACIÓN DEL EXPERIMENTO PARA DRONE {dron} <==
 
 Tiempo de vuelo: {time[-1]:5f} s
 Error promedio: {np.mean(err[NUM:]):5f} pixeles
@@ -158,7 +158,7 @@ Velocidad final en x: {vx[-1]:5f} u/s
 Velocidad final en y: {vy[-1]:5f} u/s
 Velocidad final en z: {vz[-1]:5f} u/s
 Velocidad final en yaw: {vyaw[-1]:5f} u/s""" if lider == "1" else f"""
-INFORMACIÓN DEL EXPERIMENTO
+INFORMACIÓN DEL EXPERIMENTO PARA DRONE {dron} <==
 
 Tiempo de vuelo: {time[-1]:5f} s
 Velocidad media en x: {np.mean(vx[NUM:]):5f} u/s
@@ -179,7 +179,7 @@ if lider == "1":
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
-    err_pix = err_pix / max(err_pix)
+    err_pix = err_pix / max(err)
     ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
@@ -233,6 +233,9 @@ else:
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
+    if np.any(err_pix != 0):
+        err_pix = err_pix / max(err_pix) * max(err)
+        ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
     box = ax[0].get_position()

@@ -32,10 +32,10 @@ typedef struct vc_parameters
     int patchSize = 30;
     int fastThreshold = 20;
     float flann_ratio = 0.7;
-    int control = 1;
-    int camara = 1;
-    float gainv = 2.;
-    float gainw = 2.;
+
+    int control = 1, camara = 1;
+    // float gainv = 2.0, gainw = 2.0;
+    // float gainv_max = 2.0, gainw_max = 2.0;
 
     // Camera parameters
     cv::Mat K;
@@ -93,10 +93,14 @@ public:
     /* Control parameters  */
     float Vx = 0.0, Vy = 0.0, Vz = 0.0;
     float Vyaw = 0.0, Vroll = 0.0, Vpitch = 0.0;
+
     float Kv = 1.0, Kw = 1.0;
+    float Kv_max = 1.0, Kw_max = 1.0;
+    float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
+    
     float dt = 0.025;
     float t = 0;
-    float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
+    
 
     float error = 0;
 
@@ -198,10 +202,8 @@ int getBearing(Mat &actual_image,
 int bearingControl(Mat actual_bearing,
                    Mat position,
                    Mat desired_bearings,
-                   vector<vc_state> &drones,
+                   vector<vc_state> &states,
                    XmlRpc::XmlRpcValue &marker_ids,
-                   int drone_id,
-                   double Kp,
-                   double Kv);
+                   int drone_id);
 
 #endif
