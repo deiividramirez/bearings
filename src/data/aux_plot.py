@@ -176,6 +176,8 @@ if lider == "1":
     # PRIMER PLOT
     fig, ax = plt.subplots(3, 1, figsize=(5, 8))
 
+    fig.suptitle(f"Velocidades y errores para el dron {dron}")
+
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
     err_pix = err_pix / max(err_pix)
     ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
@@ -203,6 +205,9 @@ if lider == "1":
 
     # SEGUNDO PLOT
     fig, ax = plt.subplots(2, 1, figsize=(5, 6))
+
+    fig.suptitle(f"Comparación para el {dron}")
+
     oslist = os.listdir(f"{path}/img")
     filtered = [i for i in oslist if f"{dron}_" in i]
     imgs = sorted(filtered, key=lambda x: int(x.split(".")[0]))
@@ -224,6 +229,8 @@ if lider == "1":
 
 else:
     fig, ax = plt.subplots(3, 1, figsize=(5, 8))
+
+    fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")

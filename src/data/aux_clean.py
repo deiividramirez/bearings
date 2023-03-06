@@ -13,7 +13,8 @@ from pathlib import Path
 path = Path(__file__).parent.absolute()
 
 for file in os.listdir(f"{path}/img"):
-    os.remove(os.path.join(f"{path}/img/", file))
-    #print(os.path.join(f"{path}/img/", file))
+    if (file.split("_")[1].split(".")[0]) != "1":
+        os.remove(os.path.join(f"{path}/img/", file))
+        print(os.path.join(f"{path}/img/", file))
 
 print(f"All files in '{path}/img' have been removed.")

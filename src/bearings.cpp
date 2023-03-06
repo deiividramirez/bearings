@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 	}
-	ros::Rate rate(30);
+	ros::Rate rate(60);
 
 	/****************** OPENING DESIRED IMAGES ******************/
 	if (!SAVE_DESIRED_IMAGES)
@@ -476,21 +476,22 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
 		// }
 
-		if (!SHOW_IMAGES)
+		Mat desired_temp, new_points;
+		states[0].desired_configuration.img.copyTo(desired_temp);
+
+		for (int i = 0; i < matching_results[0].p1.rows; i++)
 		{
-			Mat desired_temp, new_points;
-			states[0].desired_configuration.img.copyTo(desired_temp);
+			circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
 
-			for (int i = 0; i < matching_results[0].p1.rows; i++)
-			{
-				circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-				circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-				circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			// cout << "p1: " << matching_results[0].p1.at<double>(i, 0) << " " << matching_results[0].p1.at<double>(i, 1) << endl;
+			// cout << "p2: " << matching_results[0].p2.at<double>(i, 0) << " " << matching_results[0].p2.at<double>(i, 1) << endl;
+		}
 
-				// cout << "p1: " << matching_results[0].p1.at<double>(i, 0) << " " << matching_results[0].p1.at<double>(i, 1) << endl;
-				// cout << "p2: " << matching_results[0].p2.at<double>(i, 0) << " " << matching_results[0].p2.at<double>(i, 1) << endl;
-			}
-
+		if (SHOW_IMAGES)
+		{
 			// exit(-1);
 
 			namedWindow("Desired_1", WINDOW_NORMAL);
@@ -552,121 +553,135 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN imageCallback2 for drone 2 <=============" << endl;
 		// cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
 
-		try
+		// try
+		// {
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+		// cout << "[INFO] Image received" << endl;
+
+		// if (contIMG2++ < 3)
+		// {
+		// cout << "\n[INFO] Detecting keypoints" << endl;
+
+		// if (states[1].params.camara != 1)
+		// {
+		// 	cout << "[INFO] Detecting points with ORB" << endl;
+		// 	if (Compute_descriptors(actual, img_points2, states[1], matching_results[1]) < 0)
+		// 	{
+		// 		cout << "[ERROR] No keypoints with matches were found" << endl;
+		// 		return;
+		// 	}
+		// }
+		// else
+		// {
+		// 	cout << "[INFO] Detecting points with ArUco" << endl;
+		// 	if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
+		// 	{
+		// 		cout << "[ERROR] No ArUco were found." << endl;
+		// 		// ros::shutdown();
+		// 	}
+		// }
+		// // cout << "[INFO] img_points2: " << img_points2 << endl;
+		// cout << "[INFO] matching_result.p1: " << matching_results[1].p1 << endl;
+		// cout << "[INFO] matching_result.p2: " << matching_results[1].p2 << endl;
+
+		// img_old2 = actual;
+		// }
+		// else
+		// {
+		// Detecting points with ArUco markers
+		// cout << "[INFO] Detecting points with ArUco" << endl;
+		if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
 		{
-			Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-			// cout << "[INFO] Image received" << endl;
-
-			if (contIMG2++ < 3)
+			// Execute control law by GUO
+			// cout << "[INFO] Calling control law." << endl;
+			if (GUO(actual, states[1], matching_results[1]) < 0)
 			{
-				// cout << "\n[INFO] Detecting keypoints" << endl;
-
-				// if (states[1].params.camara != 1)
-				// {
-				// 	cout << "[INFO] Detecting points with ORB" << endl;
-				// 	if (Compute_descriptors(actual, img_points2, states[1], matching_results[1]) < 0)
-				// 	{
-				// 		cout << "[ERROR] No keypoints with matches were found" << endl;
-				// 		return;
-				// 	}
-				// }
-				// else
-				// {
-				// 	cout << "[INFO] Detecting points with ArUco" << endl;
-				// 	if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
-				// 	{
-				// 		cout << "[ERROR] No ArUco were found." << endl;
-				// 		// ros::shutdown();
-				// 	}
-				// }
-				// // cout << "[INFO] img_points2: " << img_points2 << endl;
-				// cout << "[INFO] matching_result.p1: " << matching_results[1].p1 << endl;
-				// cout << "[INFO] matching_result.p2: " << matching_results[1].p2 << endl;
-
-				// img_old2 = actual;
+				cout << "[ERROR] Controller failed" << endl;
+				return;
 			}
 			else
 			{
-				// Detecting points with ArUco markers
-				// cout << "[INFO] Detecting points with ArUco" << endl;
-				if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
-				{
-					// Execute control law by GUO
-					// cout << "[INFO] Calling control law." << endl;
-					if (GUO(actual, states[1], matching_results[1]) < 0)
-					{
-						cout << "[ERROR] Controller failed" << endl;
-						return;
-					}
-					else
-					{
-						// cout << "[INFO] Controller part has been executed" << endl;
-					}
-				}
-				else
-				{
-					cout << "[ERROR] No ArUco were found." << endl;
-					// ros::shutdown();
-					// states[1].Vx = 0;
-					// states[1].Vy = 0;
-					// states[1].Vz = 0;
-					// states[1].Vroll = 0;
-				}
-
-				// Mat desired_temp, new_points;
-				// if (Kanade_Lucas_Tomasi(img_old2, actual, desired_temp, img_points2, states[1], matching_results[1]) < 0)
-				// {
-				// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-				// 	return;
-				// }
-				// else
-				// {
-				// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-				// }
-
-				if (SHOW_IMAGES)
-				{
-					// namedWindow("Desired_2", WINDOW_NORMAL);
-					// cv::resizeWindow("Desired_2", 960, 540);
-					// imshow("Desired_2", desired_temp);
-
-					namedWindow("Frontal camera_2", WINDOW_NORMAL);
-					cv::resizeWindow("Frontal camera_2", 960, 540);
-					imshow("Frontal camera_2", actual);
-					waitKey(1);
-				}
+				// cout << "[INFO] Controller part has been executed" << endl;
 			}
-
-			string saveIMG;
-			if (SAVE_IMAGES)
-			{
-				saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2++) + ".jpg";
-				imwrite(workspace + saveIMG, actual);
-				// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-			}
-			else
-			{
-				saveIMG = "/src/bearings/src/data/img/2_1.jpg";
-				imwrite(workspace + saveIMG, actual);
-				// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-			}
-
-			/************************************************************* Prepare message */
-			// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
-			// image_msg->header.frame_id = "matching_image";
-			// image_msg->width = matching_results[1].img_matches.cols;
-			// image_msg->height = matching_results[1].img_matches.rows;
-			// image_msg->is_bigendian = false;
-			// image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
-			// image_msg->header.stamp = ros::Time::now();
-
-			/* cout << "[INFO] Matching published" << endl; */
 		}
-		catch (cv_bridge::Exception &e)
+		else
 		{
-			ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-						 msg->encoding.c_str());
+			cout << "[ERROR] No ArUco were found." << endl;
+			// ros::shutdown();
+			// states[1].Vx = 0;
+			// states[1].Vy = 0;
+			// states[1].Vz = 0;
+			// states[1].Vroll = 0;
 		}
+
+		// Mat desired_temp, new_points;
+		// if (Kanade_Lucas_Tomasi(img_old2, actual, desired_temp, img_points2, states[1], matching_results[1]) < 0)
+		// {
+		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
+		// 	return;
+		// }
+		// else
+		// {
+		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
+		// }
+
+		Mat desired_temp, new_points;
+		states[1].desired_configuration.img.copyTo(desired_temp);
+
+		for (int i = 0; i < matching_results[1].p1.rows; i++)
+		{
+			circle(desired_temp, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			circle(desired_temp, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+			circle(actual, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+
+			// cout << "p1: " << matching_results[1].p1.at<double>(i, 0) << " " << matching_results[1].p1.at<double>(i, 1) << endl;
+			// cout << "p2: " << matching_results[1].p2.at<double>(i, 0) << " " << matching_results[1].p2.at<double>(i, 1) << endl;
+		}
+
+		if (SHOW_IMAGES)
+		{
+			namedWindow("Desired_2", WINDOW_NORMAL);
+			cv::resizeWindow("Desired_2", 960, 540);
+			imshow("Desired_2", desired_temp);
+
+			namedWindow("Frontal camera_2", WINDOW_NORMAL);
+			cv::resizeWindow("Frontal camera_2", 960, 540);
+			imshow("Frontal camera_2", actual);
+			waitKey(1);
+		}
+
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2++) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/2_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		/************************************************************* Prepare message */
+		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
+		// image_msg->header.frame_id = "matching_image";
+		// image_msg->width = matching_results[1].img_matches.cols;
+		// image_msg->height = matching_results[1].img_matches.rows;
+		// image_msg->is_bigendian = false;
+		// image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
+		// image_msg->header.stamp = ros::Time::now();
+
+		/* cout << "[INFO] Matching published" << endl; */
+		// 	}
+		// 	catch (cv_bridge::Exception &e)
+		// 	{
+		// 		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
+		// 					 msg->encoding.c_str());
+		// 	}
+		// }
 		saveStuff(1);
 	}
 }
