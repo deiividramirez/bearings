@@ -63,7 +63,7 @@ int GUO(Mat img,                                      // Image to be processed
         }
 
         // Choosing the gain for the control law
-        double l0 = state.Kv_max, linf = state.Kv, lprima = 1;
+        double l0 = state.Kv_max, linf = state.Kv, lprima = .3;
         double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
         state.lambda_kp = lambda_temp;
 

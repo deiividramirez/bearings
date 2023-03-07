@@ -78,10 +78,10 @@ int main(int argc, char **argv)
 
 		image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
 
-		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
+		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
 
-		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
+		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
 	}
 	ros::Rate rate(30);
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 			rate.sleep();
 		}
 
-		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 1000)
+		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 4000)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
 			ros::shutdown();
@@ -436,30 +436,43 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		// else
 		// {
 		// Detecting keypoints from ArUco markers
-		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
+		if (matching_results[0].mean_feature_error > 0.3 || matching_results[1].mean_feature_error > 0.3)
 		{
-			// Executing control law by GUO
-			// cout << "[INFO] Calling control law." << endl;
-			if (GUO(actual, states[0], matching_results[0]) < 0)
+			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
 			{
-				cout << "[ERROR] Controller failed" << endl;
-				return;
+				// Executing control law by GUO
+				// cout << "[INFO] Calling control law." << endl;
+				if (GUO(actual, states[0], matching_results[0]) < 0)
+				{
+					cout << "[ERROR] Controller failed" << endl;
+					return;
+				}
+				// else
+				// {
+				// 	// cout << "[INFO] Controller part has been executed" << endl;
+				// }
 			}
 			else
 			{
-				// cout << "[INFO] Controller part has been executed" << endl;
+				cout << "[ERROR] No ArUco were found." << endl;
+				// ros::shutdown();
+				// states[0].Vx = 0;
+				// states[0].Vy = 0;
+				// states[0].Vz = 0;
+				// states[0].Vyaw = 0;
 			}
 		}
 		else
 		{
-			cout << "[ERROR] No ArUco were found." << endl;
-			// ros::shutdown();
-			// states[0].Vx = 0;
-			// states[0].Vy = 0;
-			// states[0].Vz = 0;
-			// states[0].Vyaw = 0;
+			states[0].Vx = tanh(after_t1);
+			states[0].Vy = 0;
+			states[0].Vz = 0;
+			states[0].Vyaw = 0;
+			if (after_t1 < 1)
+			{
+				after_t1 += .05;
+			}
 		}
-
 		// cout << "POSICIÓN: " << pos_dron[0] << endl;
 		// Mat desired_temp, new_points;
 		// if (Kanade_Lucas_Tomasi(img_old1, actual, desired_temp, img_points1, states[0], matching_results[0]) < 0)
@@ -483,7 +496,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 		}
 
-		if (SHOW_IMAGES)
+		if (!SHOW_IMAGES)
 		{
 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_1", 960, 540);
@@ -577,30 +590,43 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		// {
 		// Detecting points with ArUco markers
 		// cout << "[INFO] Detecting points with ArUco" << endl;
-		if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
+		if (matching_results[0].mean_feature_error > 0.3 || matching_results[1].mean_feature_error > 0.3)
 		{
-			// Execute control law by GUO
-			// cout << "[INFO] Calling control law." << endl;
-			if (GUO(actual, states[1], matching_results[1]) < 0)
+			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
 			{
-				cout << "[ERROR] Controller failed" << endl;
-				return;
+				// Execute control law by GUO
+				// cout << "[INFO] Calling control law." << endl;
+				if (GUO(actual, states[1], matching_results[1]) < 0)
+				{
+					cout << "[ERROR] Controller failed" << endl;
+					return;
+				}
+				// else
+				// {
+				// 	// cout << "[INFO] Controller part has been executed" << endl;
+				// }
 			}
 			else
 			{
-				// cout << "[INFO] Controller part has been executed" << endl;
+				cout << "[ERROR] No ArUco were found." << endl;
+				// ros::shutdown();
+				// states[1].Vx = 0;
+				// states[1].Vy = 0;
+				// states[1].Vz = 0;
+				// states[1].Vroll = 0;
 			}
 		}
 		else
 		{
-			cout << "[ERROR] No ArUco were found." << endl;
-			// ros::shutdown();
-			// states[1].Vx = 0;
-			// states[1].Vy = 0;
-			// states[1].Vz = 0;
-			// states[1].Vroll = 0;
+			states[1].Vx = tanh(after_t2);
+			states[1].Vy = 0;
+			states[1].Vz = 0;
+			states[1].Vroll = 0;
+			if (after_t2 < 1)
+			{
+				after_t2 += 0.05;
+			}
 		}
-
 		// Mat desired_temp, new_points;
 		// if (Kanade_Lucas_Tomasi(img_old2, actual, desired_temp, img_points2, states[1], matching_results[1]) < 0)
 		// {
@@ -623,7 +649,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 		}
 
-		if (SHOW_IMAGES)
+		if (!SHOW_IMAGES)
 		{
 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_2", 960, 540);

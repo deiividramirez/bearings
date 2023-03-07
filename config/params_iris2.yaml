@@ -10,8 +10,8 @@ dt: 0.01
 # Gain on linear velocities
 ############################################################
 # Para el control #1
-gainv: 1.5
-gainv_max: 6
+gainv: 1
+gainv_max: 4
 ############################################################
 # Para el control #2
 # gain_v: .4

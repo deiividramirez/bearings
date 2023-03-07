@@ -24,7 +24,7 @@ if ids is not None:
         c = corners[i][0]
         plt.plot([c[:, 0].mean()], [c[:, 1].mean()], "+", label = "id={0}".format(ids[i]))
 
-    plt.title("Aruco markers")
+    plt.title(f"Aruco markers - Drone {num}")
     plt.legend()
     plt.show()
 

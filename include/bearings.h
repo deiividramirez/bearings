@@ -152,3 +152,5 @@ vector<vector<float>> Z = {arr_z1, arr_z2, arr_z3, arr_z4};
 vector<vector<float>> integral_x = {integral_x1, integral_x2, integral_x3, integral_x4};
 vector<vector<float>> integral_y = {integral_y1, integral_y2, integral_y3, integral_y4};
 vector<vector<float>> integral_z = {integral_z1, integral_z2, integral_z3, integral_z4};
+
+double after_t1 = 0, after_t2 = 0, after_t3 = 0, after_t4 = 0;
