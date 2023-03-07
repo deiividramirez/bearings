@@ -100,7 +100,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         ax[3][dron-1].set_ylabel('Integrales')
 
     fig.tight_layout()
-    plt.savefig(f"{path}/out_velocidades_all.png",
+    fig.savefig(f"{path}/out_velocidades_all.png",
                 bbox_inches='tight', pad_inches=0.1)
 
     ax3d.title.set_text(f"Posiciones")
@@ -115,7 +115,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     ax3d.view_init(elev=30, azim=71, roll=0)
 
     fig3d.tight_layout()
-    plt.savefig(f"{path}/out_posiciones_all.png",
+    fig3d.savefig(f"{path}/out_posiciones_all.png",
                 bbox_inches='tight', pad_inches=0.1)
     plt.show()
     exit()
