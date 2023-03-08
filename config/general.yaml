@@ -1,5 +1,5 @@
 SAVE_DESIRED_IMAGES: 0
-SAVE_IMAGES: 0
+SAVE_IMAGES: 1
 SHOW_IMAGES: 0
 
 cam_drone_1: 1
@@ -8,7 +8,7 @@ cam_drone_3: 1
 cam_drone_4: 1
 
 seguimiento_1: [99]
-seguimiento_2: [98]
+seguimiento_2: [96]
 seguimiento_3: [1, 2]
 seguimiento_4: [1, 2]
 
