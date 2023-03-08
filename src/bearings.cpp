@@ -470,7 +470,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			states[0].Vyaw = 0;
 			if (after_t1 < 1)
 			{
-				after_t1 += .05;
+				after_t1 += 0.005;
 			}
 		}
 		// cout << "POSICIÓN: " << pos_dron[0] << endl;
@@ -624,7 +624,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			states[1].Vroll = 0;
 			if (after_t2 < 1)
 			{
-				after_t2 += 0.05;
+				after_t2 += 0.005;
 			}
 		}
 		// Mat desired_temp, new_points;
