@@ -468,7 +468,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			states[0].Vy = 0;
 			states[0].Vz = 0;
 			states[0].Vyaw = 0;
-			if (after_t1 < 1)
+			if (after_t1 < 2)
 			{
 				after_t1 += 0.005;
 			}
@@ -622,7 +622,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			states[1].Vy = 0;
 			states[1].Vz = 0;
 			states[1].Vroll = 0;
-			if (after_t2 < 1)
+			if (after_t2 < 2)
 			{
 				after_t2 += 0.005;
 			}
