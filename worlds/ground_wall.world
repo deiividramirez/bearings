@@ -12,7 +12,7 @@
       <uri>model://window_wall</uri>
       <pose>0 0 0 0 0 3.14159265</pose>
       <scale>.5 .5 .5</scale>
-    <name>window_wall</name>
+      <!-- <name>window_wall</name> -->
     </include>
 
     <!-- Only one ROS interface plugin is required per world, as any other plugin can connect a Gazebo

@@ -18,9 +18,10 @@
         </inertial>
         <collision name='collision'>
           <geometry>
-            <box>
-              <size>1 1 1</size>
-            </box>
+            <mesh>
+              <uri>model://window_wall/model.dae</uri>
+              <scale>0.5 0.5 0.5</scale>
+            </mesh>
           </geometry>
           <surface>
             <contact>
