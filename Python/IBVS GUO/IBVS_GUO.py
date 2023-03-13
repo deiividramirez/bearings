@@ -42,6 +42,7 @@ def main():
 
     n_points = len(xx)                       # Number of points
     w_points = np.vstack([xx, yy, zz])       # 3D points
+    w_points_old = np.vstack([xx, yy, zz])       # 3D points
     print("Number of points: ", n_points) 
 
     # =========================== TARGET CAMERA ===========================
@@ -63,8 +64,8 @@ def main():
     p_target = target_camera.projection(w_points, n_points)
 
     # =========================== ACTUAL CAMERA AND INITIAL POSITION ===========================
-    init_x = 2.0                     # Initial camera position 'x'
-    init_y = -3.0                    # Initial camera position 'y'
+    init_x = 6.0                     # Initial camera position 'x'
+    init_y = -8.0                    # Initial camera position 'y'
     init_z = 10.0                    # Initial camera position 'z'
     init_pitch = np.deg2rad(0.0)     # Degrees to radians 'x'
     init_roll = np.deg2rad(0.0)      # Degrees to radians 'y'
@@ -84,7 +85,7 @@ def main():
     # =========================== GLOBAL PARAMS FOR SIMULATION ===========================
     dt = 0.01        # Time Delta, integration step
     t0 = 0           # Start time of the simulation
-    steps = 1_500    # max iterations
+    steps = 5_000    # max iterations
 
     # =========================== CONTROL VARIABLES AND STUFF ===========================
     U = np.zeros((6, 1))                    # Control vector
@@ -102,11 +103,12 @@ def main():
     
     # Matrix to save distances between points
     distancesArray = np.zeros((6, steps))
+    # distancesArray = np.zeros((12, steps))
     
     # Identity matrix 3x3
     I = np.eye(3, 3)
 
-    lamb = 10   # Gain for the control
+    lamb = 20   # Gain for the control
     t = t0      # Actual time
 
     # =========================== AUXILIAR VARIABLES ===========================
@@ -121,8 +123,10 @@ def main():
     countIndex = 0         # Counter for the iterations
     err_pix = 10           # error in pixels
 
+    integral = np.zeros((distancesArray.shape[0], 1))
+
     # =========================== BEGIN ALGORITHM ===========================
-    while(countIndex < steps and err_pix > 1e-3):
+    while(countIndex < steps and err_pix > 1e-9):
         # while( countIndex < steps):
 
         # ===================== CALCULATE NEW TRANSLATION AND ROTATION VALUES USING EULER'S METHOD ====================
@@ -137,6 +141,11 @@ def main():
         roll += dt * U[3, 0]
         pitch += dt * U[4, 0]
         yaw += dt * U[5, 0]
+
+        # NN = np.sin(countIndex*dt)
+        NN = 1
+        fx = lambda x: np.zeros(x.shape)+NN if type(x) == np.ndarray else NN
+        w_points += dt*fx(countIndex*dt)
 
         moving_camera.set_position(x_pos, y_pos, z_pos, roll, pitch, yaw)
         p_moving = moving_camera.projection(w_points, n_points)
@@ -164,10 +173,16 @@ def main():
             the translational part of the control, so
             it is not used for rotation control
         """
-        U_temp = -Lo @ error
-        U_temp2 = np.array([[target_roll - roll], [target_pitch - pitch], [target_yaw - yaw]])
-        U = lamb * np.concatenate((U_temp, U_temp2), axis=0)
-        # U = lamb * np.concatenate((U_temp, np.zeros((3,1))), axis=0) #* np.linalg.norm(error)
+        # U_temp = -Lo @ error
+        # U_temp2 = np.array([[target_roll - roll], [target_pitch - pitch], [target_yaw - yaw]])
+
+        integral += error*dt
+
+        U = lamb * np.concatenate((
+                        -Lo @ (error + .1*integral),
+                        np.array([[target_roll - roll], [target_pitch - pitch], [target_yaw - yaw]])
+                            ), axis=0)
+        
 
         # Avoiding numerical error
         # U[np.abs(U) < 1.0e-9] = 0.0
@@ -187,7 +202,7 @@ def main():
 
     # =================================== Average feature error ======================================
 
-        ErrorArray[countIndex] = np.linalg.norm(error)
+        ErrorArray[countIndex] = np.linalg.norm(error, ord=1)
         err_pix = np.linalg.norm(error)
 
     # ==================================== Printing Dat =======================================
@@ -206,12 +221,11 @@ def main():
     print(f"Finished at: {countIndex} steps -- Error: {np.linalg.norm(error)}")
 
     # ======================================  Draw cameras ========================================
-    colores = np.random.rand(n_points, 3)
+    colores = np.random.rand(12, 3)
 
     # fig = plt.figure(figsize=(10, 10))
     fig = plt.figure()
-    fig.suptitle(
-        f'Control #{1 if CONTROL==1 else 2}: {n_points} points', fontsize=16)
+    fig.suptitle(f'Control #{1 if CONTROL==1 else 2}: {n_points} points', fontsize=16)
 
     ax = fig.add_subplot(2, 2, 1, projection='3d')
     ax = fig.gca()
@@ -226,11 +240,11 @@ def main():
     target_camera.draw_camera(ax, scale=camera_scale, color='red')
     target_camera.draw_frame(ax, scale=axis_scale, c='black')
     moving_camera.set_position(x_pos, y_pos, z_pos, roll, pitch, yaw)
-    moving_camera.draw_camera(ax, scale=camera_scale, color='black')
+    moving_camera.draw_camera(ax, scale=camera_scale, color='blue')
     moving_camera.draw_frame(ax, scale=axis_scale, c='black')
     moving_camera.set_position(
         init_x, init_y, init_z, init_roll, init_pitch, init_yaw)
-    moving_camera.draw_camera(ax, scale=camera_scale, color='blue')
+    moving_camera.draw_camera(ax, scale=camera_scale, color='black')
     moving_camera.draw_frame(ax, scale=axis_scale, c='black')
 
     ax.set_xlabel("$w_x$")
@@ -269,6 +283,8 @@ def main():
     ax.plot(tArray[0:countIndex], UArray[4, 0:countIndex], label='$\omega_y$')
     ax.plot(tArray[0:countIndex], UArray[5, 0:countIndex], label='$\omega_z$')
 
+    ax.plot(tArray[0:countIndex], fx(tArray[0:countIndex]), '--', label='$v^*$')
+
     ax.grid(True)
     ax.legend(loc="center right")
 
@@ -276,16 +292,18 @@ def main():
 
     ax = fig.add_subplot(2, 2, 4)
     ax.plot(tArray[0:countIndex], ErrorArray[0:countIndex], label='$Error$')
+    ax.plot([0, tArray[countIndex-1]], [ErrorArray[countIndex-1], ErrorArray[countIndex-1]],
+            '--', label=f'y = {ErrorArray[countIndex-1]:.5f}')
 
     ax.grid(True)
     ax.legend(loc="upper right")
 
     fig, ax = plt.subplots()
     ax.set_title("Distancias")
-    for i in range(6):
+    for i in range(distancesArray.shape[0]):
         ax.plot(distancesArray[i, 0:countIndex], label=f'p{i}', color=colores[i//2])
         ax.plot([0, countIndex], [distancias[i].dist2, distancias[i].dist2],
-                '--', color=colores[i//2], label=f'p{i}*')
+                '--', color=colores[i//2], label=f'p{i}* = {distancias[i].dist2:.5f}')
 
     ax.legend(loc="upper right")
     plt.show()

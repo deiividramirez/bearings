@@ -29,6 +29,7 @@ def distances(p1, p2, CONTROL):
     distancias, error = [], []
     for i in range(p1.shape[1]):
         for j in range(i):
+        # for j in range(p1.shape[1]):
             if i != j:
                 dist  = np.sqrt( 2 - 2 * np.dot(p2[:,i], p2[:,j]) )
                 dist2 = np.sqrt( 2 - 2 * np.dot(p1[:,i], p1[:,j]) ) 

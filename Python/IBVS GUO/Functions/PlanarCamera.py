@@ -20,8 +20,8 @@ class PlanarCamera:
 	def __init__(self):
 
 		#Image properties
-		self.height = 480
-		self.width = 640
+		self.height = 960
+		self.width = 1280
 
 		#Intrinsic camera parameters
 		self.focal = 0.002
@@ -211,6 +211,6 @@ class PlanarCamera:
 		ax.add_artist(a1)
 		ax.add_artist(a2)
 		ax.add_artist(a3)
-		ax.text(Xc1[0,0], Xc1[1,0], Xc1[2,0], (r'$X_{cam}$'))
-		ax.text(Yc1[0,0], Yc1[1,0], Yc1[2,0], (r'$Y_{cam}$'))
+		# ax.text(Xc1[0,0], Xc1[1,0], Xc1[2,0], (r'$X_{cam}$'))
+		# ax.text(Yc1[0,0], Yc1[1,0], Yc1[2,0], (r'$Y_{cam}$'))
 		ax.text(Zc1[0,0], Zc1[1,0], Zc1[2,0], (r'$Z_{cam}$'))
