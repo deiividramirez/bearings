@@ -436,7 +436,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		// else
 		// {
 		// Detecting keypoints from ArUco markers
-		if (matching_results[0].mean_feature_error > 0.3 || matching_results[1].mean_feature_error > 0.3)
+		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
 		{
 			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
 			{
@@ -590,7 +590,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		// {
 		// Detecting points with ArUco markers
 		// cout << "[INFO] Detecting points with ArUco" << endl;
-		if (matching_results[0].mean_feature_error > 0.3 || matching_results[1].mean_feature_error > 0.3)
+		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
 		{
 			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
 			{

@@ -17,7 +17,7 @@ gainv_max: 5
 # gain_v: .4
 
 # Gain on angular velocities
-gainw: 1
+gainw: .25
 gainw_max: 5
 
 # Threshold on the feature position error, used to stop the visual control

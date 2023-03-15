@@ -108,7 +108,7 @@ def main():
     # Identity matrix 3x3
     I = np.eye(3, 3)
 
-    lamb = 20   # Gain for the control
+    lamb = 10   # Gain for the control
     t = t0      # Actual time
 
     # =========================== AUXILIAR VARIABLES ===========================
@@ -138,9 +138,9 @@ def main():
         z_pos += dt * U[2, 0]
         
         # Rotation
-        roll += dt * U[3, 0]
+        roll  += dt * U[3, 0]
         pitch += dt * U[4, 0]
-        yaw += dt * U[5, 0]
+        yaw   += dt * U[5, 0]
 
         # NN = np.sin(countIndex*dt)
         NN = 1
@@ -179,9 +179,9 @@ def main():
         integral += error*dt
 
         U = lamb * np.concatenate((
-                        -Lo @ (error + .1*integral),
+                        -Lo @ (error + .05*integral),
                         np.array([[target_roll - roll], [target_pitch - pitch], [target_yaw - yaw]])
-                            ), axis=0)
+                                    ), axis=0)
         
 
         # Avoiding numerical error
@@ -203,22 +203,22 @@ def main():
     # =================================== Average feature error ======================================
 
         ErrorArray[countIndex] = np.linalg.norm(error, ord=1)
-        err_pix = np.linalg.norm(error)
+        err_pix = np.linalg.norm(error, ord=1)
 
     # ==================================== Printing Dat =======================================
         t += dt
         countIndex += 1
         if (countIndex) % 5 == 0:
             print(f"""{UP}{countIndex}/{steps} -> \tx: {x_pos:.5f}, y: {y_pos:.5f}, z: {z_pos:.5f}, roll: {roll:.5f}, pitch: {pitch:.5f}, yaw: {yaw:.5f}{CLR}
-    \tU: {np.round(U.T, 5)}, |e|: {np.linalg.norm(error):.5f}...{CLR}\n""")
+    \tU: {np.round(U.T, 5)}, |e|: {ErrorArray[countIndex-1]:.5f}...{CLR}\n""")
 
         if err_pix > 600:
             break
 
     print(f"""{UP}{countIndex}/{steps} -> \tx: {x_pos:.5f}, y: {y_pos:.5f}, z: {z_pos:.5f}, roll: {roll:.5f}, pitch: {pitch:.5f}, yaw: {yaw:.5f}{CLR}
-    \tU: {np.round(U.T, 5)}, |e|: {np.linalg.norm(error):.5f}{CLR}\n""")
+    \tU: {np.round(U.T, 5)}, |e|: {ErrorArray[countIndex-1]:.5f}{CLR}\n""")
 
-    print(f"Finished at: {countIndex} steps -- Error: {np.linalg.norm(error)}")
+    print(f"Finished at: {countIndex} steps -- Error: {ErrorArray[countIndex-1]}")
 
     # ======================================  Draw cameras ========================================
     colores = np.random.rand(12, 3)
