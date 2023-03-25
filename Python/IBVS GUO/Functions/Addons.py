@@ -9,6 +9,9 @@ class vecDist:
         self.dist = dist
         self.dist2 = dist2
 
+    def __repr__(self) -> str:
+        return f"i: {self.i} <-> j: {self.j}: d1 -> {self.dist:5f} - d2 -> {self.dist2:5f}"
+
 def toSpehere(p1, p2, camera):
     p1s  = np.zeros((3, p1.shape[1]))
     p2s  = np.zeros((3, p2.shape[1]))
