@@ -86,7 +86,7 @@ p_moving = moving_camera.projection(w_points, n_points)
 # =========================== GLOBAL PARAMS FOR SIMULATION ===========================
 dt = 0.01        # Time Delta, integration step
 t0 = 0           # Start time of the simulation
-steps = 1_000    # max iterations
+steps = 2_000    # max iterations
 
 # =========================== CONTROL VARIABLES AND STUFF ===========================
 U = np.ones((6, 1))                    # Control vector
@@ -110,7 +110,7 @@ distancesArray = np.zeros((6, steps))
 I = np.eye(3, 3)
 
 
-lamb = 3   # Gain for the control
+lamb = 6   # Gain for the control
 t = t0      # Actual time
 
 # =========================== AUXILIAR VARIABLES ===========================
@@ -125,17 +125,20 @@ p20 = []               # List to save the points
 countIndex = 0         # Counter for the iterations
 err_pix = 10           # error in pixels
 
-w = np.ones((1, 1))   # Vector to save the observer points
-vp = np.zeros((3, 1))  # Vector to save the observer velocity
-# w_array = np.zeros((3, steps))   # Matrix to save the observer points history
-vp_array = np.zeros((3, steps))  # Matrix to save the observer velocity history
+
 
 # integral = np.zeros((distancesArray.shape[0], 1))
-# integral_array = np.zeros((3, steps))
 # integral_array = np.zeros((distancesArray.shape[0], steps))     
 
-U_temp = np.zeros((6, 1))  # Vector to save the integral
-U_temp_array = np.zeros((6, steps))  # Matrix to save the integral history
+# w = np.zeros((1, 1))   # Vector to save the observer points
+# vp = np.zeros((3, 1))  # Vector to save the observer velocity
+# # w_array = np.zeros((3, steps))   # Matrix to save the observer points history
+# vp_array = np.zeros((3, steps))  # Matrix to save the observer velocity history
+# U_temp = np.zeros((6, 1))
+
+integrald = np.zeros((distancesArray.shape[0], 1))
+integrald_array = np.zeros((distancesArray.shape[0], steps))   
+
 
 # =========================== BEGIN ALGORITHM ===========================
 while(countIndex < steps and err_pix > 1e-5):
@@ -155,7 +158,7 @@ while(countIndex < steps and err_pix > 1e-5):
     yaw   += dt * U[5, 0]
 
     # NN = lambda t: np.sin(t/2)
-    NN = lambda t: .5
+    NN = lambda t: 0
     fx = lambda t: np.zeros(t.shape)+NN(t) if type(t) == np.ndarray else NN(t)
     w_points += dt*fx(countIndex*dt)
 
@@ -185,43 +188,31 @@ while(countIndex < steps and err_pix > 1e-5):
         the translational part of the control, so
         it is not used for rotation control
     """
-    # U_temp = -Lo @ error
-    # U_temp2 = np.array([[target_roll - roll], [target_pitch - pitch], [target_yaw - yaw]])
 
-    # integral += error*dt
-    # integral_array[:, countIndex] = (-Lo@integral).reshape((3,))
-    # integral_array[:, countIndex] = integral.reshape((6,))
+    # INTEGRAL
+    # integral += dt * error
+    # integral_array[:, countIndex] = integral[:,0]
 
-    # Lo_temp = np.linalg.pinv(L[0, :].reshape((1,3)))
-
-    # H = np.array([[.1]])
-    # # print(L[0,:])
-    # w += dt * (  (L[0, :] @ U_temp[0:3, 0]) + H*(-distancias[0].dist**3 - w)  )
-    # vp = Lo_temp @ (H @ (-distancias[0].dist**3 - w))
-    # # vp = L[0].reshape((3,1)) @ (H @ (-distancias[0].dist**3 - w))
+    # APROX VEL 3D
+    # H = .1*np.eye(1, 1)
+    # Lo_inv_temp = np.linalg.pinv(L[0, :].reshape((1,3)))
+    # w += dt * ( (L[0, :] @ U_temp[0:3, 0]) + H*(-distancias[0].dist**3 - w)  )
+    # vp = Lo_inv_temp @ (H @ (-distancias[0].dist**3 - w))
     # vp_array[:, countIndex] = vp[:,0] 
 
-    # print(w)
-    # print(w.shape)
-    # print(vp)
-    # print(vp.shape)
-    # print([vp[0,0]], [vp[1,0]], [vp[2,0]])
-    # print("=====================================")
-    # exit()
-
-    # INTEGRAL DEL SIGNO DEL ERROR
-    U_temp += -.05*dt*np.sign(error)
-    U_temp_array[:, countIndex] = U_temp.reshape((6,))
+    # DESLIZANTE INTEGRAL
+    # integrald += dt * error
+    # integrald_array[:, countIndex] = integrald[:,0]
 
     U = np.concatenate((
-                    # -Lo @ (lamb*error + .5*integral),
-                    # -lamb*Lo @ error,
-                    Lo @ (-lamb*np.abs(error)**(1/2)*np.sign(error) + U_temp),
+                    -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
+                    # -Lo @ (lamb*error + .5*integral),                                       # CONTROL INTEGRAL
+                    # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) ),                 # CONTROL DESLIZANTE
+                    # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .5*integrald),   # CONTROL DESLIZANTE INTEGRAL     
                     lamb*np.array([[target_roll - roll], 
                                    [target_pitch - pitch], 
-                                   [target_yaw - yaw]])), axis=0) #+\
-                    # np.array([[vp[0,0]], [vp[1,0]], [vp[2,0]], [0], [0], [0]]) #+\
-                    # np.array([[fx(countIndex*dt)], [fx(countIndex*dt)], [fx(countIndex*dt)], [0], [0], [0]])
+                                   [target_yaw - yaw]])), axis=0) #+ \
+                    # np.array([[vp[0,0]], [vp[1,0]], [vp[2,0]], [0], [0], [0]])              # CONTROL APROX VEL 3D                                                              
     
 
     # Avoiding numerical error
@@ -230,20 +221,16 @@ while(countIndex < steps and err_pix > 1e-5):
     # Copy data for plot
     UArray[:, countIndex] = U.reshape((6,))
     tArray[countIndex] = t
-    pixelCoordsArray[:, countIndex] = p_moving.reshape(
-        (2 * n_points, 1), order='F')[:, 0]
+    pixelCoordsArray[:, countIndex] = p_moving.reshape((2 * n_points, 1), order='F')[:, 0]
     positionArray[0, countIndex] = x_pos
     positionArray[1, countIndex] = y_pos
     positionArray[2, countIndex] = z_pos
     distancesArray[:, countIndex] = [i.dist for i in distancias]
-    # print([i.dist for i in distancias])
-    # print(len(distancias))
-    # exit()
 
 # =================================== Average feature error ======================================
 
     ErrorArray[countIndex] = np.linalg.norm(error, ord=1)
-    err_pix = np.linalg.norm(error, ord=1)
+    err_pix = ErrorArray[countIndex]
 
 # ==================================== Printing Dat =======================================
     t += dt
@@ -260,24 +247,25 @@ print(f"""{UP}{countIndex}/{steps} -> \tx: {x_pos:.5f}, y: {y_pos:.5f}, z: {z_po
 
 print(f"Finished at: {countIndex} steps -- Error: {ErrorArray[countIndex-1]}")
 
-fig, ax = plt.subplots(1, 1)
-ax.set_title(r'Integral $\int -k_2 sign(e) dt$')
-# ax.plot(tArray, fx(tArray), label=f'Deseada')
-for i in range(U_temp_array.shape[0]):
-    ax.plot(tArray, U_temp_array[i, :], label=f'U{i}*')
-plt.legend()
-# plt.show()
-# exit()
+
 
 
 # fig, ax = plt.subplots(1, 1)
+
 # ax.set_title('Aprox velocidad del punto 3D')
-# ax.plot(tArray, fx(tArray), label=f'Deseada')
-# for i in range(vp_array.shape[0]):
-#     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
+# # ax.set_title('Integral de error')
+
+# ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
+# # for i in range(integral_array.shape[0]):
+# #     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
+# # for i in range(vp_array.shape[0]):
+# #     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
+# for i in range(integrald_array.shape[0]):
+#     ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
+
 # plt.legend()
-# # plt.show()
-# # exit()
+
+
 
 # ======================================  Draw cameras ========================================
 colores = np.random.rand(12, 3)
@@ -345,7 +333,7 @@ ax.plot(tArray[0:countIndex], UArray[5, 0:countIndex], label='$\omega_z$')
 ax.plot(tArray[0:countIndex], fx(tArray[0:countIndex]), '--', label='$v^*$')
 
 ax.grid(True)
-ax.legend(loc="center right")
+ax.legend(loc="upper right")
 
 # ======================================  Plot the pixels position ===================================
 

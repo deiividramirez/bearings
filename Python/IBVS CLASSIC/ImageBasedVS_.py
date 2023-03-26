@@ -179,11 +179,11 @@ for j in range(0, steps):
     # integrald_array[:, j] = integrald[:,0]
 
     # (7) Define the control law (U=-gain*pseudoinv(Lo)*e)
-    # U = -Gain @ Lo_inv @ e                                                  # CONTROL ORIGINAL
-    # U = -Lo_inv @ (5*e + 1*integral)                                        # CONTROL INTEGRAL
-    # U = -Gain @ Lo_inv @ e + np.concatenate((vp, np.zeros((3,1))), axis=0)  # CONTROL APROX VEL 3D
+    U = -Gain @ Lo_inv @ e                                                   # CONTROL ORIGINAL
+    # U = -Lo_inv @ (5*e + 1*integral)                                         # CONTROL INTEGRAL
+    # U = -Gain @ Lo_inv @ e + np.concatenate((vp, np.zeros((3,1))), axis=0)   # CONTROL APROX VEL 3D
     # U_temp = -Gain @ Lo_inv @ e
-    # U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e))                # CONTROL DESLIZANTE
+    # U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e))                 # CONTROL DESLIZANTE
     # U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e) - .5*integrald)  # CONTROL DESLIZANTE INTEGRAL
     # U_temp = U
 
@@ -202,8 +202,6 @@ for j in range(0, steps):
 
 #  ========= Average feature error =====================
     pixel_error = p2-p1
-    # averageErrorArray[j] = np.mean(np.linalg.norm(
-    #     pixel_error.reshape((2*nPoints, 1), order='F')))
     averageErrorArray[j] = np.linalg.norm(pixel_error)
 
     t += dt
@@ -229,10 +227,10 @@ print(f"Finished at: {j} steps -- Error: {averageErrorArray[j-1]}")
 # ax.set_title('Integral de error')
 
 # ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
-# # for i in range(vp_array.shape[0]):
-# #     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
-# # for i in range(integral_array.shape[0]):
-# #     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
+# for i in range(vp_array.shape[0]):
+#     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
+# for i in range(integral_array.shape[0]):
+#     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
 # for i in range(integrald_array.shape[0]):
 #     ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
 
