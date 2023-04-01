@@ -142,6 +142,8 @@ integrald_array = np.zeros((distancesArray.shape[0], steps))
 
 # =========================== BEGIN ALGORITHM ===========================
 while(countIndex < steps and err_pix > 1e-5):
+    if countIndex % 1000 == 0:
+        integrald = np.zeros((distancesArray.shape[0], 1))
     # while( countIndex < steps):
 
     # ===================== CALCULATE NEW TRANSLATION AND ROTATION VALUES USING EULER'S METHOD ====================
@@ -157,8 +159,8 @@ while(countIndex < steps and err_pix > 1e-5):
     pitch += dt * U[4, 0]
     yaw   += dt * U[5, 0]
 
-    # NN = lambda t: np.sin(t/2)
-    NN = lambda t: 0
+    NN = lambda t: np.sin(t/2)
+    # NN = lambda t: 1
     fx = lambda t: np.zeros(t.shape)+NN(t) if type(t) == np.ndarray else NN(t)
     w_points += dt*fx(countIndex*dt)
 
@@ -201,19 +203,20 @@ while(countIndex < steps and err_pix > 1e-5):
     # vp_array[:, countIndex] = vp[:,0] 
 
     # DESLIZANTE INTEGRAL
-    # integrald += dt * error
-    # integrald_array[:, countIndex] = integrald[:,0]
+    integrald += dt * np.sign(error)
+    integrald_array[:, countIndex] = integrald[:,0]
 
     U = np.concatenate((
-                    -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
+                    # -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
                     # -Lo @ (lamb*error + .5*integral),                                       # CONTROL INTEGRAL
                     # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) ),                 # CONTROL DESLIZANTE
-                    # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .5*integrald),   # CONTROL DESLIZANTE INTEGRAL     
+                    Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .005*integrald),   # CONTROL DESLIZANTE INTEGRAL     
                     lamb*np.array([[target_roll - roll], 
                                    [target_pitch - pitch], 
-                                   [target_yaw - yaw]])), axis=0) #+ \
+                                   [target_yaw - yaw]])
+                    ), axis=0) #+ \
                     # np.array([[vp[0,0]], [vp[1,0]], [vp[2,0]], [0], [0], [0]])              # CONTROL APROX VEL 3D                                                              
-    
+
 
     # Avoiding numerical error
     U[np.abs(U) < 1.0e-9] = 0.0
@@ -239,8 +242,8 @@ while(countIndex < steps and err_pix > 1e-5):
         print(f"""{UP}{countIndex}/{steps} -> \tx: {x_pos:.5f}, y: {y_pos:.5f}, z: {z_pos:.5f}, roll: {roll:.5f}, pitch: {pitch:.5f}, yaw: {yaw:.5f}{CLR}
 \tU: {U.T}, |e|: {ErrorArray[countIndex-1]:.5f}...{CLR}\n""")
 
-    if err_pix > 600:
-        break
+    # if err_pix > 600:
+    #     break
 
 print(f"""{UP}{countIndex}/{steps} -> \tx: {x_pos:.5f}, y: {y_pos:.5f}, z: {z_pos:.5f}, roll: {roll:.5f}, pitch: {pitch:.5f}, yaw: {yaw:.5f}{CLR}
 \tU: {np.round(U.T, 5)}, |e|: {ErrorArray[countIndex-1]:.5f}{CLR}\n""")
@@ -250,20 +253,20 @@ print(f"Finished at: {countIndex} steps -- Error: {ErrorArray[countIndex-1]}")
 
 
 
-# fig, ax = plt.subplots(1, 1)
+fig, ax = plt.subplots(1, 1)
 
 # ax.set_title('Aprox velocidad del punto 3D')
-# # ax.set_title('Integral de error')
+ax.set_title('Integral de error')
 
-# ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
-# # for i in range(integral_array.shape[0]):
-# #     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
-# # for i in range(vp_array.shape[0]):
-# #     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
-# for i in range(integrald_array.shape[0]):
-#     ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
+ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
+# for i in range(integral_array.shape[0]):
+#     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
+# for i in range(vp_array.shape[0]):
+#     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
+for i in range(integrald_array.shape[0]):
+    ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
 
-# plt.legend()
+plt.legend()
 
 
 

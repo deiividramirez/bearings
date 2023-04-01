@@ -5,6 +5,7 @@ import numpy as np
 from CameraModels.PlanarCamera import PlanarCamera
 from Utils.ImageJacobian import ImageJacobian
 
+
 # Se crean los puntos en 3D
 nPoints = 8
 xx = np.array([-0.5, -0.5,  0.5,  0.5,  0,  0, -1, 1])
@@ -119,8 +120,8 @@ p20 = []
 # vp_array = np.zeros((3, steps))  # Matrix to save the observer velocity history
 # U_temp = np.zeros((6, 1))
 
-# integrald = np.zeros((16, 1))
-# integrald_array = np.zeros((16, steps))     
+integrald = np.zeros((16, 1))
+integrald_array = np.zeros((16, steps))     
 
 UP = "\x1B[3A"
 CLR = "\x1B[0K"
@@ -140,8 +141,8 @@ for j in range(0, steps):
 
     camera2.set_position(x_pos, y_pos, z_pos, roll, pitch, yaw)
 
-    # NN = lambda t: np.sin(t/2)
-    NN = lambda t: 0
+    # NN = lambda t: 1
+    NN = lambda t: np.sin(t/2)
     fx = lambda t: np.zeros(t.shape)+NN(t) if type(t) == np.ndarray else NN(t)
     w_points += dt*fx(j*dt)
 
@@ -175,20 +176,22 @@ for j in range(0, steps):
     # vp_array[:, j] = vp[:,0] 
 
     # DESLIZANTE INTEGRAL
-    # integrald += dt * e
-    # integrald_array[:, j] = integrald[:,0]
+    if j % 1000 == 0:
+        integrald = np.zeros((16, 1))
+    integrald += dt * np.sign(e)
+    integrald_array[:, j] = integrald[:,0]
 
     # (7) Define the control law (U=-gain*pseudoinv(Lo)*e)
-    U = -Gain @ Lo_inv @ e                                                   # CONTROL ORIGINAL
+    # U = -Gain @ Lo_inv @ e                                                   # CONTROL ORIGINAL
     # U = -Lo_inv @ (5*e + 1*integral)                                         # CONTROL INTEGRAL
     # U = -Gain @ Lo_inv @ e + np.concatenate((vp, np.zeros((3,1))), axis=0)   # CONTROL APROX VEL 3D
     # U_temp = -Gain @ Lo_inv @ e
     # U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e))                 # CONTROL DESLIZANTE
-    # U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e) - .5*integrald)  # CONTROL DESLIZANTE INTEGRAL
+    U = Lo_inv @ (-lambda_value*np.abs(e)**(1/2)*np.sign(e) - .1*integrald)  # CONTROL DESLIZANTE INTEGRAL
     # U_temp = U
 
     # Avoiding numerical error
-    U[np.abs(U) < 1.0e-9] = 0.0
+    # U[np.abs(U) < 1.0e-9] = 0.0
 
     # Copy data for plot
     UArray[:, j] = U[:, 0]
@@ -221,20 +224,20 @@ print(f"Finished at: {j} steps -- Error: {averageErrorArray[j-1]}")
 
 
 
-# fig, ax = plt.subplots(1, 1)
+fig, ax = plt.subplots(1, 1)
 
-# # ax.set_title('Aprox velocidad del punto 3D')
-# ax.set_title('Integral de error')
+# ax.set_title('Aprox velocidad del punto 3D')
+ax.set_title('Integral de error')
 
-# ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
+ax.plot(tArray, fx(tArray), "--", label=f'Deseada')
 # for i in range(vp_array.shape[0]):
 #     ax.plot(tArray, vp_array[i, :], label=f'vp{i}*')
 # for i in range(integral_array.shape[0]):
 #     ax.plot(tArray, integral_array[i, :], label=f'integral{i}')
-# for i in range(integrald_array.shape[0]):
-#     ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
+for i in range(integrald_array.shape[0]):
+    ax.plot(tArray, integrald_array[i, :], label=f'integral{i}')
 
-# plt.legend()
+plt.legend()
 
 
 # ======================================  Draw cameras ========================================
@@ -246,7 +249,7 @@ fig = plt.figure()
 fig.suptitle('World setting')
 
 ax = fig.add_subplot(2, 2, 1, projection='3d')
-ax = fig.gca(projection='3d')
+# ax = fig.add_subplot(projection='3d')
 ax.plot(xx, yy, zz, 'o')
 
 ax.plot(positionArray[0, :], positionArray[1, :],
@@ -316,6 +319,6 @@ ax.plot(tArray, averageErrorArray, label='Average error')
 # ax.grid(True)
 ax.legend(loc="right")
 
-if saveFIG:
-    plt.savefig(saveIMG, bbox_inches='tight', pad_inches=0.0, transparent=True)
+# if saveFIG:
+#     plt.savefig(saveIMG, bbox_inches='tight', pad_inches=0.0, transparent=True)
 plt.show()

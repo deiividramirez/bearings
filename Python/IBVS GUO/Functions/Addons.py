@@ -57,8 +57,8 @@ def Lvl(p23D, p2s, distancias, CONTROL):
     for i in range(n):
         s = -distancias[i].dist**3 if CONTROL == 1 else 1/distancias[i].dist
         
-        temp = s * ( (p2s[:, distancias[i].i].reshape(1,3)) @ ortoProj(p2s[:, distancias[i].j].reshape(3,1)) + 
-                     (p2s[:, distancias[i].j].reshape(1,3)) @ ortoProj(p2s[:, distancias[i].i].reshape(3,1)) )
+        temp = s * ( (p2s[:, distancias[i].i].reshape(1,3)) @ ortoProj(p2s[:, distancias[i].j].reshape(3,1))/2 + 
+                     (p2s[:, distancias[i].j].reshape(1,3)) @ ortoProj(p2s[:, distancias[i].i].reshape(3,1))/2 )
         
         L[i, :] = temp
     return L
