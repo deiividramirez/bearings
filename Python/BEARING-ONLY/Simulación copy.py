@@ -159,7 +159,7 @@ t = np.linspace(0, tmax, 5*lider_iz_ac.shape[0])
 
 # Ganancias del controlador
 Kp = 5
-Kv = .8
+Kv = .1
 
 # Simulación con Euler
 vnew = np.zeros((n, d))
@@ -191,9 +191,11 @@ for num, tt in enumerate(t):
 
                 # print(f"Error {i},{j}: {errorc}, {normalize(x[j]-x[i])}, {gijA[i, j, :]}")
 
-            temp[i, :] = (tempv[-1][i, :] + dt * suma1)
+            temp[i, :] = (tempv[-1][i, :] + dt * np.sign(suma2))
+
+            vB[i, :] = Kp*np.abs(suma2)**(1/2)*np.sign(suma2) + Kv*temp[i, :]
             # vB[i, :] = Kp*(suma1 + suma2) + Kv*temp[i, :]
-            vB[i, :] = Kp*(suma1 + suma2) + 1 * deriv + Kv*temp[i, :]
+            # vB[i, :] = Kp*(suma1 + suma2) + 1 * deriv + Kv*temp[i, :]
             # vB[i, :] = Kp * suma 
         else:
             if i == P2:
@@ -211,7 +213,8 @@ for num, tt in enumerate(t):
             v[i, :] = vB[i, :]
             vnew[i, :] = vB[i, :]
         else:
-            v[i, :] = .5
+            v[i, :] = np.sin(tt/2)
+            vnew[i, :] = np.sin(tt/2)
     x = x + dt * v
 
     arrx.append(x)
