@@ -190,7 +190,8 @@ for num, tt in enumerate(t):
                     error[i] += np.linalg.norm(normalize(x[j] - x[i]) - gijA[i, j, :])
 
                 # print(f"Error {i},{j}: {errorc}, {normalize(x[j]-x[i])}, {gijA[i, j, :]}")
-
+            print(suma2.shape)
+            exit()
             temp[i, :] = (tempv[-1][i, :] + dt * np.sign(suma2))
 
             vB[i, :] = Kp*np.abs(suma2)**(1/2)*np.sign(suma2) + Kv*temp[i, :]
