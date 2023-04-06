@@ -159,7 +159,7 @@ t = np.linspace(0, tmax, 5*lider_iz_ac.shape[0])
 
 # Ganancias del controlador
 Kp = 5
-Kv = .1
+Kv = .2
 
 # Simulación con Euler
 vnew = np.zeros((n, d))
@@ -190,21 +190,21 @@ for num, tt in enumerate(t):
                     error[i] += np.linalg.norm(normalize(x[j] - x[i]) - gijA[i, j, :])
 
                 # print(f"Error {i},{j}: {errorc}, {normalize(x[j]-x[i])}, {gijA[i, j, :]}")
-            print(suma2.shape)
-            exit()
+
+
             temp[i, :] = (tempv[-1][i, :] + dt * np.sign(suma2))
 
             vB[i, :] = Kp*np.abs(suma2)**(1/2)*np.sign(suma2) + Kv*temp[i, :]
             # vB[i, :] = Kp*(suma1 + suma2) + Kv*temp[i, :]
             # vB[i, :] = Kp*(suma1 + suma2) + 1 * deriv + Kv*temp[i, :]
             # vB[i, :] = Kp * suma 
-        else:
-            if i == P2:
-                # vnew[i, :] = lider_iz_ac[num]
-                vnew[i, :] = 0
-            else:
-                # vnew[i, :] = lider_de_ac[num]
-                vnew[i, :] = 0
+        # else:
+        #     if i == P2:
+        #         # vnew[i, :] = lider_iz_ac[num]
+        #         vnew[i, :] = 0
+        #     else:
+        #         # vnew[i, :] = lider_de_ac[num]
+        #         vnew[i, :] = 0
 
     tempv.append(temp)
 
@@ -214,8 +214,8 @@ for num, tt in enumerate(t):
             v[i, :] = vB[i, :]
             vnew[i, :] = vB[i, :]
         else:
-            v[i, :] = np.sin(tt/2)
-            vnew[i, :] = np.sin(tt/2)
+            v[i, :] = np.sin(tt/3)
+            vnew[i, :] = np.sin(tt/3)
     x = x + dt * v
 
     arrx.append(x)
@@ -329,7 +329,7 @@ def animate(num: int):
     # Configuración del plot
     ax.cla()
     num = 10*num % len(t)
-    ax.set_title(f"Tiempo: {t[num]:.2f}s. Error total: {np.sum(errorv[num]):.3f}m")
+    ax.set_title(f"Tiempo: {t[num]:.2f}s. Error total: {np.sum(errorv[num]):.5f}m")
     ax.set_xlim3d(np.min(arrx[num, :, 0])-1, np.max(arrx[num, :, 0])+1)
     ax.set_ylim3d(np.min(arrx[num, :, 1])-1, np.max(arrx[num, :, 1])+1)
     ax.set_zlim3d(np.min(arrx[num, :, 2])-1, np.max(arrx[num, :, 2])+1)
