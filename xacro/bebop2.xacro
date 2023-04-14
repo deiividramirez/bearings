@@ -5,7 +5,7 @@
   <xacro:property name="namespace" value="$(arg namespace)" />
   <xacro:property name="rotor_velocity_slowdown_sim" value="10" />
   <xacro:property name="use_mesh_file" value="true" />
-  <xacro:property name="mesh_file" value="package://rotors_description/meshes/bebop2.dae" />
+  <xacro:property name="mesh_file" value="package://bearings/meshes/bebop2.dae" />
   <xacro:property name="mass" value="0.503" /> <!-- [kg] -->
   <xacro:property name="body_width" value="0.316618" /> <!-- [m] -->
   <xacro:property name="body_height" value="0.089582" /> <!-- [m] -->
@@ -67,7 +67,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://rotors_description/meshes/propeller_fr.dae">
+    mesh="package://bearings/meshes/propeller_fr.dae">
     <origin xyz="0.08456 -0.11435 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>
@@ -89,7 +89,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://rotors_description/meshes/propeller_rl.dae">
+    mesh="package://bearings/meshes/propeller_rl.dae">
     <origin xyz="-0.09035 0.11452 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>
@@ -110,7 +110,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://rotors_description/meshes/propeller_fl.dae">
+    mesh="package://bearings/meshes/propeller_fl.dae">
     <origin xyz="0.08456 0.11463 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>
@@ -131,7 +131,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://rotors_description/meshes/propeller_rr.dae">
+    mesh="package://bearings/meshes/propeller_rr.dae">
     <origin xyz="-0.09035 -0.11423 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>

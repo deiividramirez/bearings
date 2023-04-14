@@ -3,7 +3,7 @@
 <robot name="ardrone" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find rotors_description)/urdf/component_snippets.xacro" />
   <!-- Instantiate ardrone "mechanics" -->
-  <xacro:include filename="$(find rotors_description)/urdf/bebop2.xacro" />
+  <xacro:include filename="$(find bearings)/xacro/bebop2.xacro" />
 
   <!-- Instantiate a controller. -->
   <xacro:controller_plugin_macro namespace="${namespace}" imu_sub_topic="imu" />
@@ -30,4 +30,3 @@
   </xacro:if>
 
 </robot>
-
