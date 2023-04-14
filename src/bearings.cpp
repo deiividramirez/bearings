@@ -447,6 +447,13 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 					cout << "[ERROR] Controller failed" << endl;
 					return;
 				}
+
+				if (contIMG1 % 500 == 0)
+				{
+					states[0].integral_error = Mat::zeros(3, 1, CV_64F);
+					states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
+					states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
+				}
 				// else
 				// {
 				// 	// cout << "[INFO] Controller part has been executed" << endl;
@@ -509,7 +516,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		string saveIMG;
 		if (SAVE_IMAGES)
 		{
-			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1++) + ".jpg";
+			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
@@ -519,6 +526,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			imwrite(workspace + saveIMG, actual);
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
+		contIMG1++;
 
 		/************************************************************* Prepare message */
 		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
@@ -601,6 +609,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 					cout << "[ERROR] Controller failed" << endl;
 					return;
 				}
+
+				if (contIMG2 % 500 == 0)
+				{
+					states[1].integral_error = Mat::zeros(3, 1, CV_64F);
+					states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
+					states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
+				}
 				// else
 				// {
 				// 	// cout << "[INFO] Controller part has been executed" << endl;
@@ -660,7 +675,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		string saveIMG;
 		if (SAVE_IMAGES)
 		{
-			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2++) + ".jpg";
+			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
@@ -670,6 +685,8 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			imwrite(workspace + saveIMG, actual);
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
+
+		contIMG2++;
 
 		/************************************************************* Prepare message */
 		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
@@ -899,9 +916,18 @@ void saveStuff(int i)
 		lambda_kv[i].push_back(states[i].lambda_kv);
 		lambda_kd[i].push_back(states[i].lambda_kd);
 
-		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
-		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
-		integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
+		if (i == 0 || i == 1)
+		{
+			integral_x[i].push_back(states[i].integral_error6.at<double>(0, 0));
+			integral_y[i].push_back(states[i].integral_error6.at<double>(1, 0));
+			integral_z[i].push_back(states[i].integral_error6.at<double>(2, 0));
+		}
+		else
+		{
+			integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
+			integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
+			integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
+		}
 
 		X[i].push_back(pos_dron[i].pose.position.x);
 		Y[i].push_back(pos_dron[i].pose.position.y);

@@ -192,9 +192,9 @@ for num, tt in enumerate(t):
                 # print(f"Error {i},{j}: {errorc}, {normalize(x[j]-x[i])}, {gijA[i, j, :]}")
 
 
-            temp[i, :] = (tempv[-1][i, :] + dt * np.sign(suma2))
+            temp[i, :] = (tempv[-1][i, :] + dt * np.sign(suma1+suma2))
 
-            vB[i, :] = Kp*np.abs(suma2)**(1/2)*np.sign(suma2) + Kv*temp[i, :]
+            vB[i, :] = Kp*np.abs(suma1+suma2)**(1/2)*np.sign(suma1+suma2) + Kv*temp[i, :]
             # vB[i, :] = Kp*(suma1 + suma2) + Kv*temp[i, :]
             # vB[i, :] = Kp*(suma1 + suma2) + 1 * deriv + Kv*temp[i, :]
             # vB[i, :] = Kp * suma 
