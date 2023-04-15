@@ -43,6 +43,8 @@ int main(int argc, char **argv)
 	gen.getParam("bearing_3", bearingsXML[2]);
 	gen.getParam("bearing_4", bearingsXML[3]);
 
+	gen.getParam("DRONE", DRONE_NAME);
+
 	for (int i = 0; i < bearings.size(); i++)
 	{
 		bearings[i] = convertBearing(bearingsXML[i], segmentsXML[i]);
@@ -59,30 +61,30 @@ int main(int argc, char **argv)
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
 	{
-		image_sub_1f = it1.subscribe("/iris_1/camera_front_camera/image_raw", 1, saveDesired1f);
-		// image_sub_1b = it1.subscribe("/iris_1/camera_under_camera/image_raw", 1, saveDesired1b);
+		image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, saveDesired1f);
+		// image_sub_1b = it1.subscribe("/" +DRONE_NAME + "_1/camera_under_camera/image_raw", 1, saveDesired1b);
 
-		image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, saveDesired2f);
-		// image_sub_2b = it2.subscribe("/iris_2/camera_under_camera/image_raw", 1, saveDesired2b);
+		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, saveDesired2f);
+		// image_sub_2b = it2.subscribe("/" +DRONE_NAME + "_2/camera_under_camera/image_raw", 1, saveDesired2b);
 
-		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, saveDesired3f);
-		// image_sub_3b = it3.subscribe("/iris_3/camera_under_camera/image_raw", 1, saveDesired3b);
+		image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, saveDesired3f);
+		// image_sub_3b = it3.subscribe("/" +DRONE_NAME + "_3/camera_under_camera/image_raw", 1, saveDesired3b);
 
-		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, saveDesired4f);
-		// image_sub_4b = it4.subscribe("/iris_4/camera_under_camera/image_raw", 1, saveDesired4b);
+		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, saveDesired4f);
+		// image_sub_4b = it4.subscribe("/" +DRONE_NAME + "_4/camera_under_camera/image_raw", 1, saveDesired4b);
 	}
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		image_sub_1f = it1.subscribe("/iris_1/camera_front_camera/image_raw", 1, imageCallback);
+		image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
 
-		image_sub_2f = it2.subscribe("/iris_2/camera_front_camera/image_raw", 1, imageCallback2);
+		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, IMGCallback3);
-		// image_sub_3f = it3.subscribe("/iris_3/camera_front_camera/image_raw", 1, imageCallback3);
+		image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
 
-		image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, IMGCallback4);
-		// image_sub_4f = it4.subscribe("/iris_4/camera_front_camera/image_raw", 1, imageCallback4);
+		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
 	}
 	ros::Rate rate(30);
 
@@ -135,10 +137,13 @@ int main(int argc, char **argv)
 		// FOR TO SUSCRIBE, PUBLISH AND ADVERTISE
 		for (int i = 0; i < states.size(); i++)
 		{
-			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/iris_" + to_string(i + 1) + "/command/trajectory", 1);
-			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/iris_" + to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
-			imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/iris_" + to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
-			cout << "[INFO] Suscribed and advertised for Iris " << i + 1 << " trajectory and pose." << endl;
+			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/command/trajectory", 1);
+			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
+			imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
+			cout << "[INFO] Suscribed and advertised for /"+DRONE_NAME+"_" << i + 1 << " trajectory and pose." << endl;
+			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/command/trajectory" << endl;
+			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose" << endl;
+			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/imu" << endl;
 		}
 	}
 

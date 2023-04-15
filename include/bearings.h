@@ -97,6 +97,7 @@ int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0, SAVE_IM
 XmlRpc::XmlRpcValue seg1, seg2, seg3, seg4;
 XmlRpc::XmlRpcValue bearing1, bearing2, bearing3, bearing4;
 Mat bearing1_points, bearing2_points, bearing3_points, bearing4_points;
+string DRONE_NAME;
 
 // For controlling target detection
 bool target1, target2, target3, target4;
