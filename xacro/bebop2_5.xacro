@@ -5,7 +5,7 @@
   <xacro:property name="namespace" value="$(arg namespace)" />
   <xacro:property name="rotor_velocity_slowdown_sim" value="10" />
   <xacro:property name="use_mesh_file" value="true" />
-  <xacro:property name="mesh_file" value="package://bearings/meshes/bebop2_1.dae" />
+  <xacro:property name="mesh_file" value="package://bearings/meshes/bebop2_5.dae" />
   <xacro:property name="mass" value="0.503" /> <!-- [kg] -->
   <xacro:property name="body_width" value="0.316618" /> <!-- [m] -->
   <xacro:property name="body_height" value="0.089582" /> <!-- [m] -->
@@ -150,10 +150,13 @@
       max_distance="50"
       noise_mean="0.0"
       noise_stddev="0.007"
-      enable_visual="true">
+      enable_visual="true"
+      focal_length = "375">
       <box size="0.001 0.001 0.001" />
       <origin xyz="0.1 0 0" rpy="0 0 0" />
   </xacro:camera_macro>
+ 
+  <!-- focal_lengtth = image_width / (2*tan(hfov_radian / 2)> -->
 
   <!-- <xacro:include filename="$(find bearings)/description/camera_bebop2.xacro"/>
   <xacro:camera_base namespace="${namespace}" ></xacro:camera_base> -->

@@ -12,7 +12,7 @@
     <link name="camera_link">
       <visual>
         <geometry>
-          <box size="0.010 0.03 0.03"/>
+          <box size="0.001 0.001 0.001"/>
         </geometry>
         <material name="Red"/>
       </visual>
@@ -65,7 +65,7 @@
         </camera>
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
           <frame_name>camera_link_optical</frame_name>
-          <cameraName>camera_front_camera</cameraName>
+          <cameraName>camera_base</cameraName>
         </plugin>
       </sensor>
     </gazebo>

@@ -1,6 +1,6 @@
 DRONE: bebop2
 # DRONE: iris
-DRONE_COUNT: 4  # MAX 5
+DRONE_COUNT: 5  # 4 drones or 5 drones
 
 SAVE_DESIRED_IMAGES: 1
 SAVE_IMAGES: 0
@@ -10,6 +10,7 @@ cam_drone_1: 1
 cam_drone_2: 1
 cam_drone_3: 1
 cam_drone_4: 1
+cam_drone_5: 1
 
 seguimiento_1: [99]
 seguimiento_2: [98]
