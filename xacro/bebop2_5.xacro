@@ -150,14 +150,11 @@
       max_distance="50"
       noise_mean="0.0"
       noise_stddev="0.007"
-      enable_visual="true"
-      focal_length = "375">
+      enable_visual="true">
       <box size="0.001 0.001 0.001" />
       <origin xyz="0.1 0 0" rpy="0 0 0" />
   </xacro:camera_macro>
  
-  <!-- focal_lengtth = image_width / (2*tan(hfov_radian / 2)> -->
-
   <!-- <xacro:include filename="$(find bearings)/description/camera_bebop2.xacro"/>
   <xacro:camera_base namespace="${namespace}" ></xacro:camera_base> -->
 
