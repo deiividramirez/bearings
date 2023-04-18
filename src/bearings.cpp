@@ -9,19 +9,21 @@ int main(int argc, char **argv)
 {
 	/****************** ROS INITIALIZING ******************/
 	ros::init(argc, argv, "bearings");
-	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), gen("general");
-	vector<ros::NodeHandle> nhs = {nh, nh2, nh3, nh4};
-	for (int i = 0; i < 4; i++)
+	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns4"), gen("general");
+	vector<ros::NodeHandle> nhs = {nh, nh2, nh3, nh4, nh5};
+	for (int i = 0; i < DRONE_COUNT; i++)
 		states[i].load(nhs[i]);
 
 	image_transport::ImageTransport it1(nh);
 	image_transport::ImageTransport it2(nh2);
 	image_transport::ImageTransport it3(nh3);
 	image_transport::ImageTransport it4(nh4);
+	image_transport::ImageTransport it5(nh5);
 	image_transport::Subscriber image_sub_1f, image_sub_1b,
 		 image_sub_2f, image_sub_2b,
 		 image_sub_3f, image_sub_3b,
-		 image_sub_4f, image_sub_4b;
+		 image_sub_4f, image_sub_4b,
+		 image_sub_5f, image_sub_5b;
 
 	/****************** CREATING PUBLISHER AND SUBSCRIBER ******************/
 
@@ -32,31 +34,37 @@ int main(int argc, char **argv)
 	gen.getParam("seguimiento_2", seg2);
 	gen.getParam("seguimiento_3", seg3);
 	gen.getParam("seguimiento_4", seg4);
+	gen.getParam("seguimiento_5", seg5);
 
 	gen.getParam("seguimiento_1", segmentsXML[0]);
 	gen.getParam("seguimiento_2", segmentsXML[1]);
 	gen.getParam("seguimiento_3", segmentsXML[2]);
 	gen.getParam("seguimiento_4", segmentsXML[3]);
+	gen.getParam("seguimiento_5", segmentsXML[4]);
 
 	gen.getParam("bearing_1", bearingsXML[0]);
 	gen.getParam("bearing_2", bearingsXML[1]);
 	gen.getParam("bearing_3", bearingsXML[2]);
 	gen.getParam("bearing_4", bearingsXML[3]);
+	gen.getParam("bearing_5", bearingsXML[4]);
 
 	gen.getParam("DRONE", DRONE_NAME);
+	gen.getParam("DRONE_COUNT", DRONE_COUNT);
 
 	for (int i = 0; i < bearings.size(); i++)
 	{
 		bearings[i] = convertBearing(bearingsXML[i], segmentsXML[i]);
 	}
 
+	cout << "[INFO] DRONE: " << DRONE_NAME << endl;
+	cout << "[INFO] DRONE_COUNT: " << DRONE_COUNT << endl;
 	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
-	cout << "[INFO] seguimiento_1: " << seg1 << endl;
-	cout << "[INFO] seguimiento_2: " << seg2 << endl;
-	cout << "[INFO] seguimiento_3: " << seg3 << endl;
-	cout << "[INFO] seguimiento_4: " << seg4 << endl;
+	// cout << "[INFO] seguimiento_1: " << seg1 << endl;
+	// cout << "[INFO] seguimiento_2: " << seg2 << endl;
+	// cout << "[INFO] seguimiento_3: " << seg3 << endl;
+	// cout << "[INFO] seguimiento_4: " << seg4 << endl;
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
@@ -72,6 +80,12 @@ int main(int argc, char **argv)
 
 		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, saveDesired4f);
 		// image_sub_4b = it4.subscribe("/" +DRONE_NAME + "_4/camera_under_camera/image_raw", 1, saveDesired4b);
+
+		if (DRONE_COUNT == 5)
+		{
+			image_sub_5f = it5.subscribe("/" +DRONE_NAME + "_5/camera_base/image_raw", 1, saveDesired5f);
+			// image_sub_5b = it5.subscribe("/" +DRONE_NAME + "_5/camera_under_camera/image_raw", 1, saveDesired5b);
+		}
 	}
 	else
 	{
@@ -85,8 +99,23 @@ int main(int argc, char **argv)
 
 		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
+
+		if (DRONE_COUNT == 5)
+		{
+			image_sub_5f = it5.subscribe("/" +DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+		}
 	}
 	ros::Rate rate(30);
+
+	// if (DRONE_COUNT == 5)
+	// {
+		
+	// }
+	// if (DRONE_COUNT == 4)
+	// {
+	// 	// cut states size to 4
+	// 	states.resize(4);
+	// }
 
 	/****************** OPENING DESIRED IMAGES ******************/
 	if (!SAVE_DESIRED_IMAGES)
@@ -94,7 +123,7 @@ int main(int argc, char **argv)
 		string image_dir = workspace;
 		image_dir += "/src/bearings/src/desired_";
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < DRONE_COUNT; i++)
 		{
 			states[i].desired_configuration.img = imread(image_dir + to_string(i + 1) + "f.jpg", IMREAD_COLOR);
 			if (states[i].desired_configuration.img.empty())
@@ -135,7 +164,7 @@ int main(int argc, char **argv)
 		// }
 
 		// FOR TO SUSCRIBE, PUBLISH AND ADVERTISE
-		for (int i = 0; i < states.size(); i++)
+		for (int i = 0; i < DRONE_COUNT; i++)
 		{
 			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/command/trajectory", 1);
 			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
@@ -145,6 +174,7 @@ int main(int argc, char **argv)
 			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose" << endl;
 			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/imu" << endl;
 		}
+		
 	}
 
 	/****************** CREATE MESSAGE ******************/
@@ -199,7 +229,7 @@ int main(int argc, char **argv)
 	if (!SAVE_DESIRED_IMAGES)
 	{
 		// SAVING DATA FOR PYTHON PLOTING
-		for (int i = 0; i < states.size(); i++)
+		for (int i = 0; i < DRONE_COUNT; i++)
 		{
 			writeFile(errors[i], workspace + file_folder + "out_errors_" + to_string(i + 1) + ".txt");
 			writeFile(errors_pix[i], workspace + file_folder + "out_errors_pix_" + to_string(i + 1) + ".txt");
@@ -386,6 +416,10 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		//   << "===================================================================\n\n";
 		saveStuff(3);
 	}
+}
+void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
+{
+
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -839,6 +873,37 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	pos_dron[3].header.stamp = ros::Time::now();
 	pos_dron[3].header.frame_id = "world";
 }
+void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
+{
+	// cout << endl
+	// 	  << "[INFO] poseCallback function for drone 4" << endl;
+
+	// Creating quaternion
+	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
+	// Creatring rotation matrix ffrom quaternion
+	tf::Matrix3x3 mat(q);
+	// obtaining euler angles
+	double roll, pitch, yaw;
+	mat.getEulerYPR(yaw, pitch, roll);
+	// saving the data obtained
+	states[4].Roll = (float)roll;
+	states[4].Pitch = (float)pitch;
+
+	// setting the position if its the first time
+	if (!states[4].initialized)
+	{
+		cout << "[INFO] Setting initial position" << endl;
+		states[4].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+	}
+
+	pos_dron[4].pose.position.x = (float)msg->position.x;
+	pos_dron[4].pose.position.y = (float)msg->position.y;
+	pos_dron[4].pose.position.z = (float)msg->position.z;
+
+	pos_dron[4].header.seq++;
+	pos_dron[4].header.stamp = ros::Time::now();
+	pos_dron[4].header.frame_id = "world";
+}
 
 /*************** FOR IMU ***************/
 void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
@@ -878,6 +943,16 @@ void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
 	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
 
 	/* pos_dron[3].header.stamp.sec++; */
+}
+void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg)
+{
+	/* cout << "IMU 4" << endl; */
+	pos_dron[4].pose.orientation.x = (float)msg->orientation.x;
+	pos_dron[4].pose.orientation.y = (float)msg->orientation.y;
+	pos_dron[4].pose.orientation.z = (float)msg->orientation.z;
+	pos_dron[4].pose.orientation.w = (float)msg->orientation.w;
+
+	/* pos_dron[4].header.stamp.sec++; */
 }
 
 void saveStuff(int i)

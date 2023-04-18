@@ -178,7 +178,7 @@
   </xacro:camera_macro> -->
 
   <xacro:include filename="$(find bearings)/description/camera.xacro"/>
-  <xacro:front_camera namespace="${namespace}" ></xacro:front_camera>
+  <xacro:camera_base namespace="${namespace}" ></xacro:camera_base>
   <xacro:under_camera namespace="${namespace}" ></xacro:under_camera>
 
 </robot>

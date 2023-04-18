@@ -163,6 +163,8 @@ void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired3b(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg);
+void saveDesired5b(const sensor_msgs::Image::ConstPtr &msg);
 
 /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
 int compute_descriptors(const cv::Mat &img,

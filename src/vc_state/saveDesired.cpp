@@ -3,7 +3,7 @@
 using namespace cv;
 using namespace std;
 
-int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0, c8 = 0;
+int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0, c8 = 0, c9 = 0, c10 = 0;
 
 void saveDesired1f(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -111,5 +111,32 @@ void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg)
    saveIMG += + "/src/bearings/src/desired_4b.jpg";
    imwrite(saveIMG, actual);
    if (c8++ == 1)
+   cout << "[INFO] << Image 4b saved >> " << saveIMG << endl;
+}
+
+void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg)
+{
+   /* cout << "[INFO] Saving Desired 4f" << endl; */
+
+   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+   // cout << "[INFO] Image 4f received" << endl;
+
+   string saveIMG = WORKSPACE;
+   saveIMG += + "/src/bearings/src/desired_5f.jpg";
+   imwrite(saveIMG, actual);
+   if (c9++ == 1)
+   cout << "[INFO] << Image 5f saved >> " << saveIMG << endl;
+}
+void saveDesired5b(const sensor_msgs::Image::ConstPtr &msg)
+{
+   /* cout << "[INFO] Saving Desired 4b" << endl; */
+
+   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+   // cout << "[INFO] Image 4b received" << endl;
+
+   string saveIMG = WORKSPACE;
+   saveIMG += + "/src/bearings/src/desired_5b.jpg";
+   imwrite(saveIMG, actual);
+   if (c10++ == 1)
    cout << "[INFO] << Image 4b saved >> " << saveIMG << endl;
 }

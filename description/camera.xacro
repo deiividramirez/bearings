@@ -74,7 +74,7 @@
   </xacro:macro>
 
 
-  <xacro:macro name="camera_secondary" params="namespace">
+  <xacro:macro name="under_camera" params="namespace">
 
     <joint name="camera_under_joint" type="fixed">
       <parent link="${namespace}/base_link"/>
