@@ -137,7 +137,7 @@
   </xacro:vertical_rotor>
  
  <!--Mount a Camera-->
-  <xacro:camera_macro
+  <!-- <xacro:camera_macro
       namespace="${namespace}"
       parent_link="${namespace}/base_link"
       camera_suffix="base"
@@ -153,9 +153,9 @@
       enable_visual="true">
       <box size="0.001 0.001 0.001" />
       <origin xyz="0.1 0 0" rpy="0 0 0" />
-  </xacro:camera_macro>
+  </xacro:camera_macro> -->
  
-  <!-- <xacro:include filename="$(find bearings)/description/camera_bebop2.xacro"/>
-  <xacro:camera_base namespace="${namespace}" ></xacro:camera_base> -->
+  <xacro:include filename="$(find bearings)/description/camera_bebop2.xacro"/>
+  <xacro:camera_base namespace="${namespace}" ></xacro:camera_base>
 
 </robot>

@@ -37,8 +37,8 @@
         <camera>
           <horizontal_fov>1.0472</horizontal_fov>
           <image>
-            <width>856</width>
-            <height>480</height>
+            <width>4096</width>
+            <height>3072</height>
             <format>R8G8B8</format>
           </image>
           <clip>
@@ -55,13 +55,20 @@
           </noise>
           <lens>
             <intrinsics>
-              <fx>258.5</fx>
-              <fy>258.5</fy>
-              <cx>428</cx>
-              <cy>240</cy>
+              <fx>1505</fx>
+              <fy>1505</fy>
+              <cx>2048</cx>
+              <cy>1536</cy>
               <s>0</s>
             </intrinsics>
           </lens>
+          <distortion>
+            <k1>0.14201146990975286</k1>
+            <k2>-0.19688011266332983</k2>
+            <k3>0.0429167931421525</k3>
+            <p1>-0.0054052167768174585</p1>
+            <p2>0.0011235413612189335</p2>
+          </distortion>
         </camera>
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
           <frame_name>camera_link_optical</frame_name>
