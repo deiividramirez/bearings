@@ -157,7 +157,7 @@ Then, you can change the variable "SAVE_DESIRED_IMAGES" to 0, and then, you can 
 
 Each drone has its own namespace and its own params file in "config" folder, so, you can modify the parameters for each drone; including the ArUco marker ID, the camera topic, and the camera calibration matrix, gains, front camera or bottom camera, and so on. Remember, changing the camera topic and the camera calibration matrix could bring some problems, so, be careful.
 
-## Aditional information 📖
+## Additional information 📖
 
 * You can find the individual controllers simulated in Python in the "Python" folder. The "Python" folder contains the IBVS controller with GUO version and classic version. Also, it contains the IBVS controller bearing-only controller. 
 
@@ -169,6 +169,11 @@ Each drone has its own namespace and its own params file in "config" folder, so,
   alias gif="python ~/catkin_ws/src/bearings/src/data/aux_gif.py"
   alias mp4="python ~/catkin_ws/src/bearings/src/data/aux_makeMP4.py"
   alias aruco="python ~/catkin_ws/src/bearings/src/data/aux_aruco_detector.py"
+  alias control="roslaunch bearings control.launch"
+  alias bebop4="roslaunch bearings bebop2_4.launch"
+  alias bebop5="roslaunch bearings bebop2_5.launch"
+  alias iris4="roslaunch bearings iris_wall_4.launch"
+  alias iris5="roslaunch bearings iris_wall_5.launch"
   ```
 
 * After every controller simulation, the are some data saved in "src/data" folder, including error's data, integral part control data, adaptative gains data, velocity data and, position data. This data can be easily plotted with the `plot` alias.
@@ -177,7 +182,7 @@ Each drone has its own namespace and its own params file in "config" folder, so,
 
 * If you want to make a gif, you can use the `gif` alias, by running `gif n`, where n is the number of the drone. The gif will be saved in the "src/data" folder as "out_sim_n.gif".
 
-* In "general.yalm" exists an option called "SAVE_IMAGES" which is useful for saving the images of the drone's camera. If you want to save the images, you have to change the variable to 1, and then, you can change it to 0, and then, you can run the control for the IBVS controller.
+* In "general.yaml" exists an option called "SAVE_IMAGES" which is useful for saving the images of the drone's camera. If you want to save the images, you have to change the variable to 1, and then, you can change it to 0, and then, you can run the control for the IBVS controller.
 
   Also, if you saved the previous images, and want to run again the control, it is recommended to clean the previous images, by running `clean`, which will delete all the images in the "src/data/img" folder.
 

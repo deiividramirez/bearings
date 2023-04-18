@@ -88,5 +88,10 @@
         "editor.tabSize": 3
     },
     "ros.distro": "noetic",
-    "cmake.sourceDirectory": "${workspaceFolder}/."
+    "cmake.sourceDirectory": "${workspaceFolder}/.",
+    "cSpell.words": [
+        "adaptative",
+        "aruco",
+        "IBVS"
+    ]
 }
