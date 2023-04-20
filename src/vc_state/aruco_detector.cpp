@@ -14,7 +14,7 @@ int aruco_detector(const Mat &actual,
    vector<int> markerIds_Detected;
    vector<vector<Point2f>> markerCorners_Detectec, rejectedCandidates;
    Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
+   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
 
    try
    {
@@ -127,5 +127,7 @@ int aruco_detector(const Mat &actual,
       cout << "[ERROR] No markers detected" << endl;
       return -1;
    }
+   
+   cout << "[INFO] Aruco markers detected" << endl;
    return 0;
 }

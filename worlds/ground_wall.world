@@ -1,6 +1,12 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
   <world name="default">
+    <gui>
+      <camera name="user_camera">
+        <pose>-12 .05 4 0 .35 -.05</pose>
+      </camera>
+    </gui>
+
     <include>
       <uri>model://mygroundplane</uri>
     </include>

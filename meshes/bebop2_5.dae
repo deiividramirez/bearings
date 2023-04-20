@@ -5,12 +5,39 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.5.0 commit date:2023-03-29, commit time:02:56, hash:1be25cfff18b</authoring_tool>
     </contributor>
-    <created>2023-04-14T18:27:46</created>
-    <modified>2023-04-14T18:27:46</modified>
+    <created>2023-04-20T12:50:36</created>
+    <modified>2023-04-20T12:50:36</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
   <library_effects>
+    <effect id="Cubo_002-effect">
+      <profile_COMMON>
+        <newparam sid="_x4_5_png-surface">
+          <surface type="2D">
+            <init_from>_x4_5_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="_x4_5_png-sampler">
+          <sampler2D>
+            <source>_x4_5_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="_x4_5_png-sampler" texcoord="Cube-mesh-map-0"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
     <effect id="coque-effect">
       <profile_COMMON>
         <technique sid="common">
@@ -18,20 +45,11 @@
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">1 1 1 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
           </lambert>
         </technique>
@@ -40,110 +58,81 @@
     <effect id="Plastic_Noir-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.02485068 0.02485068 0.02485068 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="Mousse_noir-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.09194818 0.09194818 0.09194818 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="verre-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.3999306 0.5682663 0.8 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="Metal-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.1343587 0.1343587 0.1343587 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
   </library_effects>
-  <library_images/>
+  <library_images>
+    <image id="_x4_5_png" name="_x4_5_png">
+      <init_from>4x4_5.png</init_from>
+    </image>
+  </library_images>
   <library_materials>
+    <material id="Cubo_002-material" name="Cubo.002">
+      <instance_effect url="#Cubo_002-effect"/>
+    </material>
     <material id="coque-material" name="coque">
       <instance_effect url="#coque-effect"/>
     </material>
@@ -161,6 +150,48 @@
     </material>
   </library_materials>
   <library_geometries>
+    <geometry id="Cube_001-mesh" name="Cube.001">
+      <mesh>
+        <source id="Cube_001-mesh-positions">
+          <float_array id="Cube_001-mesh-positions-array" count="24">1 1 0.09979313 1 1 -0.1013277 1 -1 0.09979313 1 -1 -0.1013277 -1 1 0.1 -1 1 -0.09999996 -1 -1 0.1 -1 -1 -0.09999996</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-normals">
+          <float_array id="Cube_001-mesh-normals-array" count="21">1.03436e-4 0 1 0 -1 0 -1 0 0 -6.63869e-4 0 -0.9999999 1 0 0 0 1 0 -6.63876e-4 0 -0.9999999</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-normals-array" count="7" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-map-0">
+          <float_array id="Cube_001-mesh-map-0-array" count="72">0.9934633 -0.003999114 0.002568066 0.9868958 0.002568066 -0.003999114 0.4930267 0.7625396 0.3820187 0.8735476 0.3820187 0.7625396 0.7195441 0.7672417 0.7642655 0.7225204 0.7642655 0.7672417 0.9906812 -0.002287924 0.00320816 0.9851848 0.00320816 -0.002287924 0.4409629 0.6789975 0.5691165 0.5508438 0.5691165 0.6789975 0.4098932 0.2848932 0.5901067 0.4651067 0.4098932 0.4651067 0.9934633 -0.003999114 0.9934633 0.9868958 0.002568066 0.9868958 0.4930267 0.7625396 0.4930267 0.8735476 0.3820187 0.8735476 0.7195441 0.7672417 0.7195441 0.7225204 0.7642655 0.7225204 0.9906812 -0.002287924 0.9906812 0.9851848 0.00320816 0.9851848 0.4409629 0.6789975 0.4409629 0.5508438 0.5691165 0.5508438 0.4098932 0.2848932 0.5901067 0.2848932 0.5901067 0.4651067</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-map-0-array" count="36" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_001-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_001-mesh-positions"/>
+        </vertices>
+        <triangles material="Cubo_002-material" count="12">
+          <input semantic="VERTEX" source="#Cube_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_001-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_001-mesh-map-0" offset="2" set="1"/>
+          <p>4 0 0 2 0 1 0 0 2 2 1 3 7 1 4 3 1 5 6 2 6 5 2 7 7 2 8 1 3 9 7 3 10 5 3 11 0 4 12 3 4 13 1 4 14 5 5 15 0 5 16 1 5 17 4 0 18 6 0 19 2 0 20 2 1 21 6 1 22 7 1 23 6 2 24 4 2 25 5 2 26 1 6 27 3 6 28 7 6 29 0 4 30 2 4 31 3 4 32 5 5 33 4 5 34 0 5 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
     <geometry id="Circle_002-mesh" name="Circle.002">
       <mesh>
         <source id="Circle_002-mesh-positions">
@@ -216,6 +247,18 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
+      <node id="Cube_001" name="Cube.001" type="NODE">
+        <matrix sid="transform">-1.74846e-9 1.74846e-9 -0.01 -0.067 0.04 0 -4.37114e-10 0 0 -0.04 -4.37114e-10 0.025 0 0 0 1</matrix>
+        <instance_geometry url="#Cube_001-mesh" name="Cube.001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Cubo_002-material" target="#Cubo_002-material">
+                <bind_vertex_input semantic="Cube-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
       <node id="Drone" name="Drone" type="NODE">
         <matrix sid="transform">1.223122 0 0 0 0 1.223122 0 0 0 0 1.223122 0 0 0 0 1</matrix>
         <instance_geometry url="#Circle_002-mesh" name="Drone">

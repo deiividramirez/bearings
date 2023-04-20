@@ -6,6 +6,8 @@ vc_state::vc_state() : X(0), Y(0), Z(0), Yaw(0), Pitch(0), Roll(0),
 
 void vc_state::load(const ros::NodeHandle &nh)
 {
+  cout << "[INFO] Loading state parameters" << endl;
+  
   // Load intrinsic parameters
   XmlRpc::XmlRpcValue kConfig;
   this->params.K = cv::Mat(3, 3, CV_64F, double(0));

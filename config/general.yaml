@@ -1,5 +1,5 @@
-DRONE: bebop2
-# DRONE: iris
+# DRONE: bebop2
+DRONE: iris
 DRONE_COUNT: 5  # 4 drones or 5 drones
 
 SAVE_DESIRED_IMAGES: 1

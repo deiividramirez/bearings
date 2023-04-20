@@ -5,22 +5,22 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.5.0 commit date:2023-03-29, commit time:02:56, hash:1be25cfff18b</authoring_tool>
     </contributor>
-    <created>2023-04-14T18:10:18</created>
-    <modified>2023-04-14T18:10:18</modified>
+    <created>2023-04-20T12:49:16</created>
+    <modified>2023-04-20T12:49:16</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
   <library_effects>
     <effect id="Cubo_001-effect">
       <profile_COMMON>
-        <newparam sid="_x6_1_png-surface">
+        <newparam sid="_x4_1_png-surface">
           <surface type="2D">
-            <init_from>_x6_1_png</init_from>
+            <init_from>_x4_1_png</init_from>
           </surface>
         </newparam>
-        <newparam sid="_x6_1_png-sampler">
+        <newparam sid="_x4_1_png-sampler">
           <sampler2D>
-            <source>_x6_1_png-surface</source>
+            <source>_x4_1_png-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -29,7 +29,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <texture texture="_x6_1_png-sampler" texcoord="Cube-mesh-map-0"/>
+              <texture texture="_x4_1_png-sampler" texcoord="Cube-mesh-map-0"/>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -45,20 +45,11 @@
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">1 1 1 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
           </lambert>
         </technique>
@@ -67,111 +58,75 @@
     <effect id="Plastic_Noir-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.02485068 0.02485068 0.02485068 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="Mousse_noir-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.09194818 0.09194818 0.09194818 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="verre-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.3999306 0.5682663 0.8 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
     <effect id="Metal-effect">
       <profile_COMMON>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
-            <ambient>
-              <color sid="ambient">0 0 0 1</color>
-            </ambient>
             <diffuse>
               <color sid="diffuse">0.1343587 0.1343587 0.1343587 1</color>
             </diffuse>
-            <specular>
-              <color sid="specular">0.5 0.5 0.5 1</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">50</float>
-            </shininess>
             <index_of_refraction>
-              <float sid="index_of_refraction">1</float>
+              <float sid="ior">1</float>
             </index_of_refraction>
-          </phong>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
   </library_effects>
   <library_images>
-    <image id="_x6_1_png" name="_x6_1_png">
-      <init_from>6x6_1.png</init_from>
+    <image id="_x4_1_png" name="_x4_1_png">
+      <init_from>4x4_1.png</init_from>
     </image>
   </library_images>
   <library_materials>
@@ -293,7 +248,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="Cube" name="Cube" type="NODE">
-        <matrix sid="transform">-2.18557e-9 -2.18557e-9 -0.05 -0.07000001 -0.05 0 2.18557e-9 0 0 0.05 -2.18557e-9 0.005 0 0 0 1</matrix>
+        <matrix sid="transform">-1.74846e-9 -1.74846e-9 -0.01 -0.067 -0.04 0 4.37114e-10 0 0 0.04 -4.37114e-10 0.025 0 0 0 1</matrix>
         <instance_geometry url="#Cube_001-mesh" name="Cube">
           <bind_material>
             <technique_common>

@@ -10,7 +10,7 @@
    inkscape:export-filename="4x4_4.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   inkscape:version="1.2.2 (1:1.2.2+202212051550+b0a8486541)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -29,12 +29,12 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.26426275"
-     inkscape:cx="980.08518"
-     inkscape:cy="930.89171"
-     inkscape:window-width="1366"
-     inkscape:window-height="745"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:cx="754.93046"
+     inkscape:cy="932.78375"
+     inkscape:window-width="1858"
+     inkscape:window-height="1016"
+     inkscape:window-x="62"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg24" />
   <rect
@@ -46,7 +46,7 @@
      y="-0.42050952" />
   <g
      id="g268"
-     transform="matrix(4.2,0,0,4.2,2.3999999,2.3999999)">
+     transform="matrix(4,0,0,4,2.9999999,2.9999999)">
     <rect
        x="0"
        y="0"

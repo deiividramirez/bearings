@@ -10,7 +10,7 @@ num = sys.argv[1] if len(sys.argv) == 2 else 1
 
 frame = cv2.imread(f"{path}/desired_{num}f.jpg")
 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_1000)
+aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
 parameters =  aruco.DetectorParameters()
 
 corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)

@@ -9,10 +9,16 @@ int main(int argc, char **argv)
 {
 	/****************** ROS INITIALIZING ******************/
 	ros::init(argc, argv, "bearings");
-	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns4"), gen("general");
+	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns5"), gen("general");
 	vector<ros::NodeHandle> nhs = {nh, nh2, nh3, nh4, nh5};
+
+	gen.getParam("DRONE", DRONE_NAME);
+	gen.getParam("DRONE_COUNT", DRONE_COUNT);
+
 	for (int i = 0; i < DRONE_COUNT; i++)
 		states[i].load(nhs[i]);
+	
+	cout << "BEARINGS: Node initialized." << endl;
 
 	image_transport::ImageTransport it1(nh);
 	image_transport::ImageTransport it2(nh2);
@@ -47,9 +53,6 @@ int main(int argc, char **argv)
 	gen.getParam("bearing_3", bearingsXML[2]);
 	gen.getParam("bearing_4", bearingsXML[3]);
 	gen.getParam("bearing_5", bearingsXML[4]);
-
-	gen.getParam("DRONE", DRONE_NAME);
-	gen.getParam("DRONE_COUNT", DRONE_COUNT);
 
 	for (int i = 0; i < bearings.size(); i++)
 	{

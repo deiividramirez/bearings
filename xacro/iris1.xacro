@@ -177,7 +177,7 @@
       <origin xyz="0.09 0 0" rpy="0 0 0" />
   </xacro:camera_macro> -->
   
-  <xacro:include filename="$(find bearings)/description/camera.xacro"/>
+  <xacro:include filename="$(find bearings)/description/camera_iris.xacro"/>
   <xacro:camera_base namespace="${namespace}" ></xacro:camera_base>
   <xacro:under_camera namespace="${namespace}" ></xacro:under_camera>
 
