@@ -8,6 +8,3 @@ int distances(Mat p1, Mat p2, vector<vecDist> &distancias, vc_parameters &params
 bool mayorQue(vecDist a, vecDist b);
 Mat ortoProj(Mat p1);
 Mat Lvl(Mat p2s, vector<vecDist> &distances, vc_parameters &params);
-
-Mat signMat(Mat mat);
-Mat robust(Mat error);

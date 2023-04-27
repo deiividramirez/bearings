@@ -31,7 +31,7 @@ int bearingControl(Mat actual_bearing,
       {
          // Control with bearing
          suma1 += (-actual_bearing.col(i) - desired_bearings.col(i));
-         states[drone_id -1].integral_error += states[drone_id - 1].dt * suma1;
+         // states[drone_id -1].integral_error += states[drone_id - 1].dt * suma1;
       }
       else if (opc == 2)
       {
@@ -39,7 +39,7 @@ int bearingControl(Mat actual_bearing,
          temp = actual_bearing.col(i);
          suma2 -= projOrtog(temp) * (desired_bearings.col(i));
 
-         states[drone_id -1].integral_error += states[drone_id - 1].dt * suma2;
+         // states[drone_id -1].integral_error += states[drone_id - 1].dt * suma2;
       }
       else if (opc == 3)
       {
@@ -48,35 +48,49 @@ int bearingControl(Mat actual_bearing,
          suma1 += -actual_bearing.col(i) - desired_bearings.col(i);
          suma2 -= projOrtog(temp) * (desired_bearings.col(i));
 
-         states[drone_id -1].integral_error += states[drone_id - 1].dt * suma1;
+         // states[drone_id -1].integral_error += states[drone_id - 1].dt * suma1;
       }
    }
 
-   cout << "Integral error: " << states[drone_id - 1].integral_error << endl;
+   // cout << "Integral error: " << states[drone_id - 1].integral_error << endl;
 
    // Error calculation
    states[drone_id - 1].error = norm(desired_bearings + actual_bearing);
 
    // Variable lambda - gain
-   double l0_Kp = states[drone_id - 1].Kv_max, linf_Kp = states[drone_id -1].Kv, lprima_Kp = 75;
-   double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(lprima_Kp * states[drone_id - 1].error) / (l0_Kp - linf_Kp)) + linf_Kp;
+   // double l0_Kp = states[drone_id - 1].Kv_max, linf_Kp = states[drone_id -1].Kv, lprima_Kp = 75;
+   // double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(lprima_Kp * states[drone_id - 1].error) / (l0_Kp - linf_Kp)) + linf_Kp;
 
-   double l0_Kv = states[drone_id - 1].Kw_max, linf_Kv = states[drone_id - 1].Kw, lprima_Kv = 75;
-   double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(lprima_Kv * states[drone_id - 1].error) / (l0_Kv - linf_Kv)) + linf_Kv;
+   // double l0_Kv = states[drone_id - 1].Kw_max, linf_Kv = states[drone_id - 1].Kw, lprima_Kv = 75;
+   // double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(lprima_Kv * states[drone_id - 1].error) / (l0_Kv - linf_Kv)) + linf_Kv;
+   double l0_Kp = states[drone_id - 1].Kv_max, linf_Kp = states[drone_id - 1].Kv, lprima = 75;
+   double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(lprima * states[drone_id - 1].error) / (l0_Kp - linf_Kp)) + linf_Kp;
 
    cout << endl
-        << "[INFO] Lambda: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
-        << "[INFO] Lambda: " << linf_Kv << " < " << lambda_Kp << " < " << l0_Kv << endl;
+        << "[INFO] Lambda: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl;
+
+   // cout << endl
+   //      << "[INFO] Lambda: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
+      //   << "[INFO] Lambda: " << linf_Kv << " < " << lambda_Kp << " < " << l0_Kv << endl;
 
    // lambda_Kp = 3;
    states[drone_id - 1].lambda_kp = lambda_Kp;
-   states[drone_id - 1].lambda_kv = lambda_Kv;
+   // states[drone_id - 1].lambda_kv = lambda_Kv;
 
    // Update the velocity
    Mat suma3 = suma1 + suma2;
-   states[drone_id - 1].Vx = lambda_Kp * suma3.at<double>(0, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(0, 0);
-   states[drone_id - 1].Vy = lambda_Kp * suma3.at<double>(1, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(1, 0);
-   states[drone_id - 1].Vz = lambda_Kp * suma3.at<double>(2, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(2, 0);
+
+   Mat tempSign = signMat(suma3);
+   states[drone_id - 1].integral_error += states[drone_id - 1].dt * tempSign;
+   Mat tempError = robust(suma3);
+
+   Mat U = lambda_Kp * tempError ;//- 1/(150*lambda_Kp) * states[drone_id - 1].integral_error;
+   states[drone_id - 1].Vx = U.at<double>(0, 0);
+   states[drone_id - 1].Vy = U.at<double>(1, 0);
+   states[drone_id - 1].Vz = U.at<double>(2, 0);
+   // states[drone_id - 1].Vx = lambda_Kp * suma3.at<double>(0, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(0, 0);
+   // states[drone_id - 1].Vy = lambda_Kp * suma3.at<double>(1, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(1, 0);
+   // states[drone_id - 1].Vz = lambda_Kp * suma3.at<double>(2, 0) + lambda_Kv * states[drone_id - 1].integral_error.at<double>(2, 0);
 
    cout << "Desired bearing: " << desired_bearings << endl;
    cout << "Actual bearing: " << actual_bearing << endl;

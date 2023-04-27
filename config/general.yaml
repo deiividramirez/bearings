@@ -1,8 +1,8 @@
-DRONE: bebop2
-# DRONE: iris
+# DRONE: bebop2
+DRONE: iris
 DRONE_COUNT: 5  # 4 drones or 5 drones
 
-SAVE_DESIRED_IMAGES: 1
+SAVE_DESIRED_IMAGES: 0
 SAVE_IMAGES: 0
 SHOW_IMAGES: 0
 
@@ -12,18 +12,26 @@ cam_drone_3: 1
 cam_drone_4: 1
 cam_drone_5: 1
 
-seguimiento_1: [99]
-seguimiento_2: [98]
-seguimiento_3: [1, 2]
-seguimiento_4: [1, 2]
-seguimiento_5: [1, 2]
+seguimiento_1: [99] #97 or 99
+seguimiento_2: [98] #96 or 98
+seguimiento_3: [1, 2] #1, 2, 96, 97
+seguimiento_4: [1, 2] #1, 2. 97, 98, 99
+seguimiento_5: [3, 4] #1, 2, 3, 4, 96, 97, 98, 99
 
 bearing_1: []
 bearing_2: []
-bearing_3: [.94,  .78,
-           -.24,  .59,
-           -.24, -.2]
-bearing_4: [.78, .94,
-           -.59, .24,
-            .2,  .24]
-bearing_5: []
+bearing_3: [
+            .9,  .69,  
+            -.3, .69,  
+            -.3, -.23, 
+]
+bearing_4: [
+            .69,  .9,
+            -.69, .3,
+            .23,  .3,
+]
+bearing_5: [
+            .9,  .9,
+            -.3, .3,
+            .3,  -.3,
+]

@@ -20,19 +20,19 @@
   <arg name="z_2" default="1.7" />
   <arg name="yaw_2" default="0" />
   
-  <arg name="x_3" default="-4" />
+  <arg name="x_3" default="-3.5" />
   <arg name="y_3" default="-.5" />
   <arg name="z_3" default="2.2" />
   <arg name="yaw_3" default="0" />
 
-  <arg name="x_4" default="-4" />
+  <arg name="x_4" default="-3.5" />
   <arg name="y_4" default=".5" />
   <arg name="z_4" default="1.2" />
   <arg name="yaw_4" default="0" />
 
-  <arg name="x_5" default="-6" />
-  <arg name="y_5" default=".5" />
-  <arg name="z_5" default="1.2" />
+  <arg name="x_5" default="-5" />
+  <arg name="y_5" default="0" />
+  <arg name="z_5" default="1.7" />
   <arg name="yaw_5" default="0" />
 
   <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find bearings)/models" />

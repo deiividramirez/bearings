@@ -210,4 +210,7 @@ int bearingControl(Mat actual_bearing,
                    XmlRpc::XmlRpcValue &marker_ids,
                    int drone_id);
 
+Mat signMat(Mat mat);
+Mat robust(Mat error);
+
 #endif

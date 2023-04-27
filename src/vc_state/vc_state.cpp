@@ -101,3 +101,40 @@ void vc_state::initialize(const float &x, const float &y, const float &z, const 
   cout << "Init pose: X: " << this->X << " Y: " << this->Y << " Z: " << this->Z << endl;
   cout << "Yaw: " << this->Yaw << " Pitch: " << this->Pitch << " Roll: " << this->Roll << endl;
 }
+
+Mat signMat(Mat mat)
+{
+        Mat sign = Mat::zeros(mat.rows, 1, CV_64F);
+        // get the sign of each element of mat
+        // 1 if positive, -1 if negative and 0 if zero
+        double tempsign;
+        for (int i = 0; i < mat.rows; i++)
+        {
+                if (mat.at<double>(i, 0) > 0)
+                {
+                        tempsign = 1;
+                }
+                else if (mat.at<double>(i, 0) < 0)
+                {
+                        tempsign = -1;
+                }
+                else
+                {
+                        tempsign = 0;
+                }
+                sign.at<double>(i, 0) = tempsign;
+
+        }
+        return sign;
+}
+
+Mat robust(Mat error)
+{
+        Mat sign = signMat(error);
+        Mat absError = abs(error), sqrtError;
+
+        sqrt(absError, sqrtError);
+        Mat robustError = sqrtError.mul(sign);
+        
+        return robustError;
+}

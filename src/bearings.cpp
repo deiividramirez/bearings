@@ -93,14 +93,14 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		// image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
 
-		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
 
-		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
 
 		if (DRONE_COUNT == 5)
@@ -308,6 +308,12 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			{
 				cout << "[INFO] Bearing control success" << endl;
 				// cout << "[INFO] Error: " << states[2].error << endl;
+				if (contIMG3 % 25 == 0)
+				{
+					states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+					states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
+					states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
+				}
 			}
 		}
 
@@ -387,6 +393,13 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			{
 				cout << "[INFO] Bearing control success" << endl;
 				// cout << "[INFO] Error: " << states[3].error << endl;
+
+				if (contIMG4 % 25 == 0)
+				{
+					states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+					states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
+					states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
+				}
 			}
 		}
 
@@ -422,7 +435,89 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 }
 void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 {
+	/*
+	This function is called for suscribed image topic for drone's camera
 
+	This function will executed a bearing only control with camera's obtained
+	bearings keeping in mind the error given by the roll, pitch and yaw of the
+	drone. The control will be executed in the drone's body frame.
+	*/
+
+	if (states[4].initialized)
+	{
+		cout << endl
+			  << "=============> BEGIN IMGCallback4 for Drone 5<=============" << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// Getting the bearings from camera's drone
+		Mat actual_bearing, bearing_ground_truth;
+		if (getBearing(actual, seg5, actual_bearing, bearing_ground_truth, states[4], 5, pos_dron) < 0)
+		{
+			cout << "[ERROR] No bearing found" << endl;
+			// states[4].Vx = 0;
+			// states[4].Vy = 0;
+			// states[4].Vz = 0;
+			// states[4].Vyaw = 0;
+		}
+		else
+		{
+			// cout << "Bearing with ground truth drone " << 3 + 1 << endl;
+			// cout << bearing_ground_truth << endl;
+			// cout << "bearings[4] = " << bearings[4] << endl;
+
+			// Executing bearing only control
+			if (bearingControl(actual_bearing,
+									 bearing_ground_truth,
+									 bearings[4],
+									 states,
+									 segmentsXML[4],
+									 5) < 0)
+			{
+				cout << "[ERROR] Bearing control failed" << endl;
+			}
+			else
+			{
+				cout << "[INFO] Bearing control success" << endl;
+				// cout << "[INFO] Error: " << states[4].error << endl;
+
+				if (contIMG5 % 25 == 0)
+				{
+					states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+					states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
+					states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
+				}
+			}
+		}
+
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/5_" + to_string(contIMG5++) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/5_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		cout << "[VELS] Vx: " << states[4].Vx
+			  << ", Vy: " << states[4].Vy
+			  << ", Vz: " << states[4].Vz
+			  << "\nVroll: " << states[4].Vroll
+			  << ", Vpitch: " << states[4].Vpitch
+			  << ", Wyaw: " << states[4].Vyaw
+			  << "\n==> Error: " << states[4].error
+			  << "<==" << endl
+			  << endl;
+
+		cout << "Bearing real: " << bearing_ground_truth << endl;
+		//   << "===================================================================\n\n";
+		saveStuff(4);
+	}
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -490,7 +585,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 					return;
 				}
 
-				if (contIMG1 % 500 == 0)
+				if (contIMG1 % 10 == 0)
 				{
 					states[0].integral_error = Mat::zeros(3, 1, CV_64F);
 					states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
@@ -652,7 +747,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 					return;
 				}
 
-				if (contIMG2 % 500 == 0)
+				if (contIMG2 % 10 == 0)
 				{
 					states[1].integral_error = Mat::zeros(3, 1, CV_64F);
 					states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
@@ -976,17 +1071,18 @@ void saveStuff(int i)
 			  << endl;
 
 		times[i].push_back(states[i].t);
-		if (i == 2 || i == 3)
-		{
-			errors[i].push_back((float)states[i].error);
-			errors_pix[i].push_back((float)states[i].error);
-		}
-		else
+		if (i == 0 || i == 1 )
 		{
 			errors[i].push_back((float)matching_results[i].mean_feature_error);
 			errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
 			// cout << "[INFO] Error: " << matching_results[i].mean_feature_error << endl;
 			cout << "[INFO] Error pix: " << matching_results[i].mean_feature_error_pix << endl;
+		}
+		else
+		{
+			errors[i].push_back((float)states[i].error);
+			errors_pix[i].push_back((float)states[i].error);
+			cout << "[INFO] Error: " << states[i].error << endl;
 		}
 
 		states[i].Vyaw = -states[i].Yaw;

@@ -94,7 +94,7 @@ vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matc
 
 // For saving images and counting them
 Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old4, img_points4, img_old5, img_points5;
-int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contGEN = 0, SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
+int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGEN = 0, SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
 
 // For reading usage from yalm
 XmlRpc::XmlRpcValue seg1, seg2, seg3, seg4, seg5;

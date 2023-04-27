@@ -15,6 +15,8 @@ import os
 from pathlib import Path
 path = Path(__file__).parent.absolute()
 
+DRONE_COUNT = 5
+
 lider = 0
 if len(sys.argv) == 2:
     dron = sys.argv[1]
@@ -23,11 +25,11 @@ elif len(sys.argv) == 3:
     dron = sys.argv[2]
 else:
 
-    fig, ax = plt.subplots(4, 4, figsize=(15, 5), sharex=True)
+    fig, ax = plt.subplots(4, DRONE_COUNT, figsize=(15, 5), sharex=True)
     fig3d, ax3d = plt.subplots(1, 1, figsize=(
         5, 5), subplot_kw=dict(projection='3d'))
 
-    for dron in range(1, 5):
+    for dron in range(1, DRONE_COUNT+1):
         err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
         err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
         time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
@@ -104,7 +106,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
                 bbox_inches='tight', pad_inches=0.1)
 
     ax3d.title.set_text(f"Posiciones")
-    for dron in range(1, 5):
+    for dron in range(1, DRONE_COUNT+1):
         x = np.loadtxt(f"{path}/out/out_X_{dron}.txt")
         y = np.loadtxt(f"{path}/out/out_Y_{dron}.txt")
         z = np.loadtxt(f"{path}/out/out_Z_{dron}.txt")
