@@ -93,14 +93,14 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		// image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
 
-		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
 
-		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
 
 		if (DRONE_COUNT == 5)
@@ -195,6 +195,7 @@ int main(int argc, char **argv)
 			if (!SAVE_DESIRED_IMAGES)
 			{
 				cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+				// COMENTARIO
 			}
 			// continue;
 		} // if we havent get the new pose for all the drones
@@ -942,8 +943,8 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 }
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl
-	// 	  << "[INFO] poseCallback function for drone 4" << endl;
+	cout << endl
+		  << "[INFO] poseCallback function for drone 4" << endl;
 
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);

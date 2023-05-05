@@ -22,14 +22,14 @@ int getBearing(Mat &actual_image,
                vector<geometry_msgs::PoseStamped> &pos_dron)
 {
 
-   for (int i = 0; i < pos_dron.size(); i++)
-   {
-      if (pos_dron[i].header.seq == 0)
-      {
-         cout << "[INFO] Waiting for position of drone " << i << endl;
-         return -1;
-      }
-   }
+   // for (int i = 0; i < pos_dron.size(); i++)
+   // {
+   //    if (pos_dron[i].header.seq == 0)
+   //    {
+   //       cout << "[INFO] Waiting for position of drone " << i << endl;
+   //       return -1;
+   //    }
+   // }
 
    store_ground_truth = Mat::zeros(3, marker_id.size(), CV_64F);
    Mat grou_temp = Mat::zeros(3, 1, CV_64F);
@@ -135,8 +135,13 @@ int getBearing(Mat &actual_image,
             bear_temp = bear_temp / norma;
          } */
 
-         store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
-         store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
+         double b1 = bear_temp.at<double>(0, 0);
+         double b2 = bear_temp.at<double>(1, 0);
+
+         store_bearing.at<double>(0, marker_index) = cos(state.Yaw)*b1 - sin(state.Yaw)*b2;
+         store_bearing.at<double>(1, marker_index) = sin(state.Yaw)*b1 + cos(state.Yaw)*b2;
+         // store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
+         // store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
          store_bearing.at<double>(2, marker_index) = bear_temp.at<double>(2, 0);
       }
       return 0;
