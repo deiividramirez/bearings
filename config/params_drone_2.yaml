@@ -13,6 +13,15 @@ camera_intrinsic_parameters: [700,   0,    960,
 # Sampling time
 dt: 0.01
 
+seguimiento: 
+  len: 1
+  data: [98] #96 or 98
+
+bearing: 
+  rows: 0
+  cols: 0
+  data: []
+
 # Gain on linear velocities
 ############################################################
 # Para el control #1

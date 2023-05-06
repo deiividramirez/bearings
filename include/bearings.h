@@ -97,8 +97,6 @@ Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGEN = 0, SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
 
 // For reading usage from yalm
-XmlRpc::XmlRpcValue seg1, seg2, seg3, seg4, seg5;
-XmlRpc::XmlRpcValue bearing1, bearing2, bearing3, bearing4, bearing5;
 Mat bearing1_points, bearing2_points, bearing3_points, bearing4_points, bearing5_points;
 string DRONE_NAME;
 int DRONE_COUNT;
@@ -107,8 +105,6 @@ int DRONE_COUNT;
 bool target1, target2, target3, target4, target5;
 
 // Vector arrays for easy usage
-vector<XmlRpc::XmlRpcValue> segmentsXML = {seg1, seg2, seg3, seg4, seg5};
-vector<XmlRpc::XmlRpcValue> bearingsXML = {bearing1, bearing2, bearing3, bearing4, bearing5};
 vector<Mat> bearings = {bearing1_points, bearing2_points, bearing3_points, bearing4_points, bearing5_points};
 vector<bool> targets = {target1, target2, target3, target4, target5};
 

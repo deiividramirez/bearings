@@ -13,6 +13,19 @@ camera_intrinsic_parameters: [700,   0,    960,
 # Sampling time
 dt: 0.01
 
+seguimiento: 
+  len: 1
+  data: [1, 2] #1, 2. 97, 98, 99
+
+bearing: 
+  rows: 3
+  cols: 2
+  data: [
+        .69,  .9,
+        -.69, .3,
+        .23,  .3,
+  ]
+
 # Gain on linear velocities
 gainv: 2
 gainv_max: 3

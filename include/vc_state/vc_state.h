@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <Eigen/Dense>
 #include <opencv2/core.hpp>
+#include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/calib3d.hpp>
@@ -34,11 +35,12 @@ typedef struct vc_parameters
     float flann_ratio = 0.7;
 
     int control = 1, camara = 1;
-    // float gainv = 2.0, gainw = 2.0;
-    // float gainv_max = 2.0, gainw_max = 2.0;
 
-    // Camera parameters
+    Mat seguimiento;
+    Mat bearing;
+
     cv::Mat K;
+    cv::Mat Kinv;
 
 } vc_parameters;
 
@@ -52,6 +54,21 @@ typedef struct vc_homograpy_matching_result
     double mean_feature_error = 1e10;
     double mean_feature_error_pix = 1e10;
 } vc_homograpy_matching_result;
+
+/****************** STRUCT FOR POINTS IN THE IMAGES ******************/
+typedef struct savingData
+{
+    Mat img;
+    Mat imgGray;
+    
+    vector<int> markerIds;
+    vector<vector<Point2f>> markerCorners;
+    Mat points;
+
+    Mat inSphere;
+    Mat bearings;
+
+} savingData;
 
 /****************** STRUCT FOR THE DESIRED CONFIGURATION ******************/
 typedef struct vc_desired_configuration
@@ -84,11 +101,9 @@ typedef struct vc_desired_configuration
 class vc_state
 {
 public:
-    /* defining where the drone will move and integrating system*/
+    /* defining where the drone will move and integrating system */
     float X = 0.0, Y = 0.0, Z = 0.0, Yaw = 0.0, Pitch = 0.0, Roll = 0.0;
     bool initialized = false;
-    // 		float t,dt;
-    // 		float Kv,Kw;
 
     /* Control parameters  */
     float Vx = 0.0, Vy = 0.0, Vz = 0.0;
@@ -97,12 +112,12 @@ public:
     float Kv = 1.0, Kw = 1.0;
     float Kv_max = 1.0, Kw_max = 1.0;
     float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
-    
+
     float dt = 0.025;
     float t = 0;
-    
 
     float error = 0;
+    float error_pix = 0;
 
     Mat integral_error = Mat::zeros(3, 1, CV_64F);
     Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
@@ -110,10 +125,12 @@ public:
 
     bool in_target = false;
 
-    // Image proessing parameters
     vc_parameters params;
     //  Desired configuration
     vc_desired_configuration desired_configuration;
+
+    savingData desired;
+    savingData actual;
 
     //  Best approximations
     bool selected = false;
@@ -148,9 +165,9 @@ typedef struct vecDist
 /****************** FUNCTIONS TO USE ******************/
 
 /****************** MAIN CONTROL FOR IMAGE BASED VISUAL SERVOING ******************/
-int GUO(cv::Mat img,
-        vc_state &state,
-        vc_homograpy_matching_result &matching_result);
+// int GUO(cv::Mat img,
+//         vc_state &state,
+//         vc_homograpy_matching_result &matching_result);
 
 /****************** FUNCTIONS TO USE ******************/
 

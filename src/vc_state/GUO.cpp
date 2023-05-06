@@ -1,274 +1,348 @@
-#include "vc_state/GUO.h"
+// #include "vc_state/GUO.h"
 
-int GUO(Mat img,                                       // Image to be processed
-        vc_state &state,                               // State of the camera
-        vc_homograpy_matching_result &matching_result  // Result of the matcher matching
-)
-{
+// class GUO
+// {
+// public:
+//         Mat imgDesired;
+//         Mat imgDesiredGray;
+//         Mat imgActual;
+//         Mat imgActualGray;
+//         vc_state state;
+//         // vc_homograpy_matching_result matching_result;
 
-        // // Compute the matching between the images using ORB as detector and descriptor
-        // if (compute_descriptors(img, state.params, state.desired_configuration, matching_result) < 0)
-        // {
-        //         cout << "Error en compute_descriptors" << endl;
-        //         return -1;
-        // }
+//         GUO(vc_state stated)
+//         {
+//                 this->imgDesired = stated.desired.img;
+//                 cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
+//                 this->imgActual = imgActual;
+//                 this->state = stated;
 
-        // Temporal matrixes for calculation
-        Mat p1s, p2s, p23D, Lo, U, U_temp, L;
-        p1s = Mat::zeros(matching_result.p1.rows, 3, CV_64F);
-        p2s = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
-        p23D = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
-        vector<vecDist> distancias;
+//                 if (this->getDesiredData() < 0)
+//                 {
+//                         cout << "[ERROR] Desired ArUco not found" << endl;
+//                         ros::shutdown();
+//                         exit(-1);
+//                 }
+//         }
 
-        // Send images points to sphere model by generic camera model
-        if (toSphere(matching_result.p1, matching_result.p2, p1s, p2s, state.params) < 0)
-        {
-                cout << "[ERROR] Error en toSphere" << endl;
-                return -1;
-        }
+//         int getDesiredData()
+//         {
+//                 vector<int> markerIds;
+//                 vector<vector<Point2f>> markerCorners, rejectedCandidates;
+//                 Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
+//                 Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
 
-        // Calculate the distances between the points in the sphere
-        // and sorting these distance for choose the greater ones
-        distances(p1s, p2s, distancias, state.params);
-        // sort(distancias.begin(), distancias.end(), mayorQue);
+//                 try
+//                 {
+//                         aruco::detectMarkers(this->imgDesired, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+//                 }
+//                 catch (Exception &e)
+//                 {
+//                         cout << "Exception: " << e.what() << endl;
+//                         return -1;
+//                 }
 
+//                 int marker_index = -1;
+//                 for (int indexesXLM = 0; indexesXLM < state.params.seguimiento.rows; indexesXLM++)
+//                 {
 
-        // Get interaction matrix and error vector with distances
-        L = Lvl(p2s, distancias, state.params);
-        Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F), ERROR_PIX = Mat::zeros(matching_result.p2.rows, 1, CV_64F);
+//                         for (int i = 0; i < markerIds.size(); i++)
+//                         {
+//                                 if (markerIds[i] == (this->state.params.seguimiento.at<int>(indexesXLM, 0)))
+//                                 {
+//                                         cout << "[INFO] Marker " << this->state.params.seguimiento.at<int>(indexesXLM, 0) << " have been detected." << endl;
+//                                         marker_index = i;
+//                                         break;
+//                                 }
+//                         }
+//                         if (marker_index == -1)
+//                         {
+//                                 cout << "[ERROR] All markers in " << this->state.params.seguimiento << " not found" << endl;
+//                                 return -1;
+//                         }
 
-        // for (int i = 0; i < 16; i++)
-        for (int i = 0; i < distancias.size(); i++)
-        {
-                ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
-        }
-        for (int i = 0; i < matching_result.p2.rows; i++)
-        {
-                ERROR_PIX.at<double>(i, 0) = (double) norm(matching_result.p2.row(distancias[i].i) - matching_result.p1.row(distancias[i].i));
-                cout << matching_result.p2.row(distancias[i].i) << " == " << matching_result.p1.row(distancias[i].i) << endl;
-        }
+//                         Mat temporal = Mat::zeros(4, 2, CV_32F);
+//                         temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
+//                         temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
+//                         temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
+//                         temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
+//                         temporal.convertTo(this->state.desired.points, CV_64F);
 
-        matching_result.mean_feature_error = norm(ERROR, NORM_L1);
-        matching_result.mean_feature_error_pix = norm(ERROR_PIX, NORM_L2);
+//                         this->state.desired.img = this->imgDesired;
+//                         this->state.desired.imgGray = this->imgDesiredGray;
+//                         this->state.desired.markerIds = markerIds;
+//                         this->state.desired.markerCorners = markerCorners;
+//                 }
+//         }
 
-        cout << "[INFO] Error actual: " << matching_result.mean_feature_error << endl;
+//         int getVels(Mat img,                                      // Image to be processed
+//                     vc_state &state,                              // State of the camera
+//                     vc_homograpy_matching_result &matching_result // Result of the matcher matching
+//         )
+//         {
 
-        // Get the Penrose pseudo-inverse of the interaction matrix
-        double det = 0.0;
-        Lo = Moore_Penrose_PInv(L, det);
-        if (det < 1e-8)
-        {
-                cout << "[ERROR] DET = ZERO --> det = " << det << endl;
-                return -1;
-        }
+//                 // // Compute the matching between the images using ORB as detector and descriptor
+//                 // if (compute_descriptors(img, state.params, state.desired_configuration, matching_result) < 0)
+//                 // {
+//                 //         cout << "Error en compute_descriptors" << endl;
+//                 //         return -1;
+//                 // }
 
-        // Choosing the gain for the control law
-        double l0 = state.Kv_max, linf = state.Kv, lprima = .3;
-        double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
-        state.lambda_kp = lambda_temp;
+//                 // Temporal matrixes for calculation
+//                 Mat p1s, p2s, p23D, Lo, U, U_temp, L;
+//                 p1s = Mat::zeros(matching_result.p1.rows, 3, CV_64F);
+//                 p2s = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
+//                 p23D = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
+//                 vector<vecDist> distancias;
 
-        Mat tempSign = signMat(ERROR);
-        state.integral_error6 += state.dt * tempSign;
+//                 // Send images points to sphere model by generic camera model
+//                 if (toSphere(matching_result.p1, matching_result.p2, p1s, p2s, state.params) < 0)
+//                 {
+//                         cout << "[ERROR] Error en toSphere" << endl;
+//                         return -1;
+//                 }
 
-        Mat tempError = robust(ERROR);
-        U_temp = Lo * (-lambda_temp * tempError - 1/(50*lambda_temp) * state.integral_error6);
+//                 // Calculate the distances between the points in the sphere
+//                 // and sorting these distance for choose the greater ones
+//                 distances(p1s, p2s, distancias, state.params);
+//                 // sort(distancias.begin(), distancias.end(), mayorQue);
 
-        // cout << "[INFO] Error: " << ERROR.t() << endl;
-        // cout << "[INFO] Error robusto: " << tempError.t() << endl;
+//                 // Get interaction matrix and error vector with distances
+//                 L = Lvl(p2s, distancias, state.params);
+//                 Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F), ERROR_PIX = Mat::zeros(matching_result.p2.rows, 1, CV_64F);
 
-        // exit(-1);
+//                 // for (int i = 0; i < 16; i++)
+//                 for (int i = 0; i < distancias.size(); i++)
+//                 {
+//                         ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
+//                 }
+//                 for (int i = 0; i < matching_result.p2.rows; i++)
+//                 {
+//                         ERROR_PIX.at<double>(i, 0) = (double)norm(matching_result.p2.row(distancias[i].i) - matching_result.p1.row(distancias[i].i));
+//                         cout << matching_result.p2.row(distancias[i].i) << " == " << matching_result.p1.row(distancias[i].i) << endl;
+//                 }
 
-        // FIll with zeros the control law in rotation 3x1
-        U = Mat::zeros(6, 1, CV_64F);
-        U_temp.copyTo(U.rowRange(0, 3));
-        cout << endl
-             << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
-        // cout << "[CONTROL] U = " << U.t() << endl;
+//                 matching_result.mean_feature_error = norm(ERROR, NORM_L1);
+//                 matching_result.mean_feature_error_pix = norm(ERROR_PIX, NORM_L2);
 
-        // Send the control law to the camera
-        if (state.params.camara == 1)
-        {
-                state.Vx = -(float)U.at<double>(2, 0);
-                state.Vy = (float)U.at<double>(0, 0);
-                state.Vz = (float)U.at<double>(1, 0);
-        }
-        else
-        {
-                state.Vx = (float)U.at<double>(1, 0);
-                state.Vy = (float)U.at<double>(0, 0);
-                state.Vz = (float)U.at<double>(2, 0);
-        }
-        
-        // state.Vroll  = (float) U.at<double>(3,0);
-        // state.Vpitch = (float) U.at<double>(4,0);
-        state.Vyaw = (float)U.at<double>(5, 0);
-        // cout << "Enviadas las velocidades..." << endl;
+//                 cout << "[INFO] Error actual: " << matching_result.mean_feature_error << endl;
 
-        U.release();
-        U_temp.release();
-        L.release();
-        Lo.release();
-        ERROR.release();
-        p1s.release();
-        p2s.release();
-        p23D.release();
-        distancias.clear();
+//                 // Get the Penrose pseudo-inverse of the interaction matrix
+//                 double det = 0.0;
+//                 Lo = Moore_Penrose_PInv(L, det);
+//                 if (det < 1e-8)
+//                 {
+//                         cout << "[ERROR] DET = ZERO --> det = " << det << endl;
+//                         return -1;
+//                 }
 
-        return 0;
-}
+//                 // Choosing the gain for the control law
+//                 double l0 = state.Kv_max, linf = state.Kv, lprima = .3;
+//                 double lambda_temp = (l0 - linf) * exp(-(lprima * matching_result.mean_feature_error) / (l0 - linf)) + linf;
+//                 state.lambda_kp = lambda_temp;
 
-int toSphere(Mat p1,               // Points in the target image
-             Mat p2,               // Points in the actual image
-             Mat &p1s,             // Empty matrix for 3D recovery direction on sphere of p1 points
-             Mat &p2s,             // Empty matrix for 3D recovery direction on sphere of p2 points
-             vc_parameters &params // Parameters of the camera
-)
-{
-        Mat temp = Mat::zeros(3, 1, CV_64F), tmp; // Temporal matrix for calculation
+//                 Mat tempSign = signMat(ERROR);
+//                 state.integral_error6 += state.dt * tempSign;
 
-        for (int i = 0; i < p1.rows; i++)
-        {
-                // Take the points in target image and add 1 to the last row
-                temp.at<double>(0, 0) = p1.at<double>(i, 0);
-                temp.at<double>(1, 0) = p1.at<double>(i, 1);
-                temp.at<double>(2, 0) = 1;
-                // Invert the matrix of the camera and multiply by the points
-                tmp = params.K.inv() * temp;
-                // Normalize the points
-                p1s.row(i) = tmp.t() / norm(tmp);
+//                 Mat tempError = robust(ERROR);
+//                 U_temp = Lo * (-lambda_temp * tempError - 1 / (50 * lambda_temp) * state.integral_error6);
 
-                // Take the points in actual image and add 1 to the last row
-                temp.at<double>(0, 0) = p2.at<double>(i, 0);
-                temp.at<double>(1, 0) = p2.at<double>(i, 1);
-                temp.at<double>(2, 0) = 1;
-                // Invert the matrix of the camera and multiply by the points
-                tmp = params.K.inv() * temp;
-                // Normalize the points
-                p2s.row(i) = tmp.t() / norm(tmp);
-        }
-        // Free the memory
-        temp.release();
-        tmp.release();
-        return 0;
-}
+//                 // cout << "[INFO] Error: " << ERROR.t() << endl;
+//                 // cout << "[INFO] Error robusto: " << tempError.t() << endl;
 
-int distances(Mat p1,                      // Points in the target image
-              Mat p2,                      // Points in the actual image
-              vector<vecDist> &distancias, // Vector of distances struct
-              vc_parameters &params        // Parameters of the camera
-)
-{
-        vecDist tmpDist;    // Temporal struct for calculation
-        double dist, dist2; // Temporal variables for distance calculation
-        int NUM, i, j;      // Variables for the loop
+//                 // exit(-1);
 
-        // NUM = 16; // Number of points to calculate the distance
-        NUM = p2.rows; // Number of points to calculate the distance
+//                 // FIll with zeros the control law in rotation 3x1
+//                 U = Mat::zeros(6, 1, CV_64F);
+//                 U_temp.copyTo(U.rowRange(0, 3));
+//                 cout << endl
+//                      << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
+//                 // cout << "[CONTROL] U = " << U.t() << endl;
 
-        for (int i = 0; i < NUM; i++)
-        {
-                // for (int j = 0; j < NUM; j++)
-                for (int j = 0; j < i; j++)
-                {
-                        if (i != j)
-                        {
-                                double dot1 = (double)(p2.row(i).dot(p2.row(j)));
-                                double dot2 = (double)(p1.row(i).dot(p1.row(j)));
-                                dist = sqrt(2 - 2 * dot1);
-                                dist2 = sqrt(2 - 2 * dot2);
-                                if (dist <= 1e-9 || dist2 <= 1e-9
-                                    //     || dot1 > .97
-                                    //     || dot2 > .97
-                                )
-                                {
-                                        continue;
-                                }
+//                 // Send the control law to the camera
+//                 if (state.params.camara == 1)
+//                 {
+//                         state.Vx = -(float)U.at<double>(2, 0);
+//                         state.Vy = (float)U.at<double>(0, 0);
+//                         state.Vz = (float)U.at<double>(1, 0);
+//                 }
+//                 else
+//                 {
+//                         state.Vx = (float)U.at<double>(1, 0);
+//                         state.Vy = (float)U.at<double>(0, 0);
+//                         state.Vz = (float)U.at<double>(2, 0);
+//                 }
 
-                                tmpDist.i = i;
-                                tmpDist.j = j;
-                                if (params.control == 1)
-                                {
-                                        tmpDist.dist = 1 / dist;
-                                        tmpDist.dist2 = 1 / dist2;
-                                }
-                                else if (params.control == 2)
-                                {
-                                        tmpDist.dist = dist;
-                                        tmpDist.dist2 = dist2;
-                                }
-                                else
-                                {
-                                        cout << "[ERROR] Control variable is not valid" << endl;
-                                        return -1;
-                                }
-                                distancias.push_back(tmpDist);
-                        }
-                }
-        }
-        return 0;
-}
+//                 // state.Vroll  = (float) U.at<double>(3,0);
+//                 // state.Vpitch = (float) U.at<double>(4,0);
+//                 state.Vyaw = (float)U.at<double>(5, 0);
+//                 // cout << "Enviadas las velocidades..." << endl;
 
-bool mayorQue(vecDist a, vecDist b)
-{
-        return a.dist > b.dist;
-}
+//                 U.release();
+//                 U_temp.release();
+//                 L.release();
+//                 Lo.release();
+//                 ERROR.release();
+//                 p1s.release();
+//                 p2s.release();
+//                 p23D.release();
+//                 distancias.clear();
 
-Mat ortoProj(Mat p1)
-{
-        Mat I = Mat::eye(3, 3, CV_64F);
-        Mat p1Temp = Mat::zeros(3, 1, CV_64F);
+//                 return 0;
+//         }
 
-        p1Temp.at<double>(0, 0) = p1.at<double>(0, 0);
-        p1Temp.at<double>(1, 0) = p1.at<double>(0, 1);
-        p1Temp.at<double>(2, 0) = p1.at<double>(0, 2);
+//         int toSphere(Mat p1,               // Points in the target image
+//                      Mat p2,               // Points in the actual image
+//                      Mat &p1s,             // Empty matrix for 3D recovery direction on sphere of p1 points
+//                      Mat &p2s,             // Empty matrix for 3D recovery direction on sphere of p2 points
+//                      vc_parameters &params // Parameters of the camera
+//         )
+//         {
+//                 Mat temp = Mat::zeros(3, 1, CV_64F), tmp; // Temporal matrix for calculation
 
-        Mat OP = I - p1Temp * p1Temp.t();
+//                 for (int i = 0; i < p1.rows; i++)
+//                 {
+//                         // Take the points in target image and add 1 to the last row
+//                         temp.at<double>(0, 0) = p1.at<double>(i, 0);
+//                         temp.at<double>(1, 0) = p1.at<double>(i, 1);
+//                         temp.at<double>(2, 0) = 1;
+//                         // Invert the matrix of the camera and multiply by the points
+//                         tmp = params.K.inv() * temp;
+//                         // Normalize the points
+//                         p1s.row(i) = tmp.t() / norm(tmp);
 
-        I.release();
-        p1Temp.release();
-        return OP;
-}
+//                         // Take the points in actual image and add 1 to the last row
+//                         temp.at<double>(0, 0) = p2.at<double>(i, 0);
+//                         temp.at<double>(1, 0) = p2.at<double>(i, 1);
+//                         temp.at<double>(2, 0) = 1;
+//                         // Invert the matrix of the camera and multiply by the points
+//                         tmp = params.K.inv() * temp;
+//                         // Normalize the points
+//                         p2s.row(i) = tmp.t() / norm(tmp);
+//                 }
+//                 // Free the memory
+//                 temp.release();
+//                 tmp.release();
+//                 return 0;
+//         }
 
-Mat Lvl(Mat p2s,                    // Points of the actual image in the sphere
-        vector<vecDist> &distances, // Vector of distances struct with actual distances
-        vc_parameters &params       // Parameters of the camera
-)
-{
-        int n = distances.size(); // Number of distances
-        // int n = 16; // Number of distances
-        std::cout << std::endl
-                  << "[INFO] Size Interaction Matrix: [" << n << "x3]" << std::endl
-                  << std::endl;
+//         int distances(Mat p1,                      // Points in the target image
+//                       Mat p2,                      // Points in the actual image
+//                       vector<vecDist> &distancias, // Vector of distances struct
+//                       vc_parameters &params        // Parameters of the camera
+//         )
+//         {
+//                 vecDist tmpDist;    // Temporal struct for calculation
+//                 double dist, dist2; // Temporal variables for distance calculation
+//                 int NUM, i, j;      // Variables for the loop
 
-        Mat temp = Mat::zeros(3, 1, CV_64F); // Temp vector for calculation
-        Mat L = Mat::zeros(n, 3, CV_64F);    // Interaction matrix
-        Mat pi, pj;                          // Temporal points for calculation
-        double s;
-        cout << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << endl;
-        for (int i = 0; i < n; i++)
-        {
-                pi = p2s.row(distances[i].i);
-                pj = p2s.row(distances[i].j);
+//                 // NUM = 16; // Number of points to calculate the distance
+//                 NUM = p2.rows; // Number of points to calculate the distance
 
-                if (params.control == 1)
-                {
-                        s = -distances[i].dist * distances[i].dist * distances[i].dist;
-                }
-                else if (params.control == 2)
-                {
-                        s = 1 / distances[i].dist;
-                }
-                else
-                {
-                        cout << "[Error] Control parameter not valid" << endl;
-                        return L;
-                }
-                temp = s * ((pi * ortoProj(pj)) + (pj * ortoProj(pi)));
-                temp.copyTo(L.row(i));
-        }
-        temp.release();
-        pi.release();
-        pj.release();
-        return L;
-}
+//                 for (int i = 0; i < NUM; i++)
+//                 {
+//                         // for (int j = 0; j < NUM; j++)
+//                         for (int j = 0; j < i; j++)
+//                         {
+//                                 if (i != j)
+//                                 {
+//                                         double dot1 = (double)(p2.row(i).dot(p2.row(j)));
+//                                         double dot2 = (double)(p1.row(i).dot(p1.row(j)));
+//                                         dist = sqrt(2 - 2 * dot1);
+//                                         dist2 = sqrt(2 - 2 * dot2);
+//                                         if (dist <= 1e-9 || dist2 <= 1e-9
+//                                             //     || dot1 > .97
+//                                             //     || dot2 > .97
+//                                         )
+//                                         {
+//                                                 continue;
+//                                         }
 
+//                                         tmpDist.i = i;
+//                                         tmpDist.j = j;
+//                                         if (params.control == 1)
+//                                         {
+//                                                 tmpDist.dist = 1 / dist;
+//                                                 tmpDist.dist2 = 1 / dist2;
+//                                         }
+//                                         else if (params.control == 2)
+//                                         {
+//                                                 tmpDist.dist = dist;
+//                                                 tmpDist.dist2 = dist2;
+//                                         }
+//                                         else
+//                                         {
+//                                                 cout << "[ERROR] Control variable is not valid" << endl;
+//                                                 return -1;
+//                                         }
+//                                         distancias.push_back(tmpDist);
+//                                 }
+//                         }
+//                 }
+//                 return 0;
+//         }
+
+//         bool mayorQue(vecDist a, vecDist b)
+//         {
+//                 return a.dist > b.dist;
+//         }
+
+//         Mat ortoProj(Mat p1)
+//         {
+//                 Mat I = Mat::eye(3, 3, CV_64F);
+//                 Mat p1Temp = Mat::zeros(3, 1, CV_64F);
+
+//                 p1Temp.at<double>(0, 0) = p1.at<double>(0, 0);
+//                 p1Temp.at<double>(1, 0) = p1.at<double>(0, 1);
+//                 p1Temp.at<double>(2, 0) = p1.at<double>(0, 2);
+
+//                 Mat OP = I - p1Temp * p1Temp.t();
+
+//                 I.release();
+//                 p1Temp.release();
+//                 return OP;
+//         }
+
+//         Mat Lvl(Mat p2s,                    // Points of the actual image in the sphere
+//                 vector<vecDist> &distances, // Vector of distances struct with actual distances
+//                 vc_parameters &params       // Parameters of the camera
+//         )
+//         {
+//                 int n = distances.size(); // Number of distances
+//                 // int n = 16; // Number of distances
+//                 std::cout << std::endl
+//                           << "[INFO] Size Interaction Matrix: [" << n << "x3]" << std::endl
+//                           << std::endl;
+
+//                 Mat temp = Mat::zeros(3, 1, CV_64F); // Temp vector for calculation
+//                 Mat L = Mat::zeros(n, 3, CV_64F);    // Interaction matrix
+//                 Mat pi, pj;                          // Temporal points for calculation
+//                 double s;
+//                 cout << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << endl;
+//                 for (int i = 0; i < n; i++)
+//                 {
+//                         pi = p2s.row(distances[i].i);
+//                         pj = p2s.row(distances[i].j);
+
+//                         if (params.control == 1)
+//                         {
+//                                 s = -distances[i].dist * distances[i].dist * distances[i].dist;
+//                         }
+//                         else if (params.control == 2)
+//                         {
+//                                 s = 1 / distances[i].dist;
+//                         }
+//                         else
+//                         {
+//                                 cout << "[Error] Control parameter not valid" << endl;
+//                                 return L;
+//                         }
+//                         temp = s * ((pi * ortoProj(pj)) + (pj * ortoProj(pi)));
+//                         temp.copyTo(L.row(i));
+//                 }
+//                 temp.release();
+//                 pi.release();
+//                 pj.release();
+//                 return L;
+//         }
+// };
