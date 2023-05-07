@@ -16,7 +16,8 @@ parameters =  aruco.DetectorParameters()
 corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
 frame_markers = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
 
-plt.figure()
+# set window title
+plt.figure(num=f"Drone {num}")
 plt.imshow(frame_markers, origin = "upper")
 
 if ids is not None:

@@ -1,6 +1,6 @@
 # DRONE: bebop2
 DRONE: iris
-DRONE_COUNT: 4  # 4 drones or 5 drones
+DRONE_COUNT: 5  # 4 to 5 drones
 
 SAVE_DESIRED_IMAGES: 0
 SAVE_IMAGES: 0

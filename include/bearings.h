@@ -84,11 +84,11 @@ string workspace = WORKSPACE;
 
 /****************** VISUAL CONTROL STATES AND RESULT VARIABLES ******************/
 vc_state state_1, state_2, state_3, state_4, state_5;
-vc_homograpy_matching_result matching_result_1, matching_result_2, matching_result_3, matching_result_4, matching_result_5;
+// vc_homograpy_matching_result matching_result_1, matching_result_2, matching_result_3, matching_result_4, matching_result_5;
 
 /****************** ARRAYS WITH DATA FOR EASY USAGE ******************/
 vector<vc_state> states = {state_1, state_2, state_3, state_4, state_5};
-vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matching_result_2, matching_result_3, matching_result_4, matching_result_5};
+// vector<vc_homograpy_matching_result> matching_results = {matching_result_1, matching_result_2, matching_result_3, matching_result_4, matching_result_5};
 
 /****************** AUXILIAR GLOBAL VARIABLES ******************/
 
@@ -97,7 +97,6 @@ Mat img_old1, img_points1, img_old2, img_points2, img_old3, img_points3, img_old
 int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGEN = 0, SAVE_IMAGES, SAVE_DESIRED_IMAGES, SHOW_IMAGES;
 
 // For reading usage from yalm
-Mat bearing1_points, bearing2_points, bearing3_points, bearing4_points, bearing5_points;
 string DRONE_NAME;
 int DRONE_COUNT;
 
@@ -105,7 +104,6 @@ int DRONE_COUNT;
 bool target1, target2, target3, target4, target5;
 
 // Vector arrays for easy usage
-vector<Mat> bearings = {bearing1_points, bearing2_points, bearing3_points, bearing4_points, bearing5_points};
 vector<bool> targets = {target1, target2, target3, target4, target5};
 
 /****************** OPENING STATE PARAMS FROM DESCRIPTORS ******************/

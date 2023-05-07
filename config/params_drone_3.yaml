@@ -21,14 +21,14 @@ bearing:
   rows: 3
   cols: 2
   data: [
-          .9,  .69,  
-          -.3, .69,  
-          -.3, -.23, 
+        .9,  .69,  
+        -.3, .69,  
+        -.3, -.23, 
   ]
 
 # Gain on linear velocities
 gainv: .5
-gainv_max: 1
+gainv_max: 1.5
 
 # Gain on angular velocities
 gainw: .002
@@ -50,7 +50,7 @@ flann_ratio: 0.7
 # control 1 (diferencia de bearings)
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
-control: 1
+control: 3
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

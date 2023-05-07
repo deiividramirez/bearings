@@ -27,12 +27,12 @@ bearing:
   ]
 
 # Gain on linear velocities
-gainv: 2
-gainv_max: 3
+gainv: .5
+gainv_max: 1.5
 
 # Gain on angular velocities
-gainw: 1
-gainw_max: 5
+gainw: .002
+gainw_max: .0002
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
@@ -50,7 +50,7 @@ flann_ratio: 0.7
 # control 1 (diferencia de bearings)
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
-control: 1
+control: 3
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

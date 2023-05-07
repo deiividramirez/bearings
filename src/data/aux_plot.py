@@ -25,9 +25,9 @@ elif len(sys.argv) == 3:
     dron = sys.argv[2]
 else:
 
-    fig, ax = plt.subplots(4, DRONE_COUNT, figsize=(15, 5), sharex=True)
+    fig, ax = plt.subplots(4, DRONE_COUNT, figsize=(15, 5), sharex=True, num=f"Velocidades y errores para todos los drones")
     fig3d, ax3d = plt.subplots(1, 1, figsize=(
-        5, 5), subplot_kw=dict(projection='3d'))
+        5, 5), subplot_kw=dict(projection='3d'), num=f"Posiciones para todos los drones")
 
     for dron in range(1, DRONE_COUNT+1):
         err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
@@ -179,8 +179,7 @@ Velocidad final en yaw: {vyaw[-1]:5f} u/s""")
 
 if lider == "1":
     # PRIMER PLOT
-    fig, ax = plt.subplots(4, 1, figsize=(5, 10))
-
+    fig, ax = plt.subplots(4, 1, figsize=(5, 10), num = f"Velocidades y errores para el dron {dron}")
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
@@ -239,8 +238,7 @@ if lider == "1":
                 bbox_inches='tight', pad_inches=0.1)
 
 else:
-    fig, ax = plt.subplots(4, 1, figsize=(5, 8))
-
+    fig, ax = plt.subplots(4, 1, figsize=(5, 8), num=f"Velocidades y errores para el dron {dron}")
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
