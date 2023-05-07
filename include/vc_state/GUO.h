@@ -1,18 +1,5 @@
 #include "vc_state/vc_state.h"
 
-// using namespace cv;
-// using namespace std;
-
-// class GUO;
-
-// // int toSphere(Mat p1, Mat p2, Mat &p1s, Mat &p2s, vc_parameters &params);
-// // int distances(Mat p1, Mat p2, vector<vecDist> &distancias, vc_parameters &params);
-// // bool mayorQue(vecDist a, vecDist b);
-// // Mat ortoProj(Mat p1);
-// // Mat Lvl(Mat p2s, vector<vecDist> &distances, vc_parameters &params);
-
-// #include "vc_state/GUO.h"
-
 class GUO
 {
 public:
@@ -21,7 +8,6 @@ public:
    Mat imgActual;
    Mat imgActualGray;
    vc_state state;
-   // vc_homograpy_matching_result matching_result;
 
    GUO(vc_state stated)
    {
@@ -29,6 +15,8 @@ public:
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
+
+      cout << "\n[INFO] Getting desired data for GUO control...";
 
       if (this->getDesiredData() < 0)
       {
@@ -130,7 +118,7 @@ int getActualData(Mat actualImg)
          return -1;
       }
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+      cout << "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
       for (int i = 0; i < markerIds.size(); i++)
       {
          cout << markerIds[i] << " ";

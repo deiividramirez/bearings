@@ -14,7 +14,7 @@ camera_intrinsic_parameters: [700,   0,    960,
 dt: 0.01
 
 seguimiento: 
-  len: 1
+  len: 2
   data: [1, 2] #1, 2, 96, 97
 
 bearing: 
@@ -27,12 +27,12 @@ bearing:
   ]
 
 # Gain on linear velocities
-gainv: 2
-gainv_max: 3
+gainv: .5
+gainv_max: 1
 
 # Gain on angular velocities
-gainw: 1
-gainw_max: 5
+gainw: .002
+gainw_max: .0002
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01

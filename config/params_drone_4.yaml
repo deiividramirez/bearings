@@ -14,7 +14,7 @@ camera_intrinsic_parameters: [700,   0,    960,
 dt: 0.01
 
 seguimiento: 
-  len: 1
+  len: 2
   data: [1, 2] #1, 2. 97, 98, 99
 
 bearing: 

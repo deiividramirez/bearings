@@ -131,6 +131,9 @@ vy = np.loadtxt(f"{path}/out/out_Vy_{dron}.txt")
 vz = np.loadtxt(f"{path}/out/out_Vz_{dron}.txt")
 vyaw = np.loadtxt(f"{path}/out/out_Vyaw_{dron}.txt")
 lamb = np.loadtxt(f"{path}/out/out_lambda_kp_{dron}.txt")
+intx = np.loadtxt(f"{path}/out/out_integral_x_{dron}.txt")
+inty = np.loadtxt(f"{path}/out/out_integral_y_{dron}.txt")
+intz = np.loadtxt(f"{path}/out/out_integral_z_{dron}.txt")
 
 NUM = 0
 try:
@@ -176,7 +179,7 @@ Velocidad final en yaw: {vyaw[-1]:5f} u/s""")
 
 if lider == "1":
     # PRIMER PLOT
-    fig, ax = plt.subplots(3, 1, figsize=(5, 8))
+    fig, ax = plt.subplots(4, 1, figsize=(5, 10))
 
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
@@ -200,6 +203,12 @@ if lider == "1":
     ax[2].plot(time[NUM:], lamb[NUM:], "r")
     ax[2].set_ylabel('Lambda')
     ax[2].set_xlabel('Tiempo (s)')
+
+    ax[3].plot(time[NUM:], intx[NUM:], label='$I_x$')
+    ax[3].plot(time[NUM:], inty[NUM:], label='$I_y$')
+    ax[3].plot(time[NUM:], intz[NUM:], label='$I_z$')
+    ax[3].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax[3].set_ylabel('Integrales')
 
     plt.tight_layout()
     plt.savefig(f"{path}/out_velocidades_{dron}.png",
@@ -230,7 +239,7 @@ if lider == "1":
                 bbox_inches='tight', pad_inches=0.1)
 
 else:
-    fig, ax = plt.subplots(3, 1, figsize=(5, 8))
+    fig, ax = plt.subplots(4, 1, figsize=(5, 8))
 
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
@@ -255,6 +264,12 @@ else:
     ax[2].plot(time[NUM:], lamb[NUM:], "r")
     ax[2].set_ylabel('Lambda')
     ax[2].set_xlabel('Tiempo (s)')
+
+    ax[3].plot(time[NUM:], intx[NUM:], label='$I_x$')
+    ax[3].plot(time[NUM:], inty[NUM:], label='$I_y$')
+    ax[3].plot(time[NUM:], intz[NUM:], label='$I_z$')
+    ax[3].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax[3].set_ylabel('Integrales')
 
     plt.tight_layout()
     plt.savefig(f"{path}/out_velocidades_{dron}.png",

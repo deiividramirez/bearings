@@ -14,7 +14,6 @@ geometry_msgs::PoseStamped pos_msg;
 geometry_msgs::PoseStamped pos_msg_to;
 
 int getBearing(Mat &actual_image,
-               XmlRpc::XmlRpcValue marker_id,
                Mat &store_bearing,
                Mat &store_ground_truth,
                vc_state &state,
@@ -31,16 +30,18 @@ int getBearing(Mat &actual_image,
    //    }
    // }
 
-   store_ground_truth = Mat::zeros(3, marker_id.size(), CV_64F);
+   // XmlRpc::XmlRpcValue marker_id;
+
+   store_ground_truth = Mat::zeros(3, state.params.seguimiento.rows, CV_64F);
    Mat grou_temp = Mat::zeros(3, 1, CV_64F);
-   
-   for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
+
+   for (int32_t marker_index = 0; marker_index < state.params.seguimiento.rows; marker_index++)
    {
 
       // Ground truth
-      grou_temp.at<double>(0, 0) = pos_dron[drone_id - 1].pose.position.x - pos_dron[(int)marker_id[marker_index] - 1].pose.position.x;
-      grou_temp.at<double>(1, 0) = pos_dron[drone_id - 1].pose.position.y - pos_dron[(int)marker_id[marker_index] - 1].pose.position.y;
-      grou_temp.at<double>(2, 0) = pos_dron[drone_id - 1].pose.position.z - pos_dron[(int)marker_id[marker_index] - 1].pose.position.z;
+      grou_temp.at<double>(0, 0) = pos_dron[drone_id - 1].pose.position.x - pos_dron[(int)state.params.seguimiento.at<double>(marker_index, 0) - 1].pose.position.x;
+      grou_temp.at<double>(1, 0) = pos_dron[drone_id - 1].pose.position.y - pos_dron[(int)state.params.seguimiento.at<double>(marker_index, 0) - 1].pose.position.y;
+      grou_temp.at<double>(2, 0) = pos_dron[drone_id - 1].pose.position.z - pos_dron[(int)state.params.seguimiento.at<double>(marker_index, 0) - 1].pose.position.z;
 
       double norma = norm(grou_temp);
       if (norma != 0)
@@ -78,16 +79,16 @@ int getBearing(Mat &actual_image,
 
       // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
 
-      store_bearing = Mat::zeros(3, marker_id.size(), CV_64F);
+      store_bearing = Mat::zeros(3, state.params.seguimiento.rows, CV_64F);
 
-      for (int32_t marker_index = 0; marker_index < marker_id.size(); marker_index++)
+      for (int32_t marker_index = 0; marker_index < state.params.seguimiento.rows; marker_index++)
       {
          indice = -1;
          for (int i = 0; i < markerIds.size(); i++)
          {
-            if (markerIds[i] == (int)marker_id[marker_index])
+            if (markerIds[i] == (int)state.params.seguimiento.at<double>(marker_index, 0))
             {
-               cout << "[INFO] Marker " << marker_id[marker_index] << " detected" << endl;
+               cout << "[INFO] Marker " << state.params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
                // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
                indice = i;
                break;
@@ -96,7 +97,7 @@ int getBearing(Mat &actual_image,
 
          if (indice == -1)
          {
-            cout << "[ERROR] Marker " << marker_id[marker_index] << " not detected" << endl;
+            cout << "[ERROR] Marker " << state.params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
             return -1;
          }
 
@@ -129,17 +130,13 @@ int getBearing(Mat &actual_image,
          bear_temp.at<double>(0, 0) = -temp.at<double>(2, 0);
          bear_temp.at<double>(1, 0) = temp.at<double>(0, 0);
          bear_temp.at<double>(2, 0) = temp.at<double>(1, 0);
-         /* double norma = norm(bear_temp);
-         if (norma != 0)
-         {
-            bear_temp = bear_temp / norma;
-         } */
+
 
          double b1 = bear_temp.at<double>(0, 0);
          double b2 = bear_temp.at<double>(1, 0);
 
-         store_bearing.at<double>(0, marker_index) = cos(state.Yaw)*b1 - sin(state.Yaw)*b2;
-         store_bearing.at<double>(1, marker_index) = sin(state.Yaw)*b1 + cos(state.Yaw)*b2;
+         store_bearing.at<double>(0, marker_index) = cos(state.Yaw) * b1 - sin(state.Yaw) * b2;
+         store_bearing.at<double>(1, marker_index) = sin(state.Yaw) * b1 + cos(state.Yaw) * b2;
          // store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
          // store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
          store_bearing.at<double>(2, marker_index) = bear_temp.at<double>(2, 0);

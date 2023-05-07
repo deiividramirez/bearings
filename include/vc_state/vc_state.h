@@ -213,7 +213,6 @@ int Kanade_Lucas_Tomasi(const Mat &img_old,
                         vc_homograpy_matching_result &matching_result);
 
 int getBearing(Mat &actual_image,
-               XmlRpc::XmlRpcValue marker_id,
                Mat &store_bearing,
                Mat &store_ground_truth,
                vc_state &state,
@@ -222,9 +221,7 @@ int getBearing(Mat &actual_image,
 
 int bearingControl(Mat actual_bearing,
                    Mat position,
-                   Mat desired_bearings,
                    vector<vc_state> &states,
-                   XmlRpc::XmlRpcValue &marker_ids,
                    int drone_id);
 
 Mat signMat(Mat mat);
