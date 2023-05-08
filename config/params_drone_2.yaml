@@ -15,7 +15,7 @@ dt: 0.01
 
 seguimiento: 
   len: 1
-  data: [98] #96 or 98
+  data: [96] #96 or 98
 
 bearing: 
   rows: 0
@@ -25,15 +25,15 @@ bearing:
 # Gain on linear velocities
 ############################################################
 # Para el control #1
-gainv: 2
-gainv_max: 4
+gainv: 1
+gainv_max: 2
 ############################################################
 # Para el control #2
 # gain_v: .4
 
 # Gain on angular velocities
-gainw: .25
-gainw_max: 5
+gainw: .001
+gainw_max: .0001
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01

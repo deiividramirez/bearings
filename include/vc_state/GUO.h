@@ -7,11 +7,17 @@ public:
    Mat imgDesiredGray;
    Mat imgActual;
    Mat imgActualGray;
-   vc_state state;
+   vc_state *state;
 
-   GUO(vc_state stated)
+   float Vx, Vy, Vz, Vyaw;
+
+   GUO()
    {
-      this->imgDesired = stated.desired.img;
+   }
+
+   GUO(vc_state *stated)
+   {
+      this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
@@ -53,21 +59,21 @@ public:
       cout << endl;
 
       int marker_index = -1;
-      for (int i = 0; i < markerIds.size(); i++)
+      for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
       {
 
-         for (int indexesXLM = 0; indexesXLM < state.params.seguimiento.cols; indexesXLM++)
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            if (markerIds[i] == (int)(this->state.params.seguimiento.at<double>(indexesXLM)))
+            if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
             {
-               cout << "[INFO] Marker " << (int)this->state.params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
+               cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
                marker_index = i;
                break;
             }
          }
          if (marker_index == -1)
          {
-            cout << "[ERROR] All markers in " << this->state.params.seguimiento << " not found" << endl;
+            cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
             return -1;
          }
 
@@ -76,30 +82,30 @@ public:
          temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
          temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
          temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-         temporal.convertTo(this->state.desired.points, CV_64F);
-
-         this->state.desired.img = this->imgDesired;
-         this->state.desired.imgGray = this->imgDesiredGray;
-         this->state.desired.markerIds = markerIds;
-         this->state.desired.markerCorners = markerCorners;
-
-         this->toSphere(this->state.desired.points, this->state.desired.inSphere);
+         temporal.convertTo((*this->state).desired.points, CV_64F);
 
          break;
       }
 
+      (*this->state).desired.img = this->imgDesired;
+      (*this->state).desired.imgGray = this->imgDesiredGray;
+      (*this->state).desired.markerIds = markerIds;
+      (*this->state).desired.markerCorners = markerCorners;
+
+      this->toSphere((*this->state).desired.points, (*this->state).desired.inSphere);
+
       // // draw detected markers on the image
-      // for (int i = 0; i < this->state.desired.points.rows; i++)
+      // for (int i = 0; i < (*this->state).desired.points.rows; i++)
       // {
-      //    circle(this->state.desired.img, Point(this->state.desired.points.at<double>(i, 0), this->state.desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
+      //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
       // }
-      // imshow("Desired", this->state.desired.img);
+      // imshow("Desired", (*this->state).desired.img);
       // waitKey(0);
 
       return 0;
    }
 
-int getActualData(Mat actualImg)
+   int getActualData(Mat actualImg)
    {
       vector<int> markerIds;
       vector<vector<Point2f>> markerCorners, rejectedCandidates;
@@ -126,21 +132,21 @@ int getActualData(Mat actualImg)
       cout << endl;
 
       int marker_index = -1;
-      for (int i = 0; i < markerIds.size(); i++)
+      for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
       {
 
-         for (int indexesXLM = 0; indexesXLM < state.params.seguimiento.cols; indexesXLM++)
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            if (markerIds[i] == (int)(this->state.params.seguimiento.at<double>(indexesXLM)))
+            if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
             {
-               cout << "[INFO] Marker " << (int)this->state.params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
+               cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
                marker_index = i;
                break;
             }
          }
          if (marker_index == -1)
          {
-            cout << "[ERROR] All markers in " << this->state.params.seguimiento << " not found" << endl;
+            cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
             return -1;
          }
 
@@ -149,33 +155,33 @@ int getActualData(Mat actualImg)
          temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
          temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
          temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-         temporal.convertTo(this->state.actual.points, CV_64F);
-
-         this->state.actual.img = this->imgDesired;
-         this->state.actual.imgGray = this->imgDesiredGray;
-         this->state.actual.markerIds = markerIds;
-         this->state.actual.markerCorners = markerCorners;
-
-         this->toSphere(this->state.actual.points, this->state.actual.inSphere);
+         temporal.convertTo((*this->state).actual.points, CV_64F);
 
          break;
       }
 
+      (*this->state).actual.img = this->imgDesired;
+      (*this->state).actual.imgGray = this->imgDesiredGray;
+      (*this->state).actual.markerIds = markerIds;
+      (*this->state).actual.markerCorners = markerCorners;
+
+      this->toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
+
       // // draw detected markers on the image
-      // for (int i = 0; i < this->state.actual.points.rows; i++)
+      // for (int i = 0; i < (*this->state).actual.points.rows; i++)
       // {
-      //    circle(this->state.actual.img, Point(this->state.actual.points.at<double>(i, 0), this->state.actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
+      //    circle((*this->state).actual.img, Point((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
       // }
-      // imshow("Desired", this->state.actual.img);
+      // imshow("Desired", (*this->state).actual.img);
       // waitKey(0);
 
       return 0;
    }
 
-   int getVels(Mat img                                      // Image to be processed
+   int getVels(Mat img // Image to be processed
    )
    {
-
+      cout << "[INFO] Getting velocities from GUO control..." << endl;
       // // Compute the matching between the images using ORB as detector and descriptor
       // if (compute_descriptors(img, state.params, state.desired_configuration, matching_result) < 0)
       // {
@@ -184,7 +190,7 @@ int getActualData(Mat actualImg)
       // }
 
       // Temporal matrixes for calculation
-      // Mat p1s, p2s, p23D, , 
+      // Mat p1s, p2s, p23D, ,
       Mat U, U_temp, L, Lo;
       // p1s = Mat::zeros(matching_result.p1.rows, 3, CV_64F);
       // p2s = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
@@ -193,18 +199,17 @@ int getActualData(Mat actualImg)
       this->getActualData(img);
 
       // Send images points to sphere model by generic camera model
-      toSphere(this->state.actual.points, this->state.actual.inSphere);
+      toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
 
       // Calculate the distances between the points in the sphere
       // and sorting these distance for choose the greater ones
-      distances(this->state.desired.inSphere, this->state.actual.inSphere, distancias, state.params);
+      distances((*this->state).desired.inSphere, (*this->state).actual.inSphere, distancias, (*this->state).params);
       // sort(distancias.begin(), distancias.end(), mayorQue);
 
       // // Get interaction matrix and error vector with distances
-      L = Lvl(this->state.actual.inSphere, distancias, state.params);
+      L = Lvl((*this->state).actual.inSphere, distancias, (*this->state).params);
       Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
 
-      // for (int i = 0; i < 16; i++)
       for (int i = 0; i < distancias.size(); i++)
       {
          ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
@@ -219,23 +224,32 @@ int getActualData(Mat actualImg)
          return -1;
       }
 
-      Mat ERROR_PIX = this->state.actual.points - this->state.desired.points;
-      this->state.error = norm(ERROR, NORM_L1);
-      this->state.error_pix = norm(ERROR_PIX, NORM_L2);
+      Mat ERROR_PIX = (*this->state).actual.points - (*this->state).desired.points;
+      (*this->state).error = norm(ERROR, NORM_L1);
+      (*this->state).error_pix = norm(ERROR_PIX, NORM_L2);
 
-      cout << "[INFO] Error actual: " << this->state.error << endl;
-      cout << "[INFO] Error pix: " << this->state.error_pix << endl;
+      cout << "[INFO] Error actual: " << (*this->state).error << endl;
+      cout << "[INFO] Error pix: " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
-      double l0 = state.Kv_max, linf = state.Kv, lprima = .3;
-      double lambda_temp = (l0 - linf) * exp(-(lprima * this->state.error) / (l0 - linf)) + linf;
-      state.lambda_kp = lambda_temp;
+      double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
+      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(.3 * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
+
+      double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
+      double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
+
+      cout << endl
+           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
+           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << endl;
+
+      (*this->state).lambda_kp = lambda_Kp;
+      (*this->state).lambda_kv = lambda_Kv;
 
       Mat tempSign = signMat(ERROR);
-      state.integral_error6 += state.dt * tempSign;
+      (*this->state).integral_error6 += (*this->state).dt * tempSign;
 
       Mat tempError = robust(ERROR);
-      U_temp = Lo * (-lambda_temp * tempError - 1 / (50 * lambda_temp) * state.integral_error6);
+      U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
 
       // // cout << "[INFO] Error: " << ERROR.t() << endl;
       // // cout << "[INFO] Error robusto: " << tempError.t() << endl;
@@ -244,48 +258,40 @@ int getActualData(Mat actualImg)
       // FIll with zeros the control law in rotation 3x1
       U = Mat::zeros(6, 1, CV_64F);
       U_temp.copyTo(U.rowRange(0, 3));
-      cout << endl
-           << "[INFO] Lambda: " << linf << " < " << lambda_temp << " < " << l0 << endl;
-      // cout << "[CONTROL] U = " << U.t() << endl;
 
       // Send the control law to the camera
-      if (state.params.camara == 1)
+      if ((*this->state).params.camara == 1)
       {
-         state.Vx = -(float)U.at<double>(2, 0);
-         state.Vy = (float)U.at<double>(0, 0);
-         state.Vz = (float)U.at<double>(1, 0);
+         (*this->state).Vx = -(float)U.at<double>(2, 0);
+         (*this->state).Vy = (float)U.at<double>(0, 0);
+         (*this->state).Vz = (float)U.at<double>(1, 0);
       }
       else
       {
-         state.Vx = (float)U.at<double>(1, 0);
-         state.Vy = (float)U.at<double>(0, 0);
-         state.Vz = (float)U.at<double>(2, 0);
+         (*this->state).Vx = (float)U.at<double>(1, 0);
+         (*this->state).Vy = (float)U.at<double>(0, 0);
+         (*this->state).Vz = (float)U.at<double>(2, 0);
       }
 
-      // state.Vroll  = (float) U.at<double>(3,0);
-      // state.Vpitch = (float) U.at<double>(4,0);
-      state.Vyaw = (float)U.at<double>(5, 0);
-      // cout << "Enviadas las velocidades..." << endl;
+      (*this->state).Vyaw = (float)U.at<double>(5, 0);
 
+      // Free the memory
       U.release();
       U_temp.release();
       L.release();
       Lo.release();
       ERROR.release();
       distancias.clear();
-      // p1s.release();
-      // p2s.release();
-      // p23D.release();
 
       return 0;
    }
 
-   void toSphere(Mat points,                   // Points in the target image
-                Mat &onSphereSave             // Empty matrix for 3D recovery direction on sphere of points 
+   void toSphere(Mat points,       // Points in the target image
+                 Mat &onSphereSave // Empty matrix for 3D recovery direction on sphere of points
    )
    {
-      Mat temp = Mat::zeros(3, 1, CV_64F), tmp; // Temporal matrix for calculation
-      onSphereSave = Mat::zeros(points.rows, 3, CV_64F);     // Matrix for 3D recovery direction on sphere of points 
+      Mat temp = Mat::zeros(3, 1, CV_64F), tmp;          // Temporal matrix for calculation
+      onSphereSave = Mat::zeros(points.rows, 3, CV_64F); // Matrix for 3D recovery direction on sphere of points
 
       for (int i = 0; i < points.rows; i++)
       {
@@ -294,7 +300,7 @@ int getActualData(Mat actualImg)
          temp.at<double>(1, 0) = points.at<double>(i, 1);
          temp.at<double>(2, 0) = 1;
          // Invert the matrix of the camera and multiply by the points
-         tmp = this->state.params.Kinv * temp;
+         tmp = (*this->state).params.Kinv * temp;
          // Normalize the points
          onSphereSave.row(i) = tmp.t() / norm(tmp);
       }

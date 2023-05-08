@@ -1,6 +1,4 @@
 #include "bearings.h"
-#include "vc_state/GUO.h"
-#include "vc_state/BearingControl.h"
 
 /****************** DECLARING NAMESPACES ******************/
 using namespace cv;
@@ -71,19 +69,19 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		// image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
 
-		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
 
-		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
 
 		if (DRONE_COUNT == 5)
 		{
-			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+			// image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 		}
 	}
 	ros::Rate rate(30);
@@ -109,8 +107,8 @@ int main(int argc, char **argv)
 			}
 		}
 
-		GUO guoLider1(states[0]);
-		GUO guoLider2(states[1]);
+		guoLider1 = GUO(&states[0]);
+		guoLider2 = GUO(&states[1]);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -435,328 +433,129 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
-	// 	/*
-	// 	This function is called for suscribed image topic for drone's camera
+	/*
+	This function is called for suscribed image topic for drone's camera
 
-	// 	This function will executed a visual servoing control with camera's information.
-	// 	The control will be executed in the drone's body frame.
-	// 	*/
-	// 	if (states[0].initialized && !states[0].in_target)
-	// 	{
-	// 		cout << endl
-	// 			  << "=============> BEGIN IMGCallback for Drone 1<=============" << endl;
-	// 		// cout << "\n[INFO] ImageCallback for drone " << 0 + 1 << endl;
+	This function will executed a visual servoing control with camera's information.
+	The control will be executed in the drone's body frame.
+	*/
+	if (states[0].initialized && !states[0].in_target)
+	{
+		cout << endl
+			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << endl;
 
-	// 		// try
-	// 		// {
-	// 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-	// 		// cout << "[INFO] Image received" << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-	// 		// if (contIMG1++ < 3)
-	// 		// {
-	// 		// 	cout << "\n[INFO] Detecting keypoints" << endl;
+		if (guoLider1.getVels(actual) == 0)
+		{
+			cout << "\n[INFO] Controller part has been executed" << endl;
+		}
+		else
+		{
+			cout << "[ERROR] No ArUco were found." << endl;
+		}
 
-	// 		// 	if (states[0].params.camara != 1)
-	// 		// 	{
-	// 		// 		cout << "[INFO] Detecting points with ORB" << endl;
-	// 		// 		if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
-	// 		// 		{
-	// 		// 			cout << "[ERROR] No keypoints with matches were found" << endl;
-	// 		// 			return;
-	// 		// 		}
-	// 		// 	}
-	// 		// 	else
-	// 		// 	{
-	// 		// 		cout << "[INFO] Detecting points with ArUco" << endl;
-	// 		// 		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
-	// 		// 		{
-	// 		// 			cout << "[ERROR] No ArUco were found." << endl;
-	// 		// 			// ros::shutdown();
-	// 		// 		}
-	// 		// 	}
-	// 		// 	// cout << "[INFO] img_points1: " << img_points1 << endl;
-	// 		// 	// cout << "[INFO] matching_result.p1: " << endl
-	// 		// 	// 	  << matching_results[0].p1 << endl;
-	// 		// 	// cout << "[INFO] matching_result.p2: " << endl
-	// 		// 	// 	  << matching_results[0].p2 << endl
-	// 		// 	// 	  << endl;
+		if (!SHOW_IMAGES)
+		{
+			for (int i = 0; i < states[0].actual.points.rows; i++)
+			{
+				circle(actual, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(actual, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			}
+			namedWindow("Frontal camera_1", WINDOW_NORMAL);
+			cv::resizeWindow("Frontal camera_1", 550, 310);
+			imshow("Frontal camera_1", actual);
+			waitKey(1);
+		}
+		// }
 
-	// 		// 	img_old1 = actual;
-	// 		// }
-	// 		// else
-	// 		// {
-	// 		// Detecting keypoints from ArUco markers
-	// 		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
-	// 		{
-	// 			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
-	// 			{
-	// 				// Executing control law by GUO
-	// 				// cout << "[INFO] Calling control law." << endl;
-	// 				// if (GUO(actual, states[0], matching_results[0]) < 0)
-	// 				// {
-	// 				// 	cout << "[ERROR] Controller failed" << endl;
-	// 				// 	return;
-	// 				// }
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/1_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
-	// 				if (contIMG1 % 10 == 0)
-	// 				{
-	// 					states[0].integral_error = Mat::zeros(3, 1, CV_64F);
-	// 					states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
-	// 					states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
-	// 				}
-	// 				// else
-	// 				// {
-	// 				// 	// cout << "[INFO] Controller part has been executed" << endl;
-	// 				// }
-	// 			}
-	// 			else
-	// 			{
-	// 				cout << "[ERROR] No ArUco were found." << endl;
-	// 				// ros::shutdown();
-	// 				// states[0].Vx = 0;
-	// 				// states[0].Vy = 0;
-	// 				// states[0].Vz = 0;
-	// 				// states[0].Vyaw = 0;
-	// 			}
-	// 		}
-	// 		else
-	// 		{
-	// 			states[0].Vx = tanh(after_t1);
-	// 			states[0].Vy = 0;
-	// 			states[0].Vz = 0;
-	// 			states[0].Vyaw = 0;
-	// 			if (after_t1 < 2)
-	// 			{
-	// 				after_t1 += 0.005;
-	// 			}
-	// 		}
-	// 		// cout << "POSICIÓN: " << pos_dron[0] << endl;
-	// 		// Mat desired_temp, new_points;
-	// 		// if (Kanade_Lucas_Tomasi(img_old1, actual, desired_temp, img_points1, states[0], matching_results[0]) < 0)
-	// 		// {
-	// 		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-	// 		// 	return;
-	// 		// }
-	// 		// else
-	// 		// {
-	// 		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-	// 		// }
-
-	// 		// Mat desired_temp, new_points;
-	// 		// states[0].desired_configuration.img.copyTo(desired_temp);
-
-	// 		for (int i = 0; i < matching_results[0].p1.rows; i++)
-	// 		{
-	// 			// circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-	// 			// circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-	// 			circle(actual, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-	// 			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-	// 		}
-
-	// 		if (!SHOW_IMAGES)
-	// 		{
-	// 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
-	// 			cv::resizeWindow("Frontal camera_1", 960, 540);
-	// 			imshow("Frontal camera_1", actual);
-	// 			waitKey(1);
-	// 		}
-	// 		// }
-
-	// 		// Saving images
-	// 		string saveIMG;
-	// 		if (SAVE_IMAGES)
-	// 		{
-	// 			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1) + ".jpg";
-	// 			imwrite(workspace + saveIMG, actual);
-	// 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-	// 		}
-	// 		else
-	// 		{
-	// 			saveIMG = "/src/bearings/src/data/img/1_1.jpg";
-	// 			imwrite(workspace + saveIMG, actual);
-	// 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-	// 		}
-	// 		contIMG1++;
-
-	// 		/************************************************************* Prepare message */
-	// 		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
-	// 		// image_msg->header.frame_id = "matching_image";
-	// 		// image_msg->width = matching_results[0].img_matches.cols;
-	// 		// image_msg->height = matching_results[0].img_matches.rows;
-	// 		// image_msg->is_bigendian = false;
-	// 		// image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
-	// 		// image_msg->header.stamp = ros::Time::now();
-
-	// 		/* cout << "[INFO] Matching published" << endl; */
-	// 		// }
-	// 		// catch (cv_bridge::Exception &e)
-	// 		// {
-	// 		// 	ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-	// 		// 				 msg->encoding.c_str());
-	// 		// }
-	// 		saveStuff(0);
-	// 	}
+		saveStuff(0);
+		contIMG1++;
+		if (contIMG1 % 100 == 0)
+		{
+			states[0].integral_error = Mat::zeros(3, 1, CV_64F);
+			states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
+		}
+	}
 }
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 {
-	// 	/*
-	// 	This function is called for suscribed image topic for drone's camera
+	/*
+	This function is called for suscribed image topic for drone's camera
 
-	// 	This function will executed a visual servoing control with camera's information.
-	// 	The control will be executed in the drone's body frame.
-	// 	*/
-	// 	if (states[1].initialized && !states[1].in_target)
-	// 	{
-	// 		cout << endl
-	// 			  << "=============> BEGIN imageCallback2 for drone 2 <=============" << endl;
-	// 		// cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
+	This function will executed a visual servoing control with camera's information.
+	The control will be executed in the drone's body frame.
+	*/
+	if (states[1].initialized && !states[1].in_target)
+	{
+		cout << endl
+			  << "=============> BEGIN IMGCallback for Drone 2 iter: " << contIMG2 << " <=============" << endl;
 
-	// 		// try
-	// 		// {
-	// 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-	// 		// cout << "[INFO] Image received" << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-	// 		// if (contIMG2++ < 3)
-	// 		// {
-	// 		// cout << "\n[INFO] Detecting keypoints" << endl;
+		if (guoLider2.getVels(actual) == 0)
+		{
+			cout << "\n[INFO] Controller part has been executed" << endl;
+		}
+		else
+		{
+			cout << "[ERROR] No ArUco were found." << endl;
+		}
 
-	// 		// if (states[1].params.camara != 1)
-	// 		// {
-	// 		// 	cout << "[INFO] Detecting points with ORB" << endl;
-	// 		// 	if (Compute_descriptors(actual, img_points2, states[1], matching_results[1]) < 0)
-	// 		// 	{
-	// 		// 		cout << "[ERROR] No keypoints with matches were found" << endl;
-	// 		// 		return;
-	// 		// 	}
-	// 		// }
-	// 		// else
-	// 		// {
-	// 		// 	cout << "[INFO] Detecting points with ArUco" << endl;
-	// 		// 	if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
-	// 		// 	{
-	// 		// 		cout << "[ERROR] No ArUco were found." << endl;
-	// 		// 		// ros::shutdown();
-	// 		// 	}
-	// 		// }
-	// 		// // cout << "[INFO] img_points2: " << img_points2 << endl;
-	// 		// cout << "[INFO] matching_result.p1: " << matching_results[1].p1 << endl;
-	// 		// cout << "[INFO] matching_result.p2: " << matching_results[1].p2 << endl;
+		if (!SHOW_IMAGES)
+		{
+			for (int i = 0; i < states[1].actual.points.rows; i++)
+			{
+				circle(actual, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(actual, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+			}
+			namedWindow("Frontal camera_2", WINDOW_NORMAL);
+			cv::resizeWindow("Frontal camera_2", 550, 310);
+			imshow("Frontal camera_2", actual);
+			waitKey(1);
+		}
+		// }
 
-	// 		// img_old2 = actual;
-	// 		// }
-	// 		// else
-	// 		// {
-	// 		// Detecting points with ArUco markers
-	// 		// cout << "[INFO] Detecting points with ArUco" << endl;
-	// 		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
-	// 		{
-	// 			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
-	// 			{
-	// 				// Execute control law by GUO
-	// 				// cout << "[INFO] Calling control law." << endl;
-	// 				// if (GUO(actual, states[1], matching_results[1]) < 0)
-	// 				// {
-	// 				// 	cout << "[ERROR] Controller failed" << endl;
-	// 				// 	return;
-	// 				// }
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/2_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
 
-	// 				if (contIMG2 % 10 == 0)
-	// 				{
-	// 					states[1].integral_error = Mat::zeros(3, 1, CV_64F);
-	// 					states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
-	// 					states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
-	// 				}
-	// 				// else
-	// 				// {
-	// 				// 	// cout << "[INFO] Controller part has been executed" << endl;
-	// 				// }
-	// 			}
-	// 			else
-	// 			{
-	// 				cout << "[ERROR] No ArUco were found." << endl;
-	// 				// ros::shutdown();
-	// 				// states[1].Vx = 0;
-	// 				// states[1].Vy = 0;
-	// 				// states[1].Vz = 0;
-	// 				// states[1].Vroll = 0;
-	// 			}
-	// 		}
-	// 		else
-	// 		{
-	// 			states[1].Vx = tanh(after_t2);
-	// 			states[1].Vy = 0;
-	// 			states[1].Vz = 0;
-	// 			states[1].Vroll = 0;
-	// 			if (after_t2 < 2)
-	// 			{
-	// 				after_t2 += 0.005;
-	// 			}
-	// 		}
-	// 		// Mat desired_temp, new_points;
-	// 		// if (Kanade_Lucas_Tomasi(img_old2, actual, desired_temp, img_points2, states[1], matching_results[1]) < 0)
-	// 		// {
-	// 		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-	// 		// 	return;
-	// 		// }
-	// 		// else
-	// 		// {
-	// 		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-	// 		// }
-
-	// 		// Mat desired_temp, new_points;
-	// 		// states[1].desired_configuration.img.copyTo(desired_temp);
-
-	// 		for (int i = 0; i < matching_results[1].p1.rows; i++)
-	// 		{
-	// 			// circle(desired_temp, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-	// 			// circle(desired_temp, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-	// 			circle(actual, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-	// 			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-	// 		}
-
-	// 		if (!SHOW_IMAGES)
-	// 		{
-	// 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
-	// 			cv::resizeWindow("Frontal camera_2", 960, 540);
-	// 			imshow("Frontal camera_2", actual);
-	// 			waitKey(1);
-	// 		}
-
-	// 		string saveIMG;
-	// 		if (SAVE_IMAGES)
-	// 		{
-	// 			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2) + ".jpg";
-	// 			imwrite(workspace + saveIMG, actual);
-	// 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-	// 		}
-	// 		else
-	// 		{
-	// 			saveIMG = "/src/bearings/src/data/img/2_1.jpg";
-	// 			imwrite(workspace + saveIMG, actual);
-	// 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-	// 		}
-
-	// 		contIMG2++;
-
-	// 		/************************************************************* Prepare message */
-	// 		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
-	// 		// image_msg->header.frame_id = "matching_image";
-	// 		// image_msg->width = matching_results[1].img_matches.cols;
-	// 		// image_msg->height = matching_results[1].img_matches.rows;
-	// 		// image_msg->is_bigendian = false;
-	// 		// image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
-	// 		// image_msg->header.stamp = ros::Time::now();
-
-	// 		/* cout << "[INFO] Matching published" << endl; */
-	// 		// 	}
-	// 		// 	catch (cv_bridge::Exception &e)
-	// 		// 	{
-	// 		// 		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-	// 		// 					 msg->encoding.c_str());
-	// 		// 	}
-	// 		// }
-	// 		saveStuff(1);
-	// 	}
+		saveStuff(1);
+		contIMG2++;
+		if (contIMG2 % 100 == 0)
+		{
+			states[1].integral_error = Mat::zeros(3, 1, CV_64F);
+			states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
+		}
+	}
 }
 
 /*************** FOR POSES ***************/
@@ -1011,17 +810,18 @@ void saveStuff(int i)
 
 		if (i == 0 || i == 1)
 		{
-			integral_x[i].push_back(states[i].integral_error6.at<double>(0, 0));
-			integral_y[i].push_back(states[i].integral_error6.at<double>(1, 0));
-			integral_z[i].push_back(states[i].integral_error6.at<double>(2, 0));
+			integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
+			integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
+			integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
+			cout << "[INFO] Integral error: " << states[i].integral_error6 << endl;
 		}
 		else
 		{
 			integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
 			integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
 			integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
+			cout << "[INFO] Integral error: " << states[i].integral_error << endl;
 		}
-		cout << "[INFO] Integral error: " << states[i].integral_error << endl;
 
 		X[i].push_back(pos_dron[i].pose.position.x);
 		Y[i].push_back(pos_dron[i].pose.position.y);

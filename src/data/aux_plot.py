@@ -64,7 +64,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         if dron == 2 or dron == 1:
             err_pix_t = (err_pix) / max(err_pix[NUM+10:]) * max(err[NUM:])
             ax[0][dron-1].plot(time[NUM:], err_pix_t[NUM:],
-                               "r", label='Error (px)')
+                               "r", label='|Error (px)|')
         ax[0][dron-1].plot([time[NUM], time[-1]], [err[-1], err[-1]], ":",
                            c="purple", label=f"y={err[-1]:.3f}", alpha=.5)
         ax[0][dron-1].plot([time[NUM], time[-1]], [0, 0],
@@ -184,7 +184,7 @@ if lider == "1":
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
     err_pix = err_pix / max(err)
-    ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
+    ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='|Error (px)|')
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
     box = ax[0].get_position()
@@ -244,7 +244,7 @@ else:
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
     if np.any(err_pix != 0):
         err_pix = err_pix / max(err_pix) * max(err)
-        ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='Error (px)')
+        ax[0].plot(time[NUM:], err_pix[NUM:], "r", label='|Error (px)|')
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot([time[NUM], time[-1]], [err[-1], err[-1]], "k--", label=f"y={err[-1]:5f}")
     box = ax[0].get_position()
