@@ -27,8 +27,8 @@ bearing:
   ]
 
 # Gain on linear velocities
-gainv: .5
-gainv_max: 1.5
+gainv: 1.5
+gainv_max: 2.5
 
 # Gain on angular velocities
 gainw: .002

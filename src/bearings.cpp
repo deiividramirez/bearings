@@ -73,15 +73,15 @@ int main(int argc, char **argv)
 
 		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
 
-		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
 		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
 
 		if (DRONE_COUNT == 5)
 		{
-			// image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 		}
 	}
 	ros::Rate rate(30);
