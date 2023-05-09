@@ -38,12 +38,14 @@ int main(int argc, char **argv)
 	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
 	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
 	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
+	gen.getParam("LIM_MAX", LIM_MAX);
 
 	cout << "\n\n[INFO] DRONE: " << DRONE_NAME << endl;
 	cout << "[INFO] DRONE_COUNT: " << DRONE_COUNT << endl;
 	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
+	cout << "[INFO] Max iterations: " << LIM_MAX << endl;
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
@@ -70,19 +72,12 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
-
-		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
-
-		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
-
-		if (DRONE_COUNT == 5)
-		{
-			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
-		}
+		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// if (DRONE_COUNT == 5)
+		// 	image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 	}
 	ros::Rate rate(30);
 
@@ -109,6 +104,8 @@ int main(int argc, char **argv)
 
 		guoLider1 = GUO(&states[0]);
 		guoLider2 = GUO(&states[1]);
+
+		rotDrone1 = RotationalControl(&states[0]);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -177,7 +174,7 @@ int main(int argc, char **argv)
 			rate.sleep();
 		}
 
-		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 4000)
+		if (contIMG1 > LIM_MAX || contIMG2 > LIM_MAX || contIMG3 > LIM_MAX || contIMG4 > LIM_MAX || contGEN > 4*LIM_MAX)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
 			ros::shutdown();
@@ -249,7 +246,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 
 		// Getting the bearings from camera's drone
 		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
+		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[2], 3, pos_dron) < 0)
 		{
 			cout << "[ERROR] No bearing found" << endl;
 		}
@@ -315,7 +312,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 
 		// Getting the bearings from camera's drone
 		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
+		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[3], 4, pos_dron) < 0)
 		{
 			cout << "[ERROR] No bearing found" << endl;
 		}
@@ -381,7 +378,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 
 		// Getting the bearings from camera's drone
 		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, states[4], 5, pos_dron) < 0)
+		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[4], 5, pos_dron) < 0)
 		{
 			cout << "[ERROR] No bearing found" << endl;
 		}
@@ -449,6 +446,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		if (guoLider1.getVels(actual) == 0)
 		{
 			cout << "\n[INFO] Controller part has been executed" << endl;
+			rotDrone1.getVels(actual);
 		}
 		else
 		{
@@ -776,7 +774,7 @@ void saveStuff(int i)
 			  << ", Vz: " << states[i].Vz
 			  << "\nVroll: " << states[i].Vroll
 			  << ", Vpitch: " << states[i].Vpitch
-			  << ", Wyaw: " << states[i].Vyaw
+			  << ", Vyaw: " << states[i].Vyaw
 			  << "\n==> Error: " << states[i].error
 			  << "<==" << endl
 			  << endl;
@@ -798,7 +796,7 @@ void saveStuff(int i)
 			cout << "[INFO] Error: " << states[i].error << endl;
 		}
 
-		states[i].Vyaw = -states[i].Yaw;
+		// states[i].Vyaw = -states[i].Yaw;
 
 		vel_x[i].push_back(states[i].Vx);
 		vel_y[i].push_back(states[i].Vy);
@@ -813,14 +811,14 @@ void saveStuff(int i)
 			integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
 			integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
 			integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
-			cout << "[INFO] Integral error: " << states[i].integral_error6 << endl;
+			cout << "[INFO] Integral error: " << states[i].integral_error6.t() << endl;
 		}
 		else
 		{
 			integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
 			integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
 			integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
-			cout << "[INFO] Integral error: " << states[i].integral_error << endl;
+			cout << "[INFO] Integral error: " << states[i].integral_error.t() << endl;
 		}
 
 		X[i].push_back(pos_dron[i].pose.position.x);

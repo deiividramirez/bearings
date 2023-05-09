@@ -153,9 +153,12 @@ vector<vector<float>> integral_y = {integral_y1, integral_y2, integral_y3, integ
 vector<vector<float>> integral_z = {integral_z1, integral_z2, integral_z3, integral_z4, integral_z5};
 
 double after_t1 = 0, after_t2 = 0, after_t3 = 0, after_t4 = 0, after_t5 = 0;
+int LIM_MAX;
 
 #include "vc_state/GUO.h"
-#include "vc_state/BearingControl.h"
+#include "vc_state/RotationalControl.h"
 
 GUO guoLider1;
 GUO guoLider2;
+
+RotationalControl rotDrone1;

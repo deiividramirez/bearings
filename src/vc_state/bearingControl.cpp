@@ -51,8 +51,9 @@ int bearingControl(Mat actual_bearing,
    }
 
    // Error calculation
-   states[drone_id - 1].error = norm(suma1) + norm(suma2);
-   states[drone_id - 1].error_pix = states[drone_id - 1].error;
+   // states[drone_id - 1].error = norm(suma1) + norm(suma2);
+   states[drone_id - 1].error = norm(states[drone_id - 1].actual.bearings - states[drone_id - 1].desired.bearings, NORM_L2);
+   states[drone_id - 1].error_pix = norm(states[drone_id - 1].actual.points - states[drone_id - 1].desired.points, NORM_L2);
 
    double l0_Kp = states[drone_id - 1].Kv_max, linf_Kp = states[drone_id - 1].Kv;
    double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(75 * states[drone_id - 1].error) / (l0_Kp - linf_Kp)) + linf_Kp;

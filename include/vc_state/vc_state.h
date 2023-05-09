@@ -215,7 +215,7 @@ int Kanade_Lucas_Tomasi(const Mat &img_old,
 int getBearing(Mat &actual_image,
                Mat &store_bearing,
                Mat &store_ground_truth,
-               vc_state &state,
+               vc_state *state,
                int drone_id,
                vector<geometry_msgs::PoseStamped> &pos_dron);
 

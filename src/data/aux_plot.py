@@ -179,7 +179,7 @@ Velocidad final en yaw: {vyaw[-1]:5f} u/s""")
 
 if lider == "1":
     # PRIMER PLOT
-    fig, ax = plt.subplots(4, 1, figsize=(5, 10), num = f"Velocidades y errores para el dron {dron}")
+    fig, ax = plt.subplots(4, 1, figsize=(5, 10), num = f"Velocidades y errores para el dron {dron}", sharex=True)
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')
@@ -238,7 +238,7 @@ if lider == "1":
                 bbox_inches='tight', pad_inches=0.1)
 
 else:
-    fig, ax = plt.subplots(4, 1, figsize=(5, 8), num=f"Velocidades y errores para el dron {dron}")
+    fig, ax = plt.subplots(4, 1, figsize=(5, 8), num=f"Velocidades y errores para el dron {dron}", sharex=True)
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label='Error (c)')

@@ -6,10 +6,7 @@ public:
    Mat imgDesired;
    Mat imgDesiredGray;
    Mat imgActual;
-   Mat imgActualGray;
    vc_state *state;
-
-   float Vx, Vy, Vz, Vyaw;
 
    GUO()
    {
@@ -99,8 +96,10 @@ public:
       // {
       //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
       // }
+      // namedWindow("Desired", WINDOW_NORMAL);
+      // cv::resizeWindow("Desired", 550, 310);
       // imshow("Desired", (*this->state).desired.img);
-      // waitKey(0);
+      // waitKey(1);
 
       return 0;
    }
@@ -155,7 +154,8 @@ public:
          temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
          temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
          temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-         temporal.convertTo((*this->state).actual.points, CV_64F);
+         temporal.convertTo(temporal, CV_64F);
+         temporal.copyTo((*this->state).actual.points);
 
          break;
       }
@@ -182,28 +182,17 @@ public:
    )
    {
       cout << "[INFO] Getting velocities from GUO control..." << endl;
-      // // Compute the matching between the images using ORB as detector and descriptor
-      // if (compute_descriptors(img, state.params, state.desired_configuration, matching_result) < 0)
-      // {
-      //         cout << "Error en compute_descriptors" << endl;
-      //         return -1;
-      // }
 
-      // Temporal matrixes for calculation
-      // Mat p1s, p2s, p23D, ,
       Mat U, U_temp, L, Lo;
-      // p1s = Mat::zeros(matching_result.p1.rows, 3, CV_64F);
-      // p2s = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
-      // p23D = Mat::zeros(matching_result.p2.rows, 3, CV_64F);
       vector<vecDist> distancias;
       this->getActualData(img);
 
       // Send images points to sphere model by generic camera model
-      toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
+      // toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
 
       // Calculate the distances between the points in the sphere
-      // and sorting these distance for choose the greater ones
       distances((*this->state).desired.inSphere, (*this->state).actual.inSphere, distancias, (*this->state).params);
+      // and sorting these distance for choose the greater ones
       // sort(distancias.begin(), distancias.end(), mayorQue);
 
       // // Get interaction matrix and error vector with distances
@@ -224,22 +213,22 @@ public:
          return -1;
       }
 
-      Mat ERROR_PIX = (*this->state).actual.points - (*this->state).desired.points;
       (*this->state).error = norm(ERROR, NORM_L1);
-      (*this->state).error_pix = norm(ERROR_PIX, NORM_L2);
-
       cout << "[INFO] Error actual: " << (*this->state).error << endl;
-      cout << "[INFO] Error pix: " << (*this->state).error_pix << endl;
+
+      // Mat ERROR_PIX = (*this->state).actual.points - (*this->state).desired.points;
+      // (*this->state).error_pix = norm(ERROR_PIX, NORM_L2);
+      // cout << "[INFO] Error pix: " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(.3 * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
+      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-.3 * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
 
       double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
       double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
 
       cout << endl
-           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
+           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl
            << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << endl;
 
       (*this->state).lambda_kp = lambda_Kp;
@@ -272,8 +261,6 @@ public:
          (*this->state).Vy = (float)U.at<double>(0, 0);
          (*this->state).Vz = (float)U.at<double>(2, 0);
       }
-
-      (*this->state).Vyaw = (float)U.at<double>(5, 0);
 
       // Free the memory
       U.release();
@@ -393,9 +380,9 @@ public:
    {
       int n = distances.size(); // Number of distances
       // int n = 16; // Number of distances
-      std::cout << std::endl
-                << "[INFO] Size Interaction Matrix: [" << n << "x3]" << std::endl
-                << std::endl;
+      // std::cout << std::endl
+      //           << "[INFO] Size Interaction Matrix: [" << n << "x3]" << std::endl
+      //           << std::endl;
 
       Mat temp = Mat::zeros(3, 1, CV_64F); // Temp vector for calculation
       Mat L = Mat::zeros(n, 3, CV_64F);    // Interaction matrix

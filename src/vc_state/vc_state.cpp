@@ -85,15 +85,17 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
 {
         this->t += this->dt;
         // Integrating
-        this->X = this->X + this->Kv * this->Vx * this->dt;
-        this->Y = this->Y + this->Kv * this->Vy * this->dt;
-        this->Z = this->Z + this->Kv * this->Vz * this->dt;
-        this->Yaw = this->Yaw + this->Kw * this->Vyaw * this->dt;
+        this->X = this->X + this->Vx * this->dt;
+        this->Y = this->Y + this->Vy * this->dt;
+        this->Z = this->Z + this->Vz * this->dt;
+        this->Yaw = this->Yaw + this->Vyaw * this->dt;
 
         cout << endl
              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
-             << "SENDING THIS POS >> X: " << this->X << " Y:" << this->Y << " Z:" << this->Z << endl
-             << "Vx: " << this->Vx << " Vy:" << this->Vy << " Vz:" << this->Vz << endl;
+             << "SENDING THIS POS >> X: " << this->X << " - Y:" << this->Y << " - Z:" << this->Z << " - Yaw: " << this->Yaw << endl
+             << "Vx: " << this->Vx << " - Vy:" << this->Vy << " - Vz:" << this->Vz << " - Vyaw: " << this->Vyaw << endl
+             << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
+             << endl;
 
         // ros::Duration(0.1).sleep();
 

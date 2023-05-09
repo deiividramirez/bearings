@@ -1,6 +1,7 @@
 # DRONE: bebop2
 DRONE: iris
 DRONE_COUNT: 5  # 4 to 5 drones
+LIM_MAX: 2000  # Maximum number of iterations for each drone
 
 SAVE_DESIRED_IMAGES: 0
 SAVE_IMAGES: 0
