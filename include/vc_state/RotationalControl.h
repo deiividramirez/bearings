@@ -276,7 +276,7 @@ public:
       cout << "[INFO] Error actual en pix " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
-      double l0_Kp = .5*(*this->state).Kv_max, linf_Kp = .5*(*this->state).Kv;
+      double l0_Kp = 1*(*this->state).Kv_max, linf_Kp = 1*(*this->state).Kv;
       double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-.3 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
 
       cout << endl

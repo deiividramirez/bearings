@@ -25,15 +25,15 @@ bearing:
 # Gain on linear velocities
 ############################################################
 # Para el control #1
-gainv: 2
-gainv_max: 3
+gainv: 2.5
+gainv_max: .1
 ############################################################
 # Para el control #2
 # gain_v: .4
 
 # Gain on angular velocities
-gainw: .001
-gainw_max: .0001
+gainw: .02
+gainw_max: .01
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01

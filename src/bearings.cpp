@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
-		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
 		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
@@ -106,6 +106,10 @@ int main(int argc, char **argv)
 		guoLider2 = GUO(&states[1]);
 
 		rotDrone1 = RotationalControl(&states[0]);
+		rotDrone2 = RotationalControl(&states[1]);
+		// rotDrone3 = RotationalControl(&states[2]);
+		// rotDrone4 = RotationalControl(&states[3]);
+		// rotDrone5 = RotationalControl(&states[4]);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -510,6 +514,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		if (guoLider2.getVels(actual) == 0)
 		{
 			cout << "\n[INFO] Controller part has been executed" << endl;
+			rotDrone2.getVels(actual);
 		}
 		else
 		{

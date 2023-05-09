@@ -162,3 +162,7 @@ GUO guoLider1;
 GUO guoLider2;
 
 RotationalControl rotDrone1;
+RotationalControl rotDrone2;
+RotationalControl rotDrone3;
+RotationalControl rotDrone4;
+RotationalControl rotDrone5;
