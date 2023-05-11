@@ -277,7 +277,7 @@ public:
 
       // Choosing the gain for the control law
       double l0_Kp = 1*(*this->state).Kv_max, linf_Kp = 1*(*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-.3 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
+      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-1 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
 
       cout << endl
            << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl;
@@ -291,7 +291,7 @@ public:
 
       U_temp = -lambda_Kp * Lo * ERROR_I;
       cout << "U_temp = " << U_temp << endl;
-      (*this->state).Vyaw = -U_temp.at<double>(2, 0);
+      // (*this->state).Vyaw = -U_temp.at<double>(2, 0);
 
       // free memory
       U_temp.release(); 

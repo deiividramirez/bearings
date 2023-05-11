@@ -25,8 +25,8 @@ bearing:
 # Gain on linear velocities
 ############################################################
 # Para el control #1
-gainv: 2.5
-gainv_max: .1
+gainv: 3.5
+gainv_max: .5
 ############################################################
 # Para el control #2
 # gain_v: .4

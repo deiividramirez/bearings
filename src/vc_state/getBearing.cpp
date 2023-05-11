@@ -81,6 +81,7 @@ int getBearing(Mat &actual_image,
 
       store_bearing = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
       (*state).actual.points = Mat::zeros(4*(*state).params.seguimiento.rows, 2, CV_64F);
+      (*state).actual.bearings = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
 
       for (int32_t marker_index = 0; marker_index < (*state).params.seguimiento.rows; marker_index++)
       {
@@ -139,11 +140,13 @@ int getBearing(Mat &actual_image,
 
          store_bearing.at<double>(0, marker_index) = cos((*state).Yaw) * b1 - sin((*state).Yaw) * b2;
          store_bearing.at<double>(1, marker_index) = sin((*state).Yaw) * b1 + cos((*state).Yaw) * b2;
-         // store_bearing.at<double>(0, marker_index) = bear_temp.at<double>(0, 0);
-         // store_bearing.at<double>(1, marker_index) = bear_temp.at<double>(1, 0);
          store_bearing.at<double>(2, marker_index) = bear_temp.at<double>(2, 0);
 
+         store_bearing.copyTo((*state).actual.bearings);
+
       }
+
+      cout << "[INFO] Bearing calculated" << endl;
       return 0;
    }
 }

@@ -75,8 +75,8 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         ax[0][dron - 1].title.set_text(f"Drone {dron}")
         ax[0][dron - 1].plot(time[NUM:], err[NUM:], "purple", label="Error (c)")
         if dron == 2 or dron == 1:
-            err_pix_t = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
-            ax[0][dron - 1].plot(time[NUM:], err_pix_t[NUM:], "r", label="|Error (px)|")
+            err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
+            ax[0][dron - 1].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
         ax[0][dron - 1].plot(
             [time[NUM], time[-1]],
             [err[-1], err[-1]],
@@ -214,7 +214,7 @@ if lider == "1":
     fig.suptitle(f"Velocidades y errores para el dron {dron}")
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label="Error (c)")
-    err_pix = err_pix / max(err)
+    err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
     ax[0].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot(
@@ -299,7 +299,7 @@ else:
 
     ax[0].plot(time[NUM:], err[NUM:], "purple", label="Error (c)")
     if np.any(err_pix != 0):
-        err_pix = err_pix / max(err_pix) * max(err)
+        err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
         ax[0].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
     ax[0].plot([time[NUM], time[-1]], [0, 0], "k--", label="y=0")
     ax[0].plot(

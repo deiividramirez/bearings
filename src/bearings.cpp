@@ -74,10 +74,10 @@ int main(int argc, char **argv)
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
 		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		// if (DRONE_COUNT == 5)
-		// 	image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		if (DRONE_COUNT == 5)
+			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 	}
 	ros::Rate rate(30);
 
@@ -107,9 +107,9 @@ int main(int argc, char **argv)
 
 		rotDrone1 = RotationalControl(&states[0]);
 		rotDrone2 = RotationalControl(&states[1]);
-		// rotDrone3 = RotationalControl(&states[2]);
-		// rotDrone4 = RotationalControl(&states[3]);
-		// rotDrone5 = RotationalControl(&states[4]);
+		rotDrone3 = RotationalControl(&states[2]);
+		rotDrone4 = RotationalControl(&states[3]);
+		rotDrone5 = RotationalControl(&states[4]);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -256,12 +256,11 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		else
 		{
-			cout << "[INFO] Got bearing successfully" << endl;
+			cout << "\n[INFO] Got bearing successfully" << endl;
 
 			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 states,
+			if (bearingControl(bearing_ground_truth,
+									 &states,
 									 3) < 0)
 			{
 				cout << "[ERROR] Bearing control failed" << endl;
@@ -269,6 +268,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Bearing control success" << endl;
+				rotDrone3.getVels(actual);
 			}
 		}
 
@@ -325,9 +325,8 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] Got bearing successfully" << endl;
 
 			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 states,
+			if (bearingControl(bearing_ground_truth,
+									 &states,
 									 4) < 0)
 			{
 				cout << "[ERROR] Bearing control failed" << endl;
@@ -335,6 +334,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Bearing control success" << endl;
+				rotDrone4.getVels(actual);
 			}
 		}
 
@@ -391,9 +391,8 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[INFO] Got bearing successfully" << endl;
 
 			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 states,
+			if (bearingControl(bearing_ground_truth,
+									 &states,
 									 5) < 0)
 			{
 				cout << "[ERROR] Bearing control failed" << endl;
@@ -401,6 +400,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			else
 			{
 				cout << "[INFO] Bearing control success" << endl;
+				rotDrone5.getVels(actual);
 			}
 		}
 
