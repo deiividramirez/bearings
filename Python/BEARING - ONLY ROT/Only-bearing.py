@@ -259,10 +259,18 @@ integralSigno = np.zeros((n, d))
 
 Q = np.array(
     [
-        composeR(np.random.rand()*2*np.pi, np.random.rand()*2*np.pi, np.random.rand()*2*np.pi),
-        composeR(0, 0, 0),
-        composeR(0, 0, 0),
-        composeR(np.random.rand()*2*np.pi, np.random.rand()*2*np.pi, np.random.rand()*2*np.pi),
+        composeR(
+            np.random.rand() * 2 * np.pi,
+            np.random.rand() * 2 * np.pi,
+            np.random.rand() * 2 * np.pi,
+        ),
+        composeR(0, 0, np.pi / 2),
+        composeR(0, 0, np.pi / 2),
+        composeR(
+            np.random.rand() * 2 * np.pi,
+            np.random.rand() * 2 * np.pi,
+            np.random.rand() * 2 * np.pi,
+        ),
     ]
 )
 
@@ -326,7 +334,9 @@ for num, tt in enumerate(t):
             )
 
             w[i] = (
-                Kp * np.abs(sum3_w) ** (0.5) * np.sign(sum3_w)
+                Kp
+                * np.abs(sum3_w) ** (0.5)
+                * np.sign(sum3_w)
                 # sum3_w
             )
 
@@ -364,113 +374,12 @@ arrIntSigno = np.array(arrIntSigno)
 # PLOTEO DE VELOCIDADES SI: estad = True
 # ----------------------------------------------------------------------------------------------------------------------
 if estad:
-    fig = plt.figure(figsize=(5, 6))
-    ax = [
-        plt.subplot(5, 3, (1, 1)),
-        plt.subplot(5, 3, (2, 2)),
-        plt.subplot(5, 3, (3, 3)),
-        plt.subplot(5, 3, (4, 4)),
-        plt.subplot(5, 3, (5, 5)),
-        plt.subplot(5, 3, (6, 6)),
-        plt.subplot(5, 3, (7, 9)),
-        plt.subplot(5, 3, (10, 12)),
-        plt.subplot(5, 3, (13, 15)),
-    ]
+    fig1, ax1 = plt.subplots(3, 1, figsize=(5, 8), num=f"Velocidades, error e integración", sharex=True)
 
-    ax[0].set_title("X")
-    # plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[0].plot(
-            t,
-            arrx[1:, i, 0],
-            color=colores[i],
-            alpha=1,
-            label=labels[i],
-        )
-
-    # ax[0].set_xlabel("Tiempo [s]")
-    ax[0].set_ylabel("Pos [m]")
-    # ax[0].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
-
-    ax[1].set_title("Y")
-    # plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[1].plot(
-            t,
-            arrx[1:, i, 1],
-            color=colores[i],
-            alpha=1,
-            label=labels[i],
-        )
-
-    # ax[1].set_xlabel("Tiempo [s]")
-    ax[1].set_ylabel("Pos [m]")
-    # # ax[1].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
-
-    ax[2].set_title("Z")
-    # plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[2].plot(
-            t,
-            arrx[1:, i, 2],
-            color=colores[i],
-            alpha=1,
-            label=labels[i],
-        )
-
-    # ax[2].set_xlabel("Tiempo [s]")
-    ax[2].set_ylabel("Pos [m]")
-    ax[2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
-
-    ax[3].set_title("Roll")
+    ax1[0].set_title("Velocidades")
     plt.subplots_adjust(right=0.75)
     for i in range(n):
-        ax[3].plot(
-            t,
-            arrQ[1:, i, 0],
-            color=colores[i],
-            alpha=1,
-            label=labels[i],
-        )
-
-    # ax[3].set_xlabel("Tiempo [s]")
-    ax[3].set_ylabel("Áng [rad]")
-    # ax[3].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
-
-    ax[4].set_title("Pitch")
-    plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[4].plot(
-            t,
-            arrQ[1:, i, 1],
-            color=colores[i],
-            alpha=1,
-            label=labels[i],
-        )
-
-    # ax[4].set_xlabel("Tiempo [s]")
-    ax[4].set_ylabel("Áng [rad]")
-    # ax[4].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
-
-    ax[5].set_title("Yaw")
-    plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[5].plot(
-            t,
-            arrQ[1:, i, 2],
-            color=colores[i],
-            alpha=1 if i != P1 and i != P2 else 0.5,
-            label=labels[i],
-        )
-
-    # ax[5].set_xlabel("Tiempo [s]")
-    ax[5].set_ylabel("Áng [rad]")
-    ax[5].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
-
-    ax[6].set_title("Velocidades")
-    # plt.subplots_adjust(right=0.75)
-    for i in range(n):
-        ax[6].plot(
+        ax1[0].plot(
             t,
             np.mean(arrv[1:, i], axis=1),
             color=colores[i],
@@ -478,31 +387,31 @@ if estad:
             label=labels[i],
         )
 
-    ax[6].set_xlabel("Tiempo [s]")
-    ax[6].set_ylabel("Velocidad [m/s]")
-    ax[6].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+    ax1[0].set_xlabel("Tiempo [s]")
+    ax1[0].set_ylabel("Velocidad [m/s]")
+    ax1[0].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
 
-    ax[7].set_title("Error")
-    # plt.subplots_adjust(right=0.75)
+    ax1[1].set_title("Error")
+    plt.subplots_adjust(right=0.75)
     for i in range(n):
         if i != P1 and i != P2:
-            ax[7].plot(t, errorv[1:, i], color=colores[i], alpha=1, label=labels[i])
-            ax[7].plot(
+            ax1[1].plot(t, errorv[1:, i], color=colores[i], alpha=1, label=labels[i])
+            ax1[1].plot(
                 [0, tmax],
                 [errorv[-1, i], errorv[-1, i]],
                 "--",
                 color=colores[i],
                 label=f"y = {errorv[-1, i]:.3f}",
             )
-    ax[7].set_xlabel("Tiempo [s]")
-    ax[7].set_ylabel("Error [m]")
-    ax[7].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+    ax1[1].set_xlabel("Tiempo [s]")
+    ax1[1].set_ylabel("Error [m]")
+    ax1[1].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
 
-    ax[8].set_title("Integración de bearings")
-    # plt.subplots_adjust(right=0.75)
+    ax1[2].set_title("Integración de bearings")
+    plt.subplots_adjust(right=0.75)
     for i in range(n):
         if i != P1 and i != P2:
-            ax[8].plot(
+            ax1[2].plot(
                 t,
                 np.mean(arrIntSigno[1:, i], axis=1),
                 color=colores[i],
@@ -510,9 +419,96 @@ if estad:
                 label=labels[i],
             )
 
-    ax[8].set_xlabel("Tiempo [s]")
-    ax[8].set_ylabel("Integración [rad]")
-    ax[8].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+    ax1[2].set_xlabel("Tiempo [s]")
+    ax1[2].set_ylabel("Integración [rad]")
+    ax1[2].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+
+    plt.tight_layout()
+
+    fig2, ax2 = plt.subplots(2, 3, figsize=(8, 5), num=f"Posiciones y ángulos", sharex=True)
+
+    ax2[0, 0].set_title("X")
+    # plt.subplots_adjust(right=0.75)
+    for i in range(n):
+        ax2[0, 0].plot(
+            t,
+            arrx[1:, i, 0],
+            color=colores[i],
+            alpha=1,
+            label=labels[i],
+        )
+
+    ax2[0,0].set_xlabel("Tiempo [s]")
+    ax2[0, 0].set_ylabel("Pos [m]")
+
+    ax2[0, 1].set_title("Y")
+    for i in range(n):
+        ax2[0, 1].plot(
+            t,
+            arrx[1:, i, 1],
+            color=colores[i],
+            alpha=1,
+            label=labels[i],
+        )
+
+    ax2[0,1].set_xlabel("Tiempo [s]")
+    ax2[0, 1].set_ylabel("Pos [m]")
+
+    ax2[0, 2].set_title("Z")
+    plt.subplots_adjust(right=0.75)
+    for i in range(n):
+        ax2[0, 2].plot(
+            t,
+            arrx[1:, i, 2],
+            color=colores[i],
+            alpha=1,
+            label=labels[i],
+        )
+
+    ax2[0,2].set_xlabel("Tiempo [s]")
+    ax2[0, 2].set_ylabel("Pos [m]")
+    ax2[0,2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
+
+    ax2[1, 0].set_title("Roll")
+    for i in range(n):
+        ax2[1, 0].plot(
+            t,
+            arrQ[1:, i, 0],
+            color=colores[i],
+            alpha=1,
+            label=labels[i],
+        )
+
+    ax2[1,0].set_xlabel("Tiempo [s]")
+    ax2[1, 0].set_ylabel("Áng [rad]")
+
+    ax2[1, 1].set_title("Pitch")
+    for i in range(n):
+        ax2[1, 1].plot(
+            t,
+            arrQ[1:, i, 1],
+            color=colores[i],
+            alpha=1,
+            label=labels[i],
+        )
+
+    ax2[1,1].set_xlabel("Tiempo [s]")
+    ax2[1, 1].set_ylabel("Áng [rad]")
+
+    ax2[1, 2].set_title("Yaw")
+    plt.subplots_adjust(right=0.75)
+    for i in range(n):
+        ax2[1, 2].plot(
+            t,
+            arrQ[1:, i, 2],
+            color=colores[i],
+            alpha=1 if i != P1 and i != P2 else 0.5,
+            label=labels[i],
+        )
+
+    ax2[1,2].set_xlabel("Tiempo [s]")
+    ax2[1, 2].set_ylabel("Áng [rad]")
+    ax2[1,2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
 
     plt.tight_layout()
 
@@ -536,7 +532,7 @@ def animate(num: int):
 
     # Recorrer todos los drones
     for i in range(n):
-
+        Qi = composeR(arrQ[num, i, 0], arrQ[num, i, 1], arrQ[num, i, 2])
         if i != P1 or i != P2:
             # Ploteo de los puntos iniciales
             ax.plot3D(
@@ -547,7 +543,7 @@ def animate(num: int):
                 color=trayec[i],
                 alpha=1,
             )
-            
+
             # Ploteo de los puntos finales
             ax.plot3D(
                 [arrx[-1, i, 0]],
@@ -560,19 +556,22 @@ def animate(num: int):
 
         for j in range(n):
             # Ploteo de los bearings
-            if i != P1 and i != P2:
+            if i != P1 and i != P2 and np.any(gijA[i, j, :] != 0):
+                temporal = Qi @ gijA[i, j, :]
+
                 ax.plot3D(
-                    [arrx[num, i, 0], arrx[num, i, 0] + gijA[i, j, 0]],
-                    [arrx[num, i, 1], arrx[num, i, 1] + gijA[i, j, 1]],
-                    [arrx[num, i, 2], arrx[num, i, 2] + gijA[i, j, 2]],
+                    [arrx[num, i, 0], arrx[num, i, 0] + temporal[0]],
+                    [arrx[num, i, 1], arrx[num, i, 1] + temporal[1]],
+                    [arrx[num, i, 2], arrx[num, i, 2] + temporal[2]],
                     color="purple",
                     alpha=1,
                 )
 
+        temporal = Qi @ arrv[num, i, :]
         ax.plot3D(
-            [arrx[num, i, 0], arrx[num, i, 0] + arrv[num, i, 0]],
-            [arrx[num, i, 1], arrx[num, i, 1] + arrv[num, i, 1]],
-            [arrx[num, i, 2], arrx[num, i, 2] + arrv[num, i, 2]],
+            [arrx[num, i, 0], arrx[num, i, 0] + temporal[0]],
+            [arrx[num, i, 1], arrx[num, i, 1] + temporal[1]],
+            [arrx[num, i, 2], arrx[num, i, 2] + temporal[2]],
             color="k",
             alpha=1,
         )
@@ -624,18 +623,20 @@ def animate(num: int):
         )
 
     ax.legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
+    plt.tight_layout()
 
 # Animación
 if anim:
-    fig = plt.figure()
-    ax = plt.axes(projection="3d")
+    fig = plt.figure(figsize=(6, 6), num=f"Simulación")
+    ax = fig.add_subplot(111, projection="3d")
+
     # ax.azim = -15
     # ax.elev = 15
     # ax.dist = 8
     ax.set_title("Simulación")
     plt.subplots_adjust(right=0.8)
     line_ani = animation.FuncAnimation(
-        fig, animate, interval=1, frames=len(t) // 10, repeat=False
+        fig, animate, interval=1, frames=len(t) // 10, repeat=True
     )
     # animate(-1)
 
