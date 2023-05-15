@@ -74,12 +74,27 @@ public:
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 2, CV_32F);
-         temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
-         temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
-         temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
-         temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-         temporal.convertTo((*this->state).desired.points, CV_64F);
+         Mat temporal = Mat::zeros(4, 3, CV_32F);
+         Mat temporal2;
+         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+         Mat Kinv;
+
+         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
+         for (int i = 0; i < 4; i++)
+         {
+            temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
+            temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
+            temporal.at<float>(i, 2) = 1;
+
+            temporal2 = Kinv * temporal.row(i).t();
+
+            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+
+         }
+         temporal3.convertTo((*this->state).desired.normPoints, CV_64F);
+         temporal.colRange(0, 2).convertTo((*this->state).desired.points, CV_64F);
 
          break;
       }
@@ -89,7 +104,13 @@ public:
       (*this->state).desired.markerIds = markerIds;
       (*this->state).desired.markerCorners = markerCorners;
 
-      this->toSphere((*this->state).desired.points, (*this->state).desired.inSphere);
+      this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
+
+      cout << "POINTS" << endl;
+      cout << (*this->state).desired.points << endl;
+      cout << "DISIRED SPHERE" << endl;
+      cout << (*this->state).desired.inSphere << endl;
+
 
       // // draw detected markers on the image
       // for (int i = 0; i < (*this->state).desired.points.rows; i++)
@@ -149,23 +170,41 @@ public:
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 2, CV_32F);
-         temporal.at<Point2f>(0, 0) = Point2f(markerCorners[marker_index][0].x, markerCorners[marker_index][0].y);
-         temporal.at<Point2f>(1, 0) = Point2f(markerCorners[marker_index][1].x, markerCorners[marker_index][1].y);
-         temporal.at<Point2f>(2, 0) = Point2f(markerCorners[marker_index][2].x, markerCorners[marker_index][2].y);
-         temporal.at<Point2f>(3, 0) = Point2f(markerCorners[marker_index][3].x, markerCorners[marker_index][3].y);
-         temporal.convertTo(temporal, CV_64F);
-         temporal.copyTo((*this->state).actual.points);
+         Mat temporal = Mat::zeros(4, 3, CV_32F);
+         Mat temporal2;
+         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+         Mat Kinv;
+
+         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
+         for (int i = 0; i < 4; i++)
+         {
+            temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
+            temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
+            temporal.at<float>(i, 2) = 1;
+
+            temporal2 = Kinv * temporal.row(i).t();
+
+            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+         }
+
+         temporal3.convertTo((*this->state).actual.normPoints, CV_64F);
+         temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
+         
 
          break;
       }
+
+      // cout << "normPoints: " << (*this->state).actual.normPoints << endl;
+      // cout << "points: " << (*this->state).actual.points << endl;
 
       (*this->state).actual.img = this->imgDesired;
       (*this->state).actual.imgGray = this->imgDesiredGray;
       (*this->state).actual.markerIds = markerIds;
       (*this->state).actual.markerCorners = markerCorners;
 
-      this->toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
+      this->toSphere((*this->state).actual.points, &(*this->state).actual.inSphere);
 
       // // draw detected markers on the image
       // for (int i = 0; i < (*this->state).actual.points.rows; i++)
@@ -181,7 +220,7 @@ public:
    int getVels(Mat img // Image to be processed
    )
    {
-      cout << "[INFO] Getting velocities from GUO control..." << endl;
+      cout << "\n[INFO] Getting velocities from GUO control..." << endl;
 
       Mat U, U_temp, L, Lo;
       vector<vecDist> distancias;
@@ -210,7 +249,7 @@ public:
       if (det < 1e-8)
       {
          cout << "[ERROR] DET = ZERO --> det = " << det << endl;
-         return -1;
+         return -2;
       }
 
       (*this->state).error = norm(ERROR, NORM_L1);
@@ -274,11 +313,11 @@ public:
    }
 
    void toSphere(Mat points,       // Points in the target image
-                 Mat &onSphereSave // Empty matrix for 3D recovery direction on sphere of points
+                 Mat *onSphereSave // Empty matrix for 3D recovery direction on sphere of points
    )
    {
       Mat temp = Mat::zeros(3, 1, CV_64F), tmp;          // Temporal matrix for calculation
-      onSphereSave = Mat::zeros(points.rows, 3, CV_64F); // Matrix for 3D recovery direction on sphere of points
+      (*onSphereSave) = Mat::zeros(points.rows, 3, CV_64F); // Matrix for 3D recovery direction on sphere of points
 
       for (int i = 0; i < points.rows; i++)
       {
@@ -288,9 +327,10 @@ public:
          temp.at<double>(2, 0) = 1;
          // Invert the matrix of the camera and multiply by the points
          tmp = (*this->state).params.Kinv * temp;
-         // Normalize the points
-         onSphereSave.row(i) = tmp.t() / norm(tmp);
+         // // Normalize the points
+         (*onSphereSave).row(i) = tmp.t() / norm(tmp);
       }
+
       // Free the memory
       temp.release();
       tmp.release();
@@ -308,6 +348,9 @@ public:
 
       // NUM = 16; // Number of points to calculate the distance
       NUM = p2.rows; // Number of points to calculate the distance
+
+      cout << "DISTANCIAS" << endl;
+      cout << "NUM: " << NUM << endl;
 
       for (int i = 0; i < NUM; i++)
       {
@@ -389,6 +432,9 @@ public:
       Mat pi, pj;                          // Temporal points for calculation
       double s;
       cout << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << endl;
+      cout << "n: " << n << endl;
+      cout << "distances.size(): " << distances.size() << endl;
+      cout << "p2s.size(): " << p2s.size() << endl;
       for (int i = 0; i < n; i++)
       {
          pi = p2s.row(distances[i].i);

@@ -64,6 +64,7 @@ typedef struct savingData
     vector<int> markerIds;
     vector<vector<Point2f>> markerCorners;
     Mat points;
+    Mat normPoints;
 
     Mat inSphere;
     Mat bearings;
