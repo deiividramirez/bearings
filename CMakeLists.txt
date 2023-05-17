@@ -211,9 +211,6 @@ src/vc_state/Moore_Penrose_PInv.cpp
 src/vc_state/saveDesired.cpp
 src/vc_state/vc_state.cpp
 src/vc_state/getBearing.cpp
-src/vc_state/bearingControl.cpp
-
-
 #src/vc_state/posesCallback.cpp
 )
 target_link_libraries(bearings ${catkin_LIBRARIES})
