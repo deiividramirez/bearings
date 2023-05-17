@@ -156,11 +156,15 @@ double after_t1 = 0, after_t2 = 0, after_t3 = 0, after_t4 = 0, after_t5 = 0;
 int LIM_MAX;
 
 #include "vc_state/GUO.h"
-#include "vc_state/RotationalControl.h"
-
 GUO guoLider1;
 GUO guoLider2;
 
+#include "vc_state/bearingControl.h"
+bearingControl bearDrone3;
+bearingControl bearDrone4;
+bearingControl bearDrone5;
+
+#include "vc_state/RotationalControl.h"
 RotationalControl rotDrone1;
 RotationalControl rotDrone2;
 RotationalControl rotDrone3;

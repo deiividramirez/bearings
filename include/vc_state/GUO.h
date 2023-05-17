@@ -55,22 +55,30 @@ public:
       }
       cout << endl;
 
-      int marker_index = -1;
-      for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
-      {
+      int indice;
 
+      // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
+
+      (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+      (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+
+      for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
+      {
+         indice = -1;
          for (int i = 0; i < markerIds.size(); i++)
          {
-            if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
+            if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
             {
-               cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
-               marker_index = i;
+               cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+               // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
+               indice = i;
                break;
             }
          }
-         if (marker_index == -1)
+
+         if (indice == -1)
          {
-            cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
+            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
             return -1;
          }
 
@@ -80,23 +88,20 @@ public:
          Mat Kinv;
 
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
-
          for (int i = 0; i < 4; i++)
          {
-            temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
-            temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
+            temporal.at<float>(i, 0) = markerCorners[indice][i].x;
+            temporal.at<float>(i, 1) = markerCorners[indice][i].y;
             temporal.at<float>(i, 2) = 1;
 
             temporal2 = Kinv * temporal.row(i).t();
 
             temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
             temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
-
          }
-         temporal3.convertTo((*this->state).desired.normPoints, CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).desired.points, CV_64F);
 
-         break;
+         temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
       }
 
       (*this->state).desired.img = this->imgDesired;
@@ -106,12 +111,6 @@ public:
 
       this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
 
-      cout << "POINTS" << endl;
-      cout << (*this->state).desired.points << endl;
-      cout << "DISIRED SPHERE" << endl;
-      cout << (*this->state).desired.inSphere << endl;
-
-
       // // draw detected markers on the image
       // for (int i = 0; i < (*this->state).desired.points.rows; i++)
       // {
@@ -120,7 +119,7 @@ public:
       // namedWindow("Desired", WINDOW_NORMAL);
       // cv::resizeWindow("Desired", 550, 310);
       // imshow("Desired", (*this->state).desired.img);
-      // waitKey(1);
+      // waitKey(0);
 
       return 0;
    }
@@ -191,7 +190,6 @@ public:
 
          temporal3.convertTo((*this->state).actual.normPoints, CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
-         
 
          break;
       }
@@ -316,7 +314,7 @@ public:
                  Mat *onSphereSave // Empty matrix for 3D recovery direction on sphere of points
    )
    {
-      Mat temp = Mat::zeros(3, 1, CV_64F), tmp;          // Temporal matrix for calculation
+      Mat temp = Mat::zeros(3, 1, CV_64F), tmp;             // Temporal matrix for calculation
       (*onSphereSave) = Mat::zeros(points.rows, 3, CV_64F); // Matrix for 3D recovery direction on sphere of points
 
       for (int i = 0; i < points.rows; i++)

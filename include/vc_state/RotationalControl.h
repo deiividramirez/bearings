@@ -21,14 +21,14 @@ public:
 
       cout << "\n[INFO] Getting desired data for Rotational control...";
 
-      if (this->getDesiredData() < 0)
-      {
-         cout << "[ERROR] Desired ArUco not found" << endl;
-         ros::shutdown();
-         exit(-1);
-      }
+      // if (this->getDesiredData() < 0)
+      // {
+      //    cout << "[ERROR] Desired ArUco not found" << endl;
+      //    ros::shutdown();
+      //    exit(-1);
+      // }
+      // cout << "[INFO] Desired data obtained" << endl;
 
-      cout << "[INFO] Desired data obtained" << endl;
    }
 
    int getDesiredData()

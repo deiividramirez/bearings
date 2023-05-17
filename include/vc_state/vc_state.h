@@ -220,10 +220,6 @@ int getBearing(Mat &actual_image,
                int drone_id,
                vector<geometry_msgs::PoseStamped> &pos_dron);
 
-int bearingControl(Mat position,
-                   vector<vc_state> *states,
-                   int drone_id);
-
 Mat signMat(Mat mat);
 Mat robust(Mat error);
 

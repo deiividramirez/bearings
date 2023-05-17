@@ -83,7 +83,7 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
             alpha=0.5,
         )
         if np.any(err_pix != 0):
-            # err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
+            err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
             ax[0][dron - 1].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
             ax[0][dron - 1].plot(
                 [time[NUM], time[-1]],
@@ -230,7 +230,7 @@ if lider == "1":
         alpha=0.5,
     )
     if np.any(err_pix != 0):
-        # err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
+        err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
         ax[0].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
         ax[0].plot(
             [time[NUM], time[-1]],
@@ -326,7 +326,7 @@ else:
         alpha=0.5,
     )
     if np.any(err_pix != 0):
-        # err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
+        err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
         ax[0].plot(time[NUM:], err_pix[NUM:], "r", label="|Error (px)|")
         ax[0].plot(
             [time[NUM], time[-1]],

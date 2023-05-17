@@ -260,16 +260,16 @@ integralSigno = np.zeros((n, d))
 Q = np.array(
     [
         composeR(
-            np.random.rand() * 2 * np.pi,
-            np.random.rand() * 2 * np.pi,
-            np.random.rand() * 2 * np.pi,
+            np.random.rand() * np.pi/2,
+            np.random.rand() * np.pi/2,
+            np.random.rand() * np.pi/2,
         ),
-        composeR(0, 0, np.pi / 2),
-        composeR(0, 0, np.pi / 2),
+        composeR(0, 0, 0),
+        composeR(0, 0, 0),
         composeR(
-            np.random.rand() * 2 * np.pi,
-            np.random.rand() * 2 * np.pi,
-            np.random.rand() * 2 * np.pi,
+            np.random.rand() * np.pi/2,
+            np.random.rand() * np.pi/2,
+            np.random.rand() * np.pi/2,
         ),
     ]
 )
@@ -289,7 +289,7 @@ arrIntSigno = [np.zeros((n, d))]
 print(f"Posiciones iniciales: {x} \n")
 print(f"Velocidades iniciales: {v} \n")
 
-tmax = 10
+tmax = 20
 dt = 0.01
 t = [i * dt for i in range(int(tmax / dt))]
 
@@ -298,10 +298,12 @@ t = [i * dt for i in range(int(tmax / dt))]
 
 # Ganancias del controlador
 Kp = 2
-Kv = 0
+Kv = 0.01
 
 for num, tt in enumerate(t):
     error = np.zeros(n)
+    # if num%500 == 0:
+    #     arrIntSigno[-1] = np.zeros((n, d))
     for i in range(n):
         if i != P1 and i != P2:
             suma1 = np.zeros(d)
@@ -313,9 +315,8 @@ for num, tt in enumerate(t):
                 if i != j and np.any(gijA[i, j, :] != 0):
                     # suma1 += normalize(x[j] - x[i]) - gijA[i, j, :]
                     suma2 -= (
-                        ortProj((ACTUAL_BEAR := (Q[i].T @ normalize(x[j] - x[i]))))
-                        @ (np.eye(3) + Q[i].T @ Q[j])
-                        / 2
+                        ortProj((ACTUAL_BEAR := ( Q[i].T @ normalize(x[j] - x[i]))))
+                        @ (np.eye(3) + Q[i].T @ Q[j]) / 2
                         @ gijA[i, j, :]
                     )
                     suma2_w += -(Q[j].T @ Q[i] - Q[i].T @ Q[j])
@@ -323,26 +324,22 @@ for num, tt in enumerate(t):
                     error[i] += np.linalg.norm(ACTUAL_BEAR - gijA[i, j, :])
 
             suma3 = suma1 + suma2
-            integralSigno[i, :] = arrIntSigno[-1][i, :] + dt * np.sign(suma3)
+            integralSigno[i] = arrIntSigno[-1][i] + dt * np.sign(suma3)
 
-            sum3_w = suma2_w / 8
+            sum3_w = suma2_w
 
             v[i] = (
-                Kp * np.abs(suma3) ** (0.5) * np.sign(suma3)
-                + Kv * integralSigno[i, :]
+                Kp * np.abs(suma3) ** (0.5) * np.sign(suma3) + Kv * integralSigno[i, :]
                 # suma3
             )
 
             w[i] = (
-                Kp
-                * np.abs(sum3_w) ** (0.5)
-                * np.sign(sum3_w)
-                # sum3_w
+                # np.abs(sum3_w) ** (.5) * np.sign(sum3_w)
+                sum3_w / 2
             )
 
         else:
-            v[i] = 0  # np.sin(tt / 3)
-            # w[i] = skewMatrix(np.array([0, 0, 0]))
+            v[i] = .5
 
         x[i] += dt * Q[i] @ v[i]
         Q[i] += dt * (Q[i] @ w[i])
@@ -379,13 +376,21 @@ if estad:
     ax1[0].set_title("Velocidades")
     plt.subplots_adjust(right=0.75)
     for i in range(n):
-        ax1[0].plot(
-            t,
-            np.mean(arrv[1:, i], axis=1),
-            color=colores[i],
-            alpha=1 if i != P1 and i != P2 else 0.5,
-            label=labels[i],
-        )
+        if i != P1 and i != P2:
+            ax1[0].plot(
+                t,
+                arrv[1:, i],
+                # color=colores[i],
+                # alpha=(1, .8, .6),
+                label=(labels[i]+" x", labels[i]+" y", labels[i]+" z"),
+            )
+    ax1[0].plot(
+        t,
+        arrv[1:, P1],
+        color=colores[P1],
+        alpha=.5,
+        label=("Desired x", "Desired y", "Desired z"),
+    )
 
     ax1[0].set_xlabel("Tiempo [s]")
     ax1[0].set_ylabel("Velocidad [m/s]")

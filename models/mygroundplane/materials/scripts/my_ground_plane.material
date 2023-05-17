@@ -10,8 +10,8 @@
 
           texture_unit
           {
-            texture MyImage.png     
-	    scale 0.1 0.1    
+            texture Grass.png     
+	          scale 0.1 0.1    
           }
         }
       }

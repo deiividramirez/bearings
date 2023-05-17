@@ -105,6 +105,10 @@ int main(int argc, char **argv)
 		guoLider1 = GUO(&states[0]);
 		guoLider2 = GUO(&states[1]);
 
+		bearDrone3 = bearingControl(&states[2]);
+		bearDrone4 = bearingControl(&states[3]);
+		bearDrone5 = bearingControl(&states[4]);
+
 		rotDrone1 = RotationalControl(&states[0]);
 		rotDrone2 = RotationalControl(&states[1]);
 		rotDrone3 = RotationalControl(&states[2]);
@@ -178,7 +182,7 @@ int main(int argc, char **argv)
 			rate.sleep();
 		}
 
-		if (contIMG1 > LIM_MAX || contIMG2 > LIM_MAX || contIMG3 > LIM_MAX || contIMG4 > LIM_MAX || contGEN > 4*LIM_MAX)
+		if (contIMG1 > LIM_MAX || contIMG2 > LIM_MAX || contIMG3 > LIM_MAX || contIMG4 > LIM_MAX || contGEN > 4 * LIM_MAX)
 		{
 			cout << "[ERROR] No convergence, quitting" << endl;
 			ros::shutdown();
@@ -249,27 +253,13 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[2], 3, pos_dron) < 0)
+		if (bearDrone3.getVels(actual) < 0)
 		{
-			cout << "[ERROR] No bearing found" << endl;
+			cout << "[ERROR] Bearing control failed" << endl;
 		}
 		else
 		{
-			cout << "\n[INFO] Got bearing successfully" << endl;
-
-			// Executing bearing only control
-			if (bearingControl(bearing_ground_truth,
-									 &states,
-									 3) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				rotDrone3.getVels(actual);
-			}
+			cout << "[INFO] Bearing control success" << endl;
 		}
 
 		// Saving images
@@ -287,7 +277,6 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		saveStuff(2);
 		contIMG3++;
 		if (contIMG3 % 100 == 0)
 		{
@@ -297,6 +286,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
 			states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
+		saveStuff(2);
 	}
 }
 void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
@@ -315,27 +305,9 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[3], 4, pos_dron) < 0)
+		if (bearDrone4.getVels(actual) < 0)
 		{
-			cout << "[ERROR] No bearing found" << endl;
-		}
-		else
-		{
-			cout << "[INFO] Got bearing successfully" << endl;
-
-			// Executing bearing only control
-			if (bearingControl(bearing_ground_truth,
-									 &states,
-									 4) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				rotDrone4.getVels(actual);
-			}
+			cout << "[ERROR] Bearing control failed" << endl;
 		}
 
 		// Saving images
@@ -353,7 +325,6 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		saveStuff(3);
 		contIMG4++;
 		if (contIMG4 % 100 == 0)
 		{
@@ -363,6 +334,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
 			states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
+		saveStuff(3);
 	}
 }
 void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
@@ -381,27 +353,9 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
 		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, actual_bearing, bearing_ground_truth, &states[4], 5, pos_dron) < 0)
+		if (bearDrone5.getVels(actual) < 0)
 		{
-			cout << "[ERROR] No bearing found" << endl;
-		}
-		else
-		{
-			cout << "[INFO] Got bearing successfully" << endl;
-
-			// Executing bearing only control
-			if (bearingControl(bearing_ground_truth,
-									 &states,
-									 5) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				rotDrone5.getVels(actual);
-			}
+			cout << "[ERROR] Bearing control failed" << endl;
 		}
 
 		// Saving images
@@ -419,7 +373,6 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		saveStuff(4);
 		contIMG5++;
 		if (contIMG5 % 100 == 0)
 		{
@@ -429,6 +382,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
 			states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
+		saveStuff(4);
 	}
 }
 
@@ -457,7 +411,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			for (int i = 0; i < states[0].actual.points.rows; i++)
 			{
@@ -486,7 +440,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		saveStuff(0);
 		contIMG1++;
 		if (contIMG1 % 100 == 0)
 		{
@@ -494,6 +447,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
 			states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
+		saveStuff(0);
 	}
 }
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
@@ -521,7 +475,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			for (int i = 0; i < states[1].actual.points.rows; i++)
 			{
@@ -550,7 +504,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
-		saveStuff(1);
 		contIMG2++;
 		if (contIMG2 % 100 == 0)
 		{
@@ -558,6 +511,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
 			states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
+		saveStuff(1);
 	}
 }
 
