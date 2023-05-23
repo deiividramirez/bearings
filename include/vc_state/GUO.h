@@ -83,24 +83,26 @@ public:
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2;
-         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-         Mat Kinv;
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F), temporal3;
+         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
 
+         Mat Kinv;
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
          for (int i = 0; i < 4; i++)
          {
             temporal.at<float>(i, 0) = markerCorners[indice][i].x;
             temporal.at<float>(i, 1) = markerCorners[indice][i].y;
             temporal.at<float>(i, 2) = 1;
 
-            temporal2 = Kinv * temporal.row(i).t();
+            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
 
-            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
 
-         temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
       }
 
@@ -116,6 +118,7 @@ public:
       // {
       //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
       // }
+
       // namedWindow("Desired", WINDOW_NORMAL);
       // cv::resizeWindow("Desired", 550, 310);
       // imshow("Desired", (*this->state).desired.img);
@@ -170,10 +173,10 @@ public:
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2;
-         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-         Mat Kinv;
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
 
+         Mat Kinv;
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
 
          for (int i = 0; i < 4; i++)
@@ -182,13 +185,14 @@ public:
             temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
             temporal.at<float>(i, 2) = 1;
 
-            temporal2 = Kinv * temporal.row(i).t();
+            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
 
-            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
 
-         temporal3.convertTo((*this->state).actual.normPoints, CV_64F);
+         // temporal3.convertTo((*this->state).actual.normPoints, CV_64F);
+         temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
 
          break;
@@ -209,7 +213,7 @@ public:
       // {
       //    circle((*this->state).actual.img, Point((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
       // }
-      // imshow("Desired", (*this->state).actual.img);
+      // imshow("Actual", (*this->state).actual.img);
       // waitKey(0);
 
       return 0;
@@ -348,7 +352,6 @@ public:
       NUM = p2.rows; // Number of points to calculate the distance
 
       cout << "DISTANCIAS" << endl;
-      cout << "NUM: " << NUM << endl;
 
       for (int i = 0; i < NUM; i++)
       {
@@ -430,9 +433,7 @@ public:
       Mat pi, pj;                          // Temporal points for calculation
       double s;
       cout << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << endl;
-      cout << "n: " << n << endl;
-      cout << "distances.size(): " << distances.size() << endl;
-      cout << "p2s.size(): " << p2s.size() << endl;
+
       for (int i = 0; i < n; i++)
       {
          pi = p2s.row(distances[i].i);

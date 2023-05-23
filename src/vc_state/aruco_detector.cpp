@@ -97,7 +97,7 @@ int aruco_detector(const Mat &actual,
          //    waitKey(1);
          // }
 
-         aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners_Detectec, markerIds_Detected, parameters, rejectedCandidates);
+         aruco::detectMarkers(state.desired.img, dictionary, markerCorners_Detectec, markerIds_Detected, parameters, rejectedCandidates);
 
          for (int i = 0; i < markerIds_Detected.size(); i++)
          {

@@ -71,13 +71,13 @@ int main(int argc, char **argv)
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
-		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		// image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		// image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
 		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		if (DRONE_COUNT == 5)
-			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// if (DRONE_COUNT == 5)
+		// 	image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 	}
 	ros::Rate rate(30);
 
@@ -102,18 +102,25 @@ int main(int argc, char **argv)
 			}
 		}
 
+		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
 		guoLider1 = GUO(&states[0]);
-		guoLider2 = GUO(&states[1]);
-
-		bearDrone3 = bearingControl(&states[2]);
-		bearDrone4 = bearingControl(&states[3]);
-		bearDrone5 = bearingControl(&states[4]);
-
 		rotDrone1 = RotationalControl(&states[0]);
+		
+		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		guoLider2 = GUO(&states[1]);
 		rotDrone2 = RotationalControl(&states[1]);
-		rotDrone3 = RotationalControl(&states[2]);
-		rotDrone4 = RotationalControl(&states[3]);
-		rotDrone5 = RotationalControl(&states[4]);
+
+		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
+		bearDrone3 = bearingControl(&states[2]);
+		// rotDrone3 = RotationalControl(&states[2]);
+
+		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
+		// bearDrone4 = bearingControl(&states[3]);
+		// rotDrone4 = RotationalControl(&states[3]);
+
+		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
+		// bearDrone5 = bearingControl(&states[4]);
+		// rotDrone5 = RotationalControl(&states[4]);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -411,7 +418,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (SHOW_IMAGES)
+		if (!SHOW_IMAGES)
 		{
 			for (int i = 0; i < states[0].actual.points.rows; i++)
 			{
@@ -475,7 +482,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (SHOW_IMAGES)
+		if (!SHOW_IMAGES)
 		{
 			for (int i = 0; i < states[1].actual.points.rows; i++)
 			{
@@ -739,23 +746,12 @@ void saveStuff(int i)
 			  << endl;
 
 		times[i].push_back(states[i].t);
-		if (i == 0 || i == 1)
-		{
-			// errors[i].push_back((float)matching_results[i].mean_feature_error);
-			// errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
-			errors[i].push_back((float)states[i].error);
-			errors_pix[i].push_back((float)states[i].error_pix);
-			// cout << "[INFO] Error: " << matching_results[i].mean_feature_error << endl;
-			cout << "[INFO] Error pix: " << states[i].error_pix << endl;
-		}
-		else
-		{
-			errors[i].push_back((float)states[i].error);
-			errors_pix[i].push_back((float)states[i].error);
-			cout << "[INFO] Error: " << states[i].error << endl;
-		}
 
-		// states[i].Vyaw = -states[i].Yaw;
+		errors[i].push_back((float)states[i].error);
+		errors_pix[i].push_back((float)states[i].error_pix);
+		
+		cout << "[INFO] Control error: " << states[i].error << endl;
+		cout << "[INFO] Control error in pixels: " << states[i].error_pix << endl;
 
 		vel_x[i].push_back(states[i].Vx);
 		vel_y[i].push_back(states[i].Vy);
@@ -764,6 +760,8 @@ void saveStuff(int i)
 		lambda_kp[i].push_back(states[i].lambda_kp);
 		lambda_kv[i].push_back(states[i].lambda_kv);
 		lambda_kd[i].push_back(states[i].lambda_kd);
+
+		// states[i].Vyaw = -states[i].Yaw;
 
 		if (i == 0 || i == 1)
 		{
@@ -784,17 +782,6 @@ void saveStuff(int i)
 		Y[i].push_back(pos_dron[i].pose.position.y);
 		Z[i].push_back(pos_dron[i].pose.position.z);
 
-		// if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
-		// {
-		// 	cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
-		// 	states[i].in_target = true;
-		// 	// break;
-		// }
-
-		// Publish image of the matching
-		// cout << "\n[INFO] Publishing image" << endl;
-		// image_pub.publish(image_msg);
-
 		// UPDATE STATE WITH THE CURRENT CONTROL
 		auto new_pose = states[i].update();
 
@@ -806,11 +793,11 @@ void saveStuff(int i)
 		// PUBLISH MESSAGE FOR TRAYECTORY
 		pos_pubs[i].publish(msg);
 	}
-	else
-	{
+	// else
+	// {
 		// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
 		// break;
-	}
+	// }
 }
 
 /*************** CONVERT YALM TO OPENCV MAT ***************/

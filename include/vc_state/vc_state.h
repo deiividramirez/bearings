@@ -128,13 +128,15 @@ public:
 
     vc_parameters params;
     //  Desired configuration
-    vc_desired_configuration desired_configuration;
+    // vc_desired_configuration desired_configuration;
 
     savingData desired;
     savingData actual;
 
+    Mat homography;
+
     //  Best approximations
-    bool selected = false;
+    // bool selected = false;
     // cv::Mat t_best;
     // cv::Mat R_best; // to save the rot and trans
 

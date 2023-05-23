@@ -28,7 +28,6 @@ public:
       //    exit(-1);
       // }
       // cout << "[INFO] Desired data obtained" << endl;
-
    }
 
    int getDesiredData()
@@ -83,8 +82,8 @@ public:
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2;
-         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
          Mat Kinv;
 
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
@@ -94,15 +93,15 @@ public:
             temporal.at<float>(i, 1) = markerCorners[indice][i].y;
             temporal.at<float>(i, 2) = 1;
 
-            temporal2 = Kinv * temporal.row(i).t();
+            temporal2.row(i) = Kinv * temporal.row(i).t();
 
-            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
 
-         temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         
       }
+
 
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
@@ -147,11 +146,12 @@ public:
       cout << "[INFO] Error actual en pix " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
-      double l0_Kp = 1 * (*this->state).Kv_max, linf_Kp = 1 * (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-1 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
+      double l0_Kp = 1 * (*this->state).Kv_max, linf_Kp = 10 * (*this->state).Kv;
+      // double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-50 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
+      double lambda_Kp = .5;
 
       cout << endl
-           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl;
+           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl;
 
       Mat ERROR_I = Mat::zeros(2 * (*this->state).actual.normPoints.rows, 1, CV_64F);
       for (int i = 0; i < (*this->state).actual.normPoints.rows; i++)
@@ -161,8 +161,7 @@ public:
       }
 
       U_temp = -lambda_Kp * Lo * ERROR_I;
-      cout << "U_temp = " << U_temp << endl;
-      (*this->state).Vyaw = -U_temp.at<double>(2, 0);
+      (*this->state).Vyaw = U_temp.at<double>(1, 0);
 
       // free memory
       U_temp.release();
@@ -182,7 +181,7 @@ public:
          double u = (*this->state).actual.normPoints.at<double>(i, 0);
          double v = (*this->state).actual.normPoints.at<double>(i, 1);
 
-         cout << "U: " << u << " V: " << v << endl;
+         // cout << "U: " << u << " V: " << v << endl;
 
          L.at<double>(2 * i, 0) = u * v;
          L.at<double>(2 * i, 1) = -(1 + u * u);

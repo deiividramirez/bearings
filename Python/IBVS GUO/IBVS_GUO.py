@@ -159,8 +159,8 @@ while(countIndex < steps and err_pix > 1e-5):
     pitch += dt * U[4, 0]
     yaw   += dt * U[5, 0]
 
-    NN = lambda t: np.sin(t/2)
-    # NN = lambda t: 1
+    # NN = lambda t: np.sin(t/2)
+    NN = lambda t: 0
     fx = lambda t: np.zeros(t.shape)+NN(t) if type(t) == np.ndarray else NN(t)
     w_points += dt*fx(countIndex*dt)
 
@@ -207,10 +207,10 @@ while(countIndex < steps and err_pix > 1e-5):
     integrald_array[:, countIndex] = integrald[:,0]
 
     U = np.concatenate((
-                    # -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
+                    -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
                     # -Lo @ (lamb*error + .5*integral),                                       # CONTROL INTEGRAL
                     # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) ),                 # CONTROL DESLIZANTE
-                    Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .005*integrald),   # CONTROL DESLIZANTE INTEGRAL     
+                    # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .005*integrald),   # CONTROL DESLIZANTE INTEGRAL     
                     lamb*np.array([[target_roll - roll], 
                                    [target_pitch - pitch], 
                                    [target_yaw - yaw]])

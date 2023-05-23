@@ -4,9 +4,9 @@ import matplotlib.pylab as plt
 import numpy as np
 
 from pathlib import Path
-
 path = Path(__file__).parent.absolute()
 
+plt.rcParams["keymap.quit"] = ['ctrl+w', 'cmd+w', 'q']
 # VARIBALES PARA CONTROL DE GUARDADO
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ def ortProj(x: np.array) -> np.array:
     m = len(x)
     x = x.reshape(m, 1)
     return (
-        np.eye(m) - np.dot(x, x.T) / np.linalg.norm(x) ** 2
+        np.eye(3) - np.dot(x, x.T) / np.linalg.norm(x) ** 2
         if np.linalg.norm(x) != 0
         else np.zeros((m, m))
     )
@@ -109,9 +109,9 @@ def decomposeR(R: np.array, way: int = 3) -> np.array:
         R: np.array
 
     Retorno:
-        Vector de tipo np.array -> [phi: Angulo de rotación en el eje x,
+        Vector de tipo np.array -> [psi: Angulo de rotación en el eje x
                                     theta: Angulo de rotación en el eje y,
-                                    psi: Angulo de rotación en el eje z]
+                                    phi: Angulo de rotación en el eje z,]
     """
     if R.shape == (3, 3):
         if way == 1:
@@ -139,7 +139,7 @@ def decomposeR(R: np.array, way: int = 3) -> np.array:
             psi = np.arctan2(R[2, 1], R[2, 2])
             phi = np.arctan2(R[1, 0], R[0, 0])
 
-        return np.array([phi, theta, psi])
+        return np.array([psi, theta, phi])
     else:
         phi = []
         theta = []
@@ -151,14 +151,14 @@ def decomposeR(R: np.array, way: int = 3) -> np.array:
         return np.array([phi, theta, psi]).T
 
 
-def composeR(phi: float, theta: float, psi: float) -> np.array:
+def composeR(psi: float, theta: float, phi: float) -> np.array:
     """
     Función la cual calcula la matriz de rotación a partir de los ángulos de Euler
 
     Parámetros:
-        phi:   float -> Ángulo de rotación en el eje x
+        psi:   float -> Ángulo de rotación en el eje x
         theta: float -> Ángulo de rotación en el eje y
-        psi:   float -> Ángulo de rotación en el eje z
+        phi:   float -> Ángulo de rotación en el eje z
 
     Retorno:
         Matriz de rotación tipo np.array
@@ -260,16 +260,16 @@ integralSigno = np.zeros((n, d))
 Q = np.array(
     [
         composeR(
-            np.random.rand() * np.pi/2,
-            np.random.rand() * np.pi/2,
-            np.random.rand() * np.pi/2,
+            0,
+            np.random.rand() * 2 * np.pi / 3 - np.pi /3,
+            np.random.rand() * 2 * np.pi / 3 - np.pi /3,
         ),
         composeR(0, 0, 0),
         composeR(0, 0, 0),
         composeR(
-            np.random.rand() * np.pi/2,
-            np.random.rand() * np.pi/2,
-            np.random.rand() * np.pi/2,
+            np.random.rand() * 2 * np.pi / 3 - np.pi /3,
+            0,
+            np.random.rand() * 2 * np.pi / 3 - np.pi /3,
         ),
     ]
 )
@@ -289,7 +289,7 @@ arrIntSigno = [np.zeros((n, d))]
 print(f"Posiciones iniciales: {x} \n")
 print(f"Velocidades iniciales: {v} \n")
 
-tmax = 20
+tmax = 50
 dt = 0.01
 t = [i * dt for i in range(int(tmax / dt))]
 
@@ -298,7 +298,9 @@ t = [i * dt for i in range(int(tmax / dt))]
 
 # Ganancias del controlador
 Kp = 2
-Kv = 0.01
+Kv = 0.1
+
+Kw = 0.2
 
 for num, tt in enumerate(t):
     error = np.zeros(n)
@@ -313,10 +315,13 @@ for num, tt in enumerate(t):
 
             for j in range(n):
                 if i != j and np.any(gijA[i, j, :] != 0):
-                    # suma1 += normalize(x[j] - x[i]) - gijA[i, j, :]
+                    # suma1 += (
+                    #     (ACTUAL_BEAR := ( Q[i].T @ normalize(x[j] - x[i])))
+                    #     - ((np.eye(3) + Q[i].T @ Q[j]) / 2 @ gijA[i, j, :])
+                    # )
                     suma2 -= (
-                        ortProj((ACTUAL_BEAR := ( Q[i].T @ normalize(x[j] - x[i]))))
-                        @ (np.eye(3) + Q[i].T @ Q[j]) / 2
+                        ortProj((ACTUAL_BEAR := (Q[i].T @ normalize(x[j] - x[i]))))
+                        @ ((np.eye(3) + Q[i].T @ Q[j]) / 2)
                         @ gijA[i, j, :]
                     )
                     suma2_w += -(Q[j].T @ Q[i] - Q[i].T @ Q[j])
@@ -329,23 +334,28 @@ for num, tt in enumerate(t):
             sum3_w = suma2_w
 
             v[i] = (
-                Kp * np.abs(suma3) ** (0.5) * np.sign(suma3) + Kv * integralSigno[i, :]
+                Kp * np.abs(suma3) ** (0.5) * np.sign(suma3)
+                + Kv * integralSigno[i, :]
                 # suma3
             )
 
             w[i] = (
-                # np.abs(sum3_w) ** (.5) * np.sign(sum3_w)
-                sum3_w / 2
+                Kw * sum3_w
+                # (np.abs(sum3_w) ** (.5) * np.sign(sum3_w))
+                # (sum3_w)
             )
 
         else:
-            v[i] = .5
+            v[i] = np.array([0, 0, 0])
+            # w[i] = skewMatrix([0, 0, -decomposeR(Q[i])[-1]])
+            # w[i] = skewMatrix([.1, 0, 0])
+            # w[i] = skewMatrix([.1, 0, -decomposeR(Q[i])[-1]])
 
         x[i] += dt * Q[i] @ v[i]
         Q[i] += dt * (Q[i] @ w[i])
 
     arrx.append(x.copy())
-    arrxw.append(normalize(getFrames(Q)))
+    arrxw.append(getFrames(Q))
 
     arrv.append(v.copy())
     arrw.append(w.copy())
@@ -355,14 +365,14 @@ for num, tt in enumerate(t):
     arrIntSigno.append(integralSigno.copy())
 
 print(f"Posiciones finales: {x} \n")
-
 # Conversión a numpy array para poder plotear
 arrx = np.array(arrx)
 arrxw = np.array(arrxw)
 
 arrv = np.array(arrv)
-# arrw = np.array(arrw)
+arrw = np.array([skewVector(W) for W in arrw])
 arrQ = np.array([decomposeR(Q) for Q in arrQ])
+print(f"Rotaciones finales: {arrQ[-1]} \n")
 
 errorv = np.array(errorv)
 arrIntSigno = np.array(arrIntSigno)
@@ -371,9 +381,11 @@ arrIntSigno = np.array(arrIntSigno)
 # PLOTEO DE VELOCIDADES SI: estad = True
 # ----------------------------------------------------------------------------------------------------------------------
 if estad:
-    fig1, ax1 = plt.subplots(3, 1, figsize=(5, 8), num=f"Velocidades, error e integración", sharex=True)
+    fig1, ax1 = plt.subplots(
+        4, 1, figsize=(6, 8), num=f"Velocidades, error e integración", sharex=True
+    )
 
-    ax1[0].set_title("Velocidades")
+    ax1[0].set_title("Velocidades lineales")
     plt.subplots_adjust(right=0.75)
     for i in range(n):
         if i != P1 and i != P2:
@@ -382,13 +394,13 @@ if estad:
                 arrv[1:, i],
                 # color=colores[i],
                 # alpha=(1, .8, .6),
-                label=(labels[i]+" x", labels[i]+" y", labels[i]+" z"),
+                label=(labels[i] + " x", labels[i] + " y", labels[i] + " z"),
             )
     ax1[0].plot(
         t,
         arrv[1:, P1],
         color=colores[P1],
-        alpha=.5,
+        alpha=0.5,
         label=("Desired x", "Desired y", "Desired z"),
     )
 
@@ -396,41 +408,68 @@ if estad:
     ax1[0].set_ylabel("Velocidad [m/s]")
     ax1[0].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
 
-    ax1[1].set_title("Error")
+    ax1[1].set_title("Velocidades angulares")
     plt.subplots_adjust(right=0.75)
     for i in range(n):
         if i != P1 and i != P2:
-            ax1[1].plot(t, errorv[1:, i], color=colores[i], alpha=1, label=labels[i])
             ax1[1].plot(
+                t,
+                arrw[1:, i],
+                # color=colores[i],
+                # alpha=(1, .8, .6),
+                label=(labels[i] + " x", labels[i] + " y", labels[i] + " z"),
+            )
+    ax1[1].plot(
+        t,
+        arrv[1:, P1],
+        color=colores[P1],
+        alpha=0.5,
+        label=("Desired x", "Desired y", "Desired z"),
+    )
+
+    ax1[1].set_xlabel("Tiempo [s]")
+    ax1[1].set_ylabel("Velocidad [m/s]")
+    ax1[1].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+
+
+    ax1[2].set_title("Error")
+    plt.subplots_adjust(right=0.75)
+    for i in range(n):
+        if i != P1 and i != P2:
+            ax1[2].plot(t, errorv[1:, i], color=colores[i], alpha=1, label=labels[i])
+            ax1[2].plot(
                 [0, tmax],
                 [errorv[-1, i], errorv[-1, i]],
                 "--",
                 color=colores[i],
                 label=f"y = {errorv[-1, i]:.3f}",
             )
-    ax1[1].set_xlabel("Tiempo [s]")
-    ax1[1].set_ylabel("Error [m]")
-    ax1[1].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+    ax1[2].set_xlabel("Tiempo [s]")
+    ax1[2].set_ylabel("Error [m]")
+    ax1[2].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
 
-    ax1[2].set_title("Integración de bearings")
+    ax1[3].set_title("Integración de bearings")
     plt.subplots_adjust(right=0.75)
     for i in range(n):
         if i != P1 and i != P2:
-            ax1[2].plot(
+            ax1[3].plot(
                 t,
-                np.mean(arrIntSigno[1:, i], axis=1),
-                color=colores[i],
+                arrIntSigno[1:, i],
+                # color=colores[i],
                 alpha=1,
-                label=labels[i],
+                label=[f"{labels[i]} x", f"{labels[i]} y", f"{labels[i]} z"],
             )
 
-    ax1[2].set_xlabel("Tiempo [s]")
-    ax1[2].set_ylabel("Integración [rad]")
-    ax1[2].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
+    ax1[3].set_xlabel("Tiempo [s]")
+    ax1[3].set_ylabel("Integración [rad]")
+    ax1[3].legend(bbox_to_anchor=(1.02, 0.5), loc="center left", borderaxespad=0)
 
     plt.tight_layout()
 
-    fig2, ax2 = plt.subplots(2, 3, figsize=(8, 5), num=f"Posiciones y ángulos", sharex=True)
+
+    fig2, ax2 = plt.subplots(
+        2, 3, figsize=(8, 5), num=f"Posiciones y ángulos", sharex=True
+    )
 
     ax2[0, 0].set_title("X")
     # plt.subplots_adjust(right=0.75)
@@ -443,7 +482,7 @@ if estad:
             label=labels[i],
         )
 
-    ax2[0,0].set_xlabel("Tiempo [s]")
+    ax2[0, 0].set_xlabel("Tiempo [s]")
     ax2[0, 0].set_ylabel("Pos [m]")
 
     ax2[0, 1].set_title("Y")
@@ -456,7 +495,7 @@ if estad:
             label=labels[i],
         )
 
-    ax2[0,1].set_xlabel("Tiempo [s]")
+    ax2[0, 1].set_xlabel("Tiempo [s]")
     ax2[0, 1].set_ylabel("Pos [m]")
 
     ax2[0, 2].set_title("Z")
@@ -470,9 +509,9 @@ if estad:
             label=labels[i],
         )
 
-    ax2[0,2].set_xlabel("Tiempo [s]")
+    ax2[0, 2].set_xlabel("Tiempo [s]")
     ax2[0, 2].set_ylabel("Pos [m]")
-    ax2[0,2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
+    ax2[0, 2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
 
     ax2[1, 0].set_title("Roll")
     for i in range(n):
@@ -484,7 +523,7 @@ if estad:
             label=labels[i],
         )
 
-    ax2[1,0].set_xlabel("Tiempo [s]")
+    ax2[1, 0].set_xlabel("Tiempo [s]")
     ax2[1, 0].set_ylabel("Áng [rad]")
 
     ax2[1, 1].set_title("Pitch")
@@ -497,7 +536,7 @@ if estad:
             label=labels[i],
         )
 
-    ax2[1,1].set_xlabel("Tiempo [s]")
+    ax2[1, 1].set_xlabel("Tiempo [s]")
     ax2[1, 1].set_ylabel("Áng [rad]")
 
     ax2[1, 2].set_title("Yaw")
@@ -511,9 +550,9 @@ if estad:
             label=labels[i],
         )
 
-    ax2[1,2].set_xlabel("Tiempo [s]")
+    ax2[1, 2].set_xlabel("Tiempo [s]")
     ax2[1, 2].set_ylabel("Áng [rad]")
-    ax2[1,2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
+    ax2[1, 2].legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
 
     plt.tight_layout()
 
@@ -595,23 +634,23 @@ def animate(num: int):
         # Ploteo de los ángulos de los drones
         ax.plot3D(
             [arrx[num, i, 0], arrx[num, i, 0] + arrxw[num, i, 0, 0]],
-            [arrx[num, i, 1], arrx[num, i, 1] + arrxw[num, i, 0, 1]],
-            [arrx[num, i, 2], arrx[num, i, 2] + arrxw[num, i, 0, 2]],
+            [arrx[num, i, 1], arrx[num, i, 1] + arrxw[num, i, 1, 0]],
+            [arrx[num, i, 2], arrx[num, i, 2] + arrxw[num, i, 2, 0]],
             color="red",
             alpha=1,
         )
 
         ax.plot3D(
-            [arrx[num, i, 0], arrx[num, i, 0] + arrxw[num, i, 1, 0]],
+            [arrx[num, i, 0], arrx[num, i, 0] + arrxw[num, i, 0, 1]],
             [arrx[num, i, 1], arrx[num, i, 1] + arrxw[num, i, 1, 1]],
-            [arrx[num, i, 2], arrx[num, i, 2] + arrxw[num, i, 1, 2]],
+            [arrx[num, i, 2], arrx[num, i, 2] + arrxw[num, i, 2, 1]],
             color="green",
             alpha=1,
         )
 
         ax.plot3D(
-            [arrx[num, i, 0], arrx[num, i, 0] + arrxw[num, i, 2, 0]],
-            [arrx[num, i, 1], arrx[num, i, 1] + arrxw[num, i, 2, 1]],
+            [arrx[num, i, 0], arrx[num, i, 0] + arrxw[num, i, 0, 2]],
+            [arrx[num, i, 1], arrx[num, i, 1] + arrxw[num, i, 1, 2]],
             [arrx[num, i, 2], arrx[num, i, 2] + arrxw[num, i, 2, 2]],
             color="blue",
             alpha=1,
@@ -630,6 +669,7 @@ def animate(num: int):
     ax.legend(bbox_to_anchor=(1.1, 0.5), loc="center left", borderaxespad=0)
     plt.tight_layout()
 
+
 # Animación
 if anim:
     fig = plt.figure(figsize=(6, 6), num=f"Simulación")
@@ -641,7 +681,7 @@ if anim:
     ax.set_title("Simulación")
     plt.subplots_adjust(right=0.8)
     line_ani = animation.FuncAnimation(
-        fig, animate, interval=1, frames=len(t) // 10, repeat=True
+        fig, animate, interval=1, frames=len(t) // 10, repeat=False
     )
     # animate(-1)
 
@@ -654,8 +694,6 @@ if anim:
         writergif = animation.PillowWriter(fps=len(t) / (tmax + 1))
         line_ani.save(f, writer=writergif)
         print("Se guardó.")
-
-print(arrxw[0] - arrxw[-1])
 
 if estad or anim:
     plt.show()

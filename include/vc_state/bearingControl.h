@@ -83,8 +83,8 @@ public:
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2;
-         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
          Mat Kinv;
 
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
@@ -94,13 +94,15 @@ public:
             temporal.at<float>(i, 1) = markerCorners[indice][i].y;
             temporal.at<float>(i, 2) = 1;
 
-            temporal2 = Kinv * temporal.row(i).t();
+            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
 
-            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
+         cout << "temporal2 brefore " << temporal2 << endl;
 
-         temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.convertTo(temporal, CV_64F);
 
@@ -125,8 +127,8 @@ public:
          (*this->state).desired.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
       }
 
-      cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
-      cout << "State desired: " << (*this->state).params.bearing << endl;
+      // cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
+      // cout << "State desired: " << (*this->state).params.bearing << endl;
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
       (*this->state).desired.markerIds = markerIds;
@@ -196,8 +198,8 @@ public:
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2;
-         Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
          Mat Kinv;
 
          (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
@@ -207,15 +209,18 @@ public:
             temporal.at<float>(i, 1) = markerCorners[indice][i].y;
             temporal.at<float>(i, 2) = 1;
 
-            temporal2 = Kinv * temporal.row(i).t();
+            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
 
-            temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
 
-         temporal3.convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         // temporal3.convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).actual.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.convertTo(temporal, CV_64F);
+
+         Mat printi = (*this->state).actual.normPoints - (*this->state).desired.normPoints;
 
          Mat p1 = temporal.row(0);
          Mat p2 = temporal.row(1);
@@ -273,12 +278,6 @@ public:
             // Control with position
             cout << "[INFO] Control with global position it is not available at the moment" << endl;
             exit(-1);
-            // temp = desired_bearings.col(i);
-            // temp = (*this->state).params.bearing.col(i);
-            // temp2.at<double>(0, 0) = (*this->state).Vx - (*states)[(int)(*this->state).params.seguimiento.at<double>(i, 0) - 1].Vx;
-            // temp2.at<double>(1, 0) = (*this->state).Vy - (*states)[(int)(*this->state).params.seguimiento.at<double>(i, 0) - 1].Vy;
-            // temp2.at<double>(2, 0) = (*this->state).Vz - (*states)[(int)(*this->state).params.seguimiento.at<double>(i, 0) - 1].Vz;
-            // suma1 -= projOrtog(temp) * ((*this->state).Kv * position.col(i) + (*this->state).Kw * temp2);
          }
          else if (opc == 1)
          {
@@ -327,13 +326,29 @@ public:
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      Mat U = lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error;
-      (*this->state).Vx = U.at<double>(0, 0);
-      (*this->state).Vy = U.at<double>(1, 0);
-      (*this->state).Vz = U.at<double>(2, 0);
+      Mat U_translation = lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error;
+      (*this->state).Vx = U_translation.at<double>(0, 0);
+      (*this->state).Vy = U_translation.at<double>(1, 0);
+      (*this->state).Vz = U_translation.at<double>(2, 0);
 
       cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
       cout << "Actual bearing: " << (*this->state).actual.bearings << endl;
+
+      if (getHomography() < 0)
+      {
+         cout << "F" << endl;
+      }
+
+      return 0;
+   }
+
+   int getHomography()
+   {
+      Mat homography;
+      homography = findHomography((*this->state).desired.points, (*this->state).actual.points, RANSAC);
+      (*this->state).homography = homography;
+
+      cout << "Homography: " << homography << endl;
 
       return 0;
    }
