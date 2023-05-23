@@ -344,13 +344,120 @@ public:
 
    int getHomography()
    {
-      Mat homography;
-      homography = findHomography((*this->state).desired.points, (*this->state).actual.points, RANSAC);
-      (*this->state).homography = homography;
+      Mat H;
+      vector<Point2f> actual32, desired32;
+      for (int i = 0; i < (*this->state).actual.points.rows; i++)
+      {
+         actual32.push_back(Point2f((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)));
+         desired32.push_back(Point2f((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)));
+      }
+      H = findHomography(actual32, desired32, RANSAC);
+      H.convertTo((*this->state).homography, CV_64F);
 
-      cout << "Homography: " << homography << endl;
+      cout << "\nHomography: " << H << endl;
 
+      // Normalization to ensure that ||c1|| = 1
+      double norm = sqrt(H.at<double>(0, 0) * H.at<double>(0, 0) +
+                         H.at<double>(1, 0) * H.at<double>(1, 0) +
+                         H.at<double>(2, 0) * H.at<double>(2, 0));
+      H /= norm;
+      Mat c1 = H.col(0);
+      Mat c2 = H.col(1);
+      Mat c3 = c1.cross(c2);
+      Mat tvec = H.col(2);
+      
+      vector<Mat> Rs_decomp, ts_decomp, normals_decomp;
+      int sols = decomposeHomographyMat(H, (*state).params.K, Rs_decomp, ts_decomp, normals_decomp);
+      for (int i = 0; i < sols; i++)
+      {
+         cout << "\nR" << i << ":\n"
+              << Rs_decomp[i] << endl;
+
+         Mat descom = decomposeR(Rs_decomp[i]);
+         cout << "Roll: " << descom.at<double>(0, 0) << " Pitch: " << descom.at<double>(1, 0) << " Yaw: " << descom.at<double>(2, 0) << endl;
+         // cout << "t" << i << ":\n"
+         //      << ts_decomp[i] << endl;
+         // cout << "n" << i << ":\n"
+         //      << normals_decomp[i] << endl;
+      }
+
+
+      // Mat R(3, 3, CV_64F);
+
+      // for (int i = 0; i < 3; i++)
+      // {
+      //    R.at<double>(i, 0) = c1.at<double>(i, 0);
+      //    R.at<double>(i, 1) = c2.at<double>(i, 0);
+      //    R.at<double>(i, 2) = c3.at<double>(i, 0);
+      // }
+
+      // // cout << "\nR (before polar decomposition):\n"
+      // //      << R << "\ndet(R): " << determinant(R) << endl;
+
+
+      // Mat_<double> W, U, Vt;
+      // SVDecomp(R, W, U, Vt);
+
+      // Mat In = Mat::eye(3, 3, CV_64F);
+      // In.at<double>(2, 2) = determinant(U) * determinant(Vt.t());
+      
+      // R = U * In * Vt.t();
+      // double det = determinant(R);
+      // Mat euler = decomposeR(R);
+      // cout << "\nR (after polar decomposition):\n"
+      //      << R << "\ndet(R): " << determinant(R) << endl;
+      // cout << "Roll: " << euler.at<double>(0, 0) << " Pitch: " << euler.at<double>(1, 0) << " Yaw: " << euler.at<double>(2, 0) << endl;
+
+
+      Mat compose = composeR((*this->state).Roll, (*this->state).Pitch, (*this->state).Yaw);
+      double det = determinant(compose);
+
+
+      cout << "\n\nCompose:\n"
+           << compose << "\ndet(compose): " << det << endl;
+      cout << "Roll: " << (*this->state).Roll << " Pitch: " << (*this->state).Pitch << " Yaw: " << (*this->state).Yaw << endl;
+      Mat des = decomposeR(compose);
+      cout << "Roll: " << des.at<double>(0, 0) << " Pitch: " << des.at<double>(1, 0) << " Yaw: " << des.at<double>(2, 0) << endl;
+
+
+      // ros::shutdown();
+      // exit(-1);
       return 0;
+   }
+
+   Mat composeR(double roll, double pitch, double yaw)
+   {
+      Mat R = Mat::zeros(3, 3, CV_64F);
+
+      R.at<double>(0, 0) = cos(yaw) * cos(pitch);
+      R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+      R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+
+      R.at<double>(1, 0) = sin(yaw) * cos(pitch);
+      R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+      R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+
+      R.at<double>(2, 0) = -sin(pitch);
+      R.at<double>(2, 1) = cos(pitch) * sin(roll);
+      R.at<double>(2, 2) = cos(pitch) * cos(roll);
+
+      return R;
+   }
+
+   Mat decomposeR(Mat R)
+   {
+      double roll, pitch, yaw;
+
+      pitch = -asin(R.at<double>(2, 0));
+      roll = atan2(R.at<double>(2, 1), R.at<double>(2, 2));
+      yaw = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+
+      Mat euler = Mat::zeros(3, 1, CV_64F);
+      euler.at<double>(0, 0) = roll;
+      euler.at<double>(1, 0) = pitch;
+      euler.at<double>(2, 0) = yaw;
+
+      return euler;
    }
 
    Mat projOrtog(Mat &x)
@@ -366,5 +473,52 @@ public:
       pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
       pMedio.at<double>(0, 2) = (p1.at<double>(0, 2) + p2.at<double>(0, 2) + p3.at<double>(0, 2) + p4.at<double>(0, 2)) / 4;
       return pMedio;
+   }
+
+   string type2str(int type)
+   {
+      string r;
+
+      uchar depth = type & CV_MAT_DEPTH_MASK;
+      uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+      switch (depth)
+      {
+      case CV_8U:
+         r = "8U";
+         break;
+      case CV_8S:
+         r = "8S";
+         break;
+      case CV_16U:
+         r = "16U";
+         break;
+      case CV_16S:
+         r = "16S";
+         break;
+      case CV_32S:
+         r = "32S";
+         break;
+      case CV_32F:
+         r = "32F";
+         break;
+      case CV_64F:
+         r = "64F";
+         break;
+      default:
+         r = "User";
+         break;
+      }
+
+      r += "C";
+      r += (chans + '0');
+
+      return r;
+   }
+   void Tipito(Mat &Matrix)
+   {
+      string ty = type2str(Matrix.type());
+      cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
+      cout << Matrix << endl;
    }
 };

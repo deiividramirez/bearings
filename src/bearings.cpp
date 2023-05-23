@@ -538,6 +538,7 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 	// saving the data obtained
 	states[0].Roll = (float)roll;
 	states[0].Pitch = (float)pitch;
+	states[0].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[0].initialized)
@@ -569,6 +570,7 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 	// saving the data obtained
 	states[1].Roll = (float)roll;
 	states[1].Pitch = (float)pitch;
+	states[1].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[1].initialized)
@@ -600,6 +602,7 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 	// saving the data obtained
 	states[2].Roll = (float)roll;
 	states[2].Pitch = (float)pitch;
+	states[2].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[2].initialized)
@@ -631,6 +634,7 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	// saving the data obtained
 	states[3].Roll = (float)roll;
 	states[3].Pitch = (float)pitch;
+	states[3].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[3].initialized)
@@ -662,6 +666,7 @@ void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 	// saving the data obtained
 	states[4].Roll = (float)roll;
 	states[4].Pitch = (float)pitch;
+	states[4].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[4].initialized)
@@ -735,15 +740,13 @@ void saveStuff(int i)
 	if (!states[i].in_target)
 	{
 		cout << "\n[INFO] Saving data for drone " + to_string(i + 1) << endl;
-		cout << "[VELS] Vx: " << states[i].Vx
-			  << ", Vy: " << states[i].Vy
-			  << ", Vz: " << states[i].Vz
-			  << "\nVroll: " << states[i].Vroll
-			  << ", Vpitch: " << states[i].Vpitch
-			  << ", Vyaw: " << states[i].Vyaw
-			  << "\n==> Error: " << states[i].error
-			  << "<==" << endl
-			  << endl;
+		// cout << "[VELS] Vx: " << states[i].Vx
+		// 	  << ", Vy: " << states[i].Vy
+		// 	  << ", Vz: " << states[i].Vz
+		// 	  << "\nVroll: " << states[i].Vroll
+		// 	  << ", Vpitch: " << states[i].Vpitch
+		// 	  << ", Vyaw: " << states[i].Vyaw
+		// 	  << endl;
 
 		times[i].push_back(states[i].t);
 

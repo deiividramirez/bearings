@@ -92,8 +92,9 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
 
         cout << endl
              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
-             << "SENDING THIS POS >> X: " << this->X << " - Y:" << this->Y << " - Z:" << this->Z << " - Yaw: " << this->Yaw << endl
-             << "Vx: " << this->Vx << " - Vy:" << this->Vy << " - Vz:" << this->Vz << " - Vyaw: " << this->Vyaw << endl
+             << "SENDING THIS POS >>" << endl 
+             << "Vx: " << this->Vx << " - Vy: " << this->Vy << " - Vz: " << this->Vz << " - Vyaw: " << this->Vyaw << endl
+             << "X: " << this->X << " - Y: " << this->Y << " - Z: " << this->Z << " - Yaw: " << this->Yaw << endl
              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
              << endl;
 
