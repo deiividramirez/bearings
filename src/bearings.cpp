@@ -545,6 +545,8 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 	{
 		cout << "[INFO] Setting initial position" << endl;
 		states[0].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[0].Q = composeR(states[0].Roll, states[0].Pitch, states[0].Yaw);
 	}
 
 	pos_dron[0].pose.position.x = (float)msg->position.x;
@@ -577,6 +579,8 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 	{
 		cout << "[INFO] Setting initial position" << endl;
 		states[1].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[1].Q = composeR(states[1].Roll, states[1].Pitch, states[1].Yaw);
 	}
 
 	pos_dron[1].pose.position.x = (float)msg->position.x;
@@ -609,6 +613,8 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 	{
 		cout << "[INFO] Setting initial position" << endl;
 		states[2].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[2].Q = composeR(states[2].Roll, states[2].Pitch, states[2].Yaw);
 	}
 
 	pos_dron[2].pose.position.x = (float)msg->position.x;
@@ -641,6 +647,8 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	{
 		cout << "[INFO] Setting initial position" << endl;
 		states[3].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[3].Q = composeR(states[3].Roll, states[3].Pitch, states[3].Yaw);
 	}
 
 	pos_dron[3].pose.position.x = (float)msg->position.x;
@@ -673,6 +681,8 @@ void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 	{
 		cout << "[INFO] Setting initial position" << endl;
 		states[4].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[4].Q = composeR(states[4].Roll, states[4].Pitch, states[4].Yaw);
 	}
 
 	pos_dron[4].pose.position.x = (float)msg->position.x;

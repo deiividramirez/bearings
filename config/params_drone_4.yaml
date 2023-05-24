@@ -10,6 +10,10 @@ camera_intrinsic_parameters: [700,   0,    960,
 #                               0,    1505,   1446,
 #                               0,     0,     1]
 
+R: [0, 0, -1,
+    1, 0, 0,
+    0, 1, 0]
+    
 # Sampling time
 dt: 0.01
 
@@ -50,7 +54,8 @@ flann_ratio: 0.7
 # control 1 (diferencia de bearings)
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
-control: 3
+# control 4 (con rotaciones)
+control: 4
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

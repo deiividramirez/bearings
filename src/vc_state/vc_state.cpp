@@ -6,7 +6,7 @@ vc_state::vc_state() : X(0), Y(0), Z(0), Yaw(0), Pitch(0), Roll(0),
 
 void vc_state::load(const ros::NodeHandle &nh)
 {
-        cout << "[INFO] Loading state parameters" << endl;
+        cout << "\n\n[INFO] Loading state parameters" << endl;
 
         // Load intrinsic parameters
         XmlRpc::XmlRpcValue kConfig;
@@ -27,6 +27,23 @@ void vc_state::load(const ros::NodeHandle &nh)
              << this->params.K << endl;
 
         this->params.Kinv = this->params.K.inv();
+
+        this->R = cv::Mat(3, 3, CV_64F, double(0));
+        if (nh.hasParam("R"))
+        {
+                nh.getParam("R", kConfig);
+                if (kConfig.getType() == XmlRpc::XmlRpcValue::TypeArray)
+                        for (int i = 0; i < 9; i++)
+                        {
+                                std::ostringstream ostr;
+                                ostr << kConfig[i];
+                                std::istringstream istr(ostr.str());
+                                istr >> this->R.at<double>(i / 3, i % 3);
+                        }
+        }
+
+        cout << "[INFO] Rotation Matrix \n"
+             << this->R << endl;
 
         // Load error threshold parameter
         this->params.feature_threshold = nh.param(std::string("feature_error_threshold"), std::numeric_limits<double>::max());
@@ -169,4 +186,125 @@ Mat robust(Mat error)
         Mat robustError = sqrtError.mul(sign);
 
         return robustError;
+}
+
+Mat composeR(double roll, double pitch, double yaw)
+{
+    Mat R = Mat::zeros(3, 3, CV_64F);
+
+    R.at<double>(0, 0) = cos(yaw) * cos(pitch);
+    R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+    R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+
+    R.at<double>(1, 0) = sin(yaw) * cos(pitch);
+    R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+    R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+
+    R.at<double>(2, 0) = -sin(pitch);
+    R.at<double>(2, 1) = cos(pitch) * sin(roll);
+    R.at<double>(2, 2) = cos(pitch) * cos(roll);
+
+    return R;
+}
+
+Mat composeR(Mat rvec)
+{
+    Mat R = Mat::zeros(3, 3, CV_64F);
+
+    double roll = rvec.at<double>(0, 0);
+    double pitch = rvec.at<double>(1, 0);
+    double yaw = rvec.at<double>(2, 0);
+
+    R.at<double>(0, 0) = cos(yaw) * cos(pitch);
+    R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+    R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+
+    R.at<double>(1, 0) = sin(yaw) * cos(pitch);
+    R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+    R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+
+    R.at<double>(2, 0) = -sin(pitch);
+    R.at<double>(2, 1) = cos(pitch) * sin(roll);
+    R.at<double>(2, 2) = cos(pitch) * cos(roll);
+
+    return R;
+}
+
+Mat decomposeR(Mat R)
+{
+    double roll, pitch, yaw;
+
+    pitch = -asin(R.at<double>(2, 0));
+    roll = atan2(R.at<double>(2, 1), R.at<double>(2, 2));
+    yaw = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+
+    Mat euler = Mat::zeros(3, 1, CV_64F);
+    euler.at<double>(0, 0) = roll;
+    euler.at<double>(1, 0) = pitch;
+    euler.at<double>(2, 0) = yaw;
+
+    return euler;
+}
+
+Mat projOrtog(Mat &x)
+{
+    Mat Px = (Mat::eye(3, 3, CV_64F) - x * x.t());
+    return Px;
+}
+
+Mat puntoMedio(Mat p1, Mat p2, Mat p3, Mat p4)
+{
+    Mat pMedio = Mat::zeros(3, 1, CV_64F);
+    pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0) + p3.at<double>(0, 0) + p4.at<double>(0, 0)) / 4;
+    pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
+    pMedio.at<double>(0, 2) = (p1.at<double>(0, 2) + p2.at<double>(0, 2) + p3.at<double>(0, 2) + p4.at<double>(0, 2)) / 4;
+    return pMedio;
+}
+
+string type2str(int type)
+{
+    string r;
+
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+    switch (depth)
+    {
+    case CV_8U:
+        r = "8U";
+        break;
+    case CV_8S:
+        r = "8S";
+        break;
+    case CV_16U:
+        r = "16U";
+        break;
+    case CV_16S:
+        r = "16S";
+        break;
+    case CV_32S:
+        r = "32S";
+        break;
+    case CV_32F:
+        r = "32F";
+        break;
+    case CV_64F:
+        r = "64F";
+        break;
+    default:
+        r = "User";
+        break;
+    }
+
+    r += "C";
+    r += (chans + '0');
+
+    return r;
+}
+
+void Tipito(Mat &Matrix)
+{
+    string ty = type2str(Matrix.type());
+    cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
+    cout << Matrix << endl;
 }

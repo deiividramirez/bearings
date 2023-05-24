@@ -60,7 +60,7 @@ typedef struct savingData
 {
     Mat img;
     Mat imgGray;
-    
+
     vector<int> markerIds;
     vector<vector<Point2f>> markerCorners;
     Mat points;
@@ -120,6 +120,14 @@ public:
     float error = 0;
     float error_pix = 0;
 
+    Mat I3 = Mat::eye(3, 3, CV_64F);
+
+    Mat R;
+    Mat Q;
+
+    Mat U_trans = Mat::zeros(3, 1, CV_64F);
+    Mat U_rot = Mat::zeros(3, 1, CV_64F);
+
     Mat integral_error = Mat::zeros(3, 1, CV_64F);
     Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
     Mat integral_error12 = Mat::zeros(12, 1, CV_64F);
@@ -176,15 +184,16 @@ typedef struct vecDist
 
 /****************** SAVE DESIRED IMAGES FROM POSES ******************/
 void saveDesired1f(const sensor_msgs::Image::ConstPtr &msg);
-void saveDesired1b(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired2f(const sensor_msgs::Image::ConstPtr &msg);
-void saveDesired2b(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
-void saveDesired3b(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
-void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg);
-void saveDesired5b(const sensor_msgs::Image::ConstPtr &msg);
+
+// void saveDesired1b(const sensor_msgs::Image::ConstPtr &msg);
+// void saveDesired2b(const sensor_msgs::Image::ConstPtr &msg);
+// void saveDesired3b(const sensor_msgs::Image::ConstPtr &msg);
+// void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg);
+// void saveDesired5b(const sensor_msgs::Image::ConstPtr &msg);
 
 /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
 int compute_descriptors(const cv::Mat &img,
@@ -224,5 +233,19 @@ int getBearing(Mat &actual_image,
 
 Mat signMat(Mat mat);
 Mat robust(Mat error);
+
+Mat composeR(double roll, double pitch, double yaw);
+
+Mat composeR(Mat rvec);
+
+Mat decomposeR(Mat R);
+
+Mat projOrtog(Mat &x);
+
+Mat puntoMedio(Mat p1, Mat p2, Mat p3, Mat p4);
+
+string type2str(int type);
+
+void Tipito(Mat &Matrix);
 
 #endif

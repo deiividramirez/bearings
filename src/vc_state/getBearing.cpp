@@ -7,9 +7,6 @@
 using namespace cv;
 using namespace std;
 
-Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4);
-void Tipito(Mat &Matrix);
-
 geometry_msgs::PoseStamped pos_msg;
 geometry_msgs::PoseStamped pos_msg_to;
 
@@ -149,58 +146,4 @@ int getBearing(Mat &actual_image,
       cout << "[INFO] Bearing calculated" << endl;
       return 0;
    }
-}
-
-Mat puntoMedio(Mat &p1, Mat &p2, Mat &p3, Mat &p4)
-{
-   Mat pMedio = Mat::zeros(1, 2, CV_64F);
-   pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0) + p3.at<double>(0, 0) + p4.at<double>(0, 0)) / 4;
-   pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
-   return pMedio;
-}
-string type2str(int type)
-{
-   string r;
-
-   uchar depth = type & CV_MAT_DEPTH_MASK;
-   uchar chans = 1 + (type >> CV_CN_SHIFT);
-
-   switch (depth)
-   {
-   case CV_8U:
-      r = "8U";
-      break;
-   case CV_8S:
-      r = "8S";
-      break;
-   case CV_16U:
-      r = "16U";
-      break;
-   case CV_16S:
-      r = "16S";
-      break;
-   case CV_32S:
-      r = "32S";
-      break;
-   case CV_32F:
-      r = "32F";
-      break;
-   case CV_64F:
-      r = "64F";
-      break;
-   default:
-      r = "User";
-      break;
-   }
-
-   r += "C";
-   r += (chans + '0');
-
-   return r;
-}
-void Tipito(Mat &Matrix)
-{
-   string ty = type2str(Matrix.type());
-   cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
-   cout << Matrix << endl;
 }

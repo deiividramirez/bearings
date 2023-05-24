@@ -207,8 +207,8 @@ src/vc_state/aruco_detector.cpp
 src/vc_state/Moore_Penrose_PInv.cpp 
 src/vc_state/saveDesired.cpp
 src/vc_state/vc_state.cpp
-src/vc_state/getBearing.cpp
 
+#src/vc_state/getBearing.cpp
 #src/vc_state/Kanade_Lucas_Tomasi.cpp
 #src/vc_state/Compute_descriptors.cpp
 #src/vc_state/compute_descriptors.cpp
