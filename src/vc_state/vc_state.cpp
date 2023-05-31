@@ -101,17 +101,22 @@ void vc_state::load(const ros::NodeHandle &nh)
 std::pair<Eigen::VectorXd, float> vc_state::update()
 {
         this->t += this->dt;
-        // Integrating
         this->X = this->X + this->Vx * this->dt;
         this->Y = this->Y + this->Vy * this->dt;
         this->Z = this->Z + this->Vz * this->dt;
-        this->Yaw = this->Yaw + this->Vyaw * this->dt;
+        // this->Yaw = this->Yaw + this->Vyaw * this->dt;
+        this->Yaw = this->Vyaw;
+
+        // this->X = -3.75;
+        // this->Y = 0.1;
+        // this->Z = 1.7;
+        // this->Yaw = 0;
 
         cout << endl
              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
-             << "SENDING THIS POS >>" << endl 
-             << "Vx: " << this->Vx << " - Vy: " << this->Vy << " - Vz: " << this->Vz << " - Vyaw: " << this->Vyaw << endl
+             << "SENDING THIS POS >>" << endl
              << "X: " << this->X << " - Y: " << this->Y << " - Z: " << this->Z << " - Yaw: " << this->Yaw << endl
+             << "Vx: " << this->Vx << " - Vy: " << this->Vy << " - Vz: " << this->Vz << " - Vyaw: " << this->Vyaw << endl
              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
              << endl;
 
@@ -123,11 +128,6 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
         position(0) = this->X;
         position(1) = this->Y;
         position(2) = this->Z;
-
-        /* this->Vx = 0;
-        this->Vy = 0;
-        this->Vz = 0;
-        this->Vyaw = 0; */
 
         return make_pair(position, this->Yaw);
 }
@@ -147,9 +147,17 @@ void vc_state::initialize(const float &x, const float &y, const float &z, const 
         this->Y = y;
         this->Z = z;
         this->Yaw = yaw;
-        this->initialized = true;
+
+        this->Vx = 0;
+        this->Vy = 0;
+        this->Vz = 0;
+        this->Vyaw = 0;
+
         cout << "Init pose: X: " << this->X << " Y: " << this->Y << " Z: " << this->Z << endl;
         cout << "Yaw: " << this->Yaw << " Pitch: " << this->Pitch << " Roll: " << this->Roll << endl;
+
+        this->initialized = true;
+        // vc_state::update();
 }
 
 Mat signMat(Mat mat)
@@ -190,121 +198,155 @@ Mat robust(Mat error)
 
 Mat composeR(double roll, double pitch, double yaw)
 {
-    Mat R = Mat::zeros(3, 3, CV_64F);
+        Mat R = Mat::zeros(3, 3, CV_64F);
 
-    R.at<double>(0, 0) = cos(yaw) * cos(pitch);
-    R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
-    R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+        R.at<double>(0, 0) = cos(yaw) * cos(pitch);
+        R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+        R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
 
-    R.at<double>(1, 0) = sin(yaw) * cos(pitch);
-    R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
-    R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+        R.at<double>(1, 0) = sin(yaw) * cos(pitch);
+        R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+        R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
 
-    R.at<double>(2, 0) = -sin(pitch);
-    R.at<double>(2, 1) = cos(pitch) * sin(roll);
-    R.at<double>(2, 2) = cos(pitch) * cos(roll);
+        R.at<double>(2, 0) = -sin(pitch);
+        R.at<double>(2, 1) = cos(pitch) * sin(roll);
+        R.at<double>(2, 2) = cos(pitch) * cos(roll);
 
-    return R;
+        return R;
 }
 
 Mat composeR(Mat rvec)
 {
-    Mat R = Mat::zeros(3, 3, CV_64F);
+        Mat R = Mat::zeros(3, 3, CV_64F);
 
-    double roll = rvec.at<double>(0, 0);
-    double pitch = rvec.at<double>(1, 0);
-    double yaw = rvec.at<double>(2, 0);
+        double roll = rvec.at<double>(0, 0);
+        double pitch = rvec.at<double>(1, 0);
+        double yaw = rvec.at<double>(2, 0);
 
-    R.at<double>(0, 0) = cos(yaw) * cos(pitch);
-    R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
-    R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+        R.at<double>(0, 0) = cos(yaw) * cos(pitch);
+        R.at<double>(0, 1) = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+        R.at<double>(0, 2) = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
 
-    R.at<double>(1, 0) = sin(yaw) * cos(pitch);
-    R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
-    R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+        R.at<double>(1, 0) = sin(yaw) * cos(pitch);
+        R.at<double>(1, 1) = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+        R.at<double>(1, 2) = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
 
-    R.at<double>(2, 0) = -sin(pitch);
-    R.at<double>(2, 1) = cos(pitch) * sin(roll);
-    R.at<double>(2, 2) = cos(pitch) * cos(roll);
+        R.at<double>(2, 0) = -sin(pitch);
+        R.at<double>(2, 1) = cos(pitch) * sin(roll);
+        R.at<double>(2, 2) = cos(pitch) * cos(roll);
 
-    return R;
+        return R;
 }
 
 Mat decomposeR(Mat R)
 {
-    double roll, pitch, yaw;
+        double roll, pitch, yaw;
 
-    pitch = -asin(R.at<double>(2, 0));
-    roll = atan2(R.at<double>(2, 1), R.at<double>(2, 2));
-    yaw = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+        pitch = -asin(R.at<double>(2, 0));
+        roll = atan2(R.at<double>(2, 1), R.at<double>(2, 2));
+        yaw = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
 
-    Mat euler = Mat::zeros(3, 1, CV_64F);
-    euler.at<double>(0, 0) = roll;
-    euler.at<double>(1, 0) = pitch;
-    euler.at<double>(2, 0) = yaw;
+        Mat euler = Mat::zeros(3, 1, CV_64F);
+        euler.at<double>(0, 0) = roll;
+        euler.at<double>(1, 0) = pitch;
+        euler.at<double>(2, 0) = yaw;
 
-    return euler;
+        return euler;
 }
 
 Mat projOrtog(Mat &x)
 {
-    Mat Px = (Mat::eye(3, 3, CV_64F) - x * x.t());
-    return Px;
+        Mat Px = (Mat::eye(3, 3, CV_64F) - x * x.t());
+        return Px;
 }
 
 Mat puntoMedio(Mat p1, Mat p2, Mat p3, Mat p4)
 {
-    Mat pMedio = Mat::zeros(3, 1, CV_64F);
-    pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0) + p3.at<double>(0, 0) + p4.at<double>(0, 0)) / 4;
-    pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
-    pMedio.at<double>(0, 2) = (p1.at<double>(0, 2) + p2.at<double>(0, 2) + p3.at<double>(0, 2) + p4.at<double>(0, 2)) / 4;
-    return pMedio;
+        if (p1.type() == CV_64F && p2.type() == CV_64F && p3.type() == CV_64F && p4.type() == CV_64F)
+        {
+                Mat pMedio = Mat::zeros(3, 1, CV_64F);
+                pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0) + p3.at<double>(0, 0) + p4.at<double>(0, 0)) / 4;
+                pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1) + p3.at<double>(0, 1) + p4.at<double>(0, 1)) / 4;
+                pMedio.at<double>(0, 2) = (p1.at<double>(0, 2) + p2.at<double>(0, 2) + p3.at<double>(0, 2) + p4.at<double>(0, 2)) / 4;
+                return pMedio;
+        }
+        else
+        {
+                Mat pMedio = Mat::zeros(3, 1, CV_32F);
+                pMedio.at<float>(0, 0) = (p1.at<float>(0, 0) + p2.at<float>(0, 0) + p3.at<float>(0, 0) + p4.at<float>(0, 0)) / 4;
+                pMedio.at<float>(0, 1) = (p1.at<float>(0, 1) + p2.at<float>(0, 1) + p3.at<float>(0, 1) + p4.at<float>(0, 1)) / 4;
+                pMedio.at<float>(0, 2) = (p1.at<float>(0, 2) + p2.at<float>(0, 2) + p3.at<float>(0, 2) + p4.at<float>(0, 2)) / 4;
+                return pMedio;
+        }
+}
+
+Mat puntoMedio(Mat p1, Mat p2)
+{
+        if (p1.type() == CV_64F && p2.type() == CV_64F)
+        {
+                Mat pMedio = Mat::zeros(1, 2, CV_64F);
+                pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0)) / 2;
+                pMedio.at<double>(0, 1) = (p1.at<double>(0, 1) + p2.at<double>(0, 1)) / 2;
+                return pMedio;
+        }
+        else
+        {
+                Mat pMedio = Mat::zeros(1, 2, CV_32F);
+                pMedio.at<float>(0, 0) = (int)((p1.at<float>(0, 0) + p2.at<float>(0, 0)) / 2);
+                pMedio.at<float>(0, 1) = (int)((p1.at<float>(0, 1) + p2.at<float>(0, 1)) / 2);
+                return pMedio;
+        }
+
+        // Mat pMedio = Mat::zeros(2, 1, CV_64F);
+        // pMedio.at<double>(0, 0) = (p1.at<double>(0, 0) + p2.at<double>(0, 0)) / 2;
+        // pMedio.at<double>(1, 0) = (p1.at<double>(0, 1) + p2.at<double>(0, 1)) / 2;
+        // return pMedio;
 }
 
 string type2str(int type)
 {
-    string r;
+        string r;
 
-    uchar depth = type & CV_MAT_DEPTH_MASK;
-    uchar chans = 1 + (type >> CV_CN_SHIFT);
+        uchar depth = type & CV_MAT_DEPTH_MASK;
+        uchar chans = 1 + (type >> CV_CN_SHIFT);
 
-    switch (depth)
-    {
-    case CV_8U:
-        r = "8U";
-        break;
-    case CV_8S:
-        r = "8S";
-        break;
-    case CV_16U:
-        r = "16U";
-        break;
-    case CV_16S:
-        r = "16S";
-        break;
-    case CV_32S:
-        r = "32S";
-        break;
-    case CV_32F:
-        r = "32F";
-        break;
-    case CV_64F:
-        r = "64F";
-        break;
-    default:
-        r = "User";
-        break;
-    }
+        switch (depth)
+        {
+        case CV_8U:
+                r = "8U";
+                break;
+        case CV_8S:
+                r = "8S";
+                break;
+        case CV_16U:
+                r = "16U";
+                break;
+        case CV_16S:
+                r = "16S";
+                break;
+        case CV_32S:
+                r = "32S";
+                break;
+        case CV_32F:
+                r = "32F";
+                break;
+        case CV_64F:
+                r = "64F";
+                break;
+        default:
+                r = "User";
+                break;
+        }
 
-    r += "C";
-    r += (chans + '0');
+        r += "C";
+        r += (chans + '0');
 
-    return r;
+        return r;
 }
 
 void Tipito(Mat &Matrix)
 {
-    string ty = type2str(Matrix.type());
-    cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
-    cout << Matrix << endl;
+        string ty = type2str(Matrix.type());
+        cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
+        cout << Matrix << endl;
 }

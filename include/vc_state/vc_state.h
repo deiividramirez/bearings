@@ -124,6 +124,9 @@ public:
 
     Mat R;
     Mat Q;
+    vector<Mat> Qi;
+    
+    vector<Mat> Hi;
 
     Mat U_trans = Mat::zeros(3, 1, CV_64F);
     Mat U_rot = Mat::zeros(3, 1, CV_64F);
@@ -141,8 +144,7 @@ public:
     savingData desired;
     savingData actual;
 
-    Mat homography;
-
+    Mat groundTruth = Mat::zeros(6, 1, CV_64F);
     //  Best approximations
     // bool selected = false;
     // cv::Mat t_best;
@@ -155,7 +157,6 @@ public:
     vc_state();
 
     std::pair<Eigen::VectorXd, float> update();
-    std::vector<double> position();
     void load(const ros::NodeHandle &nh);
     void initialize(const float &x,
                     const float &y,
@@ -243,6 +244,7 @@ Mat decomposeR(Mat R);
 Mat projOrtog(Mat &x);
 
 Mat puntoMedio(Mat p1, Mat p2, Mat p3, Mat p4);
+Mat puntoMedio(Mat p1, Mat p2);
 
 string type2str(int type);
 

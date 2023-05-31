@@ -105,13 +105,13 @@ int main(int argc, char **argv)
 		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
 		guoLider1 = GUO(&states[0]);
 		rotDrone1 = RotationalControl(&states[0]);
-		
+
 		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
 		guoLider2 = GUO(&states[1]);
 		rotDrone2 = RotationalControl(&states[1]);
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone3 = bearingControl(&states[2]);
+		bearDrone3 = bearingControl(&states[2], states);
 		// rotDrone3 = RotationalControl(&states[2]);
 
 		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 		{
 			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/command/trajectory", 1);
 			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
-			imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
+			// imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
 			cout << "[INFO] Suscribed and advertised for /" + DRONE_NAME + "_" << i + 1 << " trajectory and pose." << endl;
 			cout << DRONE_NAME + "_" + to_string(i + 1) + "/command/trajectory" << endl;
 			cout << DRONE_NAME + "_" + to_string(i + 1) + "/ground_truth/pose" << endl;
@@ -536,26 +536,30 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[0].Roll = (float)roll;
-	states[0].Pitch = (float)pitch;
-	states[0].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[0].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[0].X = (float)msg->position.x;
+		states[0].Y = (float)msg->position.y;
+		states[0].Z = (float)msg->position.z;
+
+		states[0].Roll = (float)roll;
+		states[0].Pitch = (float)pitch;
+		states[0].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 1" << endl;
 		states[0].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 
 		states[0].Q = composeR(states[0].Roll, states[0].Pitch, states[0].Yaw);
 	}
 
-	pos_dron[0].pose.position.x = (float)msg->position.x;
-	pos_dron[0].pose.position.y = (float)msg->position.y;
-	pos_dron[0].pose.position.z = (float)msg->position.z;
-
-	pos_dron[0].header.seq++;
-	pos_dron[0].header.stamp = ros::Time::now();
-	pos_dron[0].header.frame_id = "world";
+	states[0].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[0].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[0].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[0].groundTruth.at<double>(3, 0) = (float)roll;
+	states[0].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[0].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -570,32 +574,33 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[1].Roll = (float)roll;
-	states[1].Pitch = (float)pitch;
-	states[1].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[1].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[1].X = (float)msg->position.x;
+		states[1].Y = (float)msg->position.y;
+		states[1].Z = (float)msg->position.z;
+
+		states[1].Roll = (float)roll;
+		states[1].Pitch = (float)pitch;
+		states[1].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 2" << endl;
 		states[1].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 
 		states[1].Q = composeR(states[1].Roll, states[1].Pitch, states[1].Yaw);
 	}
 
-	pos_dron[1].pose.position.x = (float)msg->position.x;
-	pos_dron[1].pose.position.y = (float)msg->position.y;
-	pos_dron[1].pose.position.z = (float)msg->position.z;
-
-	pos_dron[1].header.seq++;
-	pos_dron[1].header.stamp = ros::Time::now();
-	pos_dron[1].header.frame_id = "world";
+	states[1].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[1].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[1].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[1].groundTruth.at<double>(3, 0) = (float)roll;
+	states[1].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[1].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl
-	// 	  << "[INFO] poseCallback function for drone 3" << endl;
-
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
 	// Creatring rotation matrix ffrom quaternion
@@ -604,26 +609,36 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[2].Roll = (float)roll;
-	states[2].Pitch = (float)pitch;
-	states[2].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[2].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[2].X = (float)msg->position.x;
+		states[2].Y = (float)msg->position.y;
+		states[2].Z = (float)msg->position.z;
+
+		states[2].Roll = (float)roll;
+		states[2].Pitch = (float)pitch;
+		states[2].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 3" << endl;
 		states[2].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 
-		states[2].Q = composeR(states[2].Roll, states[2].Pitch, states[2].Yaw);
+		states[2].Q = composeR(0, 0, states[2].Yaw);
+
+		for (int i = 0; i < states[2].params.seguimiento.rows; i++)
+		{
+			states[2].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[2].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[2].pose.position.x = (float)msg->position.x;
-	pos_dron[2].pose.position.y = (float)msg->position.y;
-	pos_dron[2].pose.position.z = (float)msg->position.z;
-
-	pos_dron[2].header.seq++;
-	pos_dron[2].header.stamp = ros::Time::now();
-	pos_dron[2].header.frame_id = "world";
+	states[2].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[2].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[2].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[2].groundTruth.at<double>(3, 0) = (float)roll;
+	states[2].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[2].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -638,26 +653,36 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[3].Roll = (float)roll;
-	states[3].Pitch = (float)pitch;
-	states[3].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[3].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[3].X = (float)msg->position.x;
+		states[3].Y = (float)msg->position.y;
+		states[3].Z = (float)msg->position.z;
+
+		states[3].Roll = (float)roll;
+		states[3].Pitch = (float)pitch;
+		states[3].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 4" << endl;
 		states[3].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 
 		states[3].Q = composeR(states[3].Roll, states[3].Pitch, states[3].Yaw);
+
+		for (int i = 0; i < states[3].params.seguimiento.rows; i++)
+		{
+			states[3].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[3].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[3].pose.position.x = (float)msg->position.x;
-	pos_dron[3].pose.position.y = (float)msg->position.y;
-	pos_dron[3].pose.position.z = (float)msg->position.z;
-
-	pos_dron[3].header.seq++;
-	pos_dron[3].header.stamp = ros::Time::now();
-	pos_dron[3].header.frame_id = "world";
+	states[3].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[3].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[3].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[3].groundTruth.at<double>(3, 0) = (float)roll;
+	states[3].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[3].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -672,77 +697,87 @@ void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[4].Roll = (float)roll;
-	states[4].Pitch = (float)pitch;
-	states[4].Yaw = (float)yaw;
 
 	// setting the position if its the first time
 	if (!states[4].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[4].X = (float)msg->position.x;
+		states[4].Y = (float)msg->position.y;
+		states[4].Z = (float)msg->position.z;
+
+		states[4].Roll = (float)roll;
+		states[4].Pitch = (float)pitch;
+		states[4].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 5" << endl;
 		states[4].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
 
 		states[4].Q = composeR(states[4].Roll, states[4].Pitch, states[4].Yaw);
+
+		for (int i = 0; i < states[4].params.seguimiento.rows; i++)
+		{
+			states[4].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[4].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[4].pose.position.x = (float)msg->position.x;
-	pos_dron[4].pose.position.y = (float)msg->position.y;
-	pos_dron[4].pose.position.z = (float)msg->position.z;
-
-	pos_dron[4].header.seq++;
-	pos_dron[4].header.stamp = ros::Time::now();
-	pos_dron[4].header.frame_id = "world";
+	states[4].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[4].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[4].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[4].groundTruth.at<double>(3, 0) = (float)roll;
+	states[4].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[4].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 
 /*************** FOR IMU ***************/
-void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[0].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[0].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[0].pose.orientation.w = (float)msg->orientation.w;
+// void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[0].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[0].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[0].pose.orientation.w = (float)msg->orientation.w;
 
-	/* pos_dron[0].header.stamp.sec++; */
-}
-void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	pos_dron[1].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[1].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[1].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[1].pose.orientation.w = (float)msg->orientation.w;
+// 	/* pos_dron[0].header.stamp.sec++; */
+// }
+// void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	pos_dron[1].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[1].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[1].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[1].pose.orientation.w = (float)msg->orientation.w;
 
-	/* pos_dron[1].header.stamp.sec++; */
-}
-void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 3" << endl; */
-	pos_dron[2].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[2].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[2].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[2].pose.orientation.w = (float)msg->orientation.w;
+// 	/* pos_dron[1].header.stamp.sec++; */
+// }
+// void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 3" << endl; */
+// 	pos_dron[2].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[2].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[2].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[2].pose.orientation.w = (float)msg->orientation.w;
 
-	/* pos_dron[2].header.stamp.sec++; */
-}
-void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 4" << endl; */
-	pos_dron[3].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[3].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[3].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
+// 	/* pos_dron[2].header.stamp.sec++; */
+// }
+// void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 4" << endl; */
+// 	pos_dron[3].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[3].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[3].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
 
-	/* pos_dron[3].header.stamp.sec++; */
-}
-void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 4" << endl; */
-	pos_dron[4].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[4].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[4].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[4].pose.orientation.w = (float)msg->orientation.w;
+// 	/* pos_dron[3].header.stamp.sec++; */
+// }
+// void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 4" << endl; */
+// 	pos_dron[4].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[4].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[4].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[4].pose.orientation.w = (float)msg->orientation.w;
 
-	/* pos_dron[4].header.stamp.sec++; */
-}
+// 	/* pos_dron[4].header.stamp.sec++; */
+// }
 
 void saveStuff(int i)
 {
@@ -762,7 +797,7 @@ void saveStuff(int i)
 
 		errors[i].push_back((float)states[i].error);
 		errors_pix[i].push_back((float)states[i].error_pix);
-		
+
 		cout << "[INFO] Control error: " << states[i].error << endl;
 		cout << "[INFO] Control error in pixels: " << states[i].error_pix << endl;
 
@@ -791,9 +826,9 @@ void saveStuff(int i)
 			cout << "[INFO] Integral error: " << states[i].integral_error.t() << endl;
 		}
 
-		X[i].push_back(pos_dron[i].pose.position.x);
-		Y[i].push_back(pos_dron[i].pose.position.y);
-		Z[i].push_back(pos_dron[i].pose.position.z);
+		X[i].push_back(states[i].X);
+		Y[i].push_back(states[i].Y);
+		Z[i].push_back(states[i].Z);
 
 		// UPDATE STATE WITH THE CURRENT CONTROL
 		auto new_pose = states[i].update();
@@ -808,8 +843,8 @@ void saveStuff(int i)
 	}
 	// else
 	// {
-		// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
-		// break;
+	// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
+	// break;
 	// }
 }
 

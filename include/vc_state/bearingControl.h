@@ -7,6 +7,9 @@ public:
    Mat imgDesiredGray;
    Mat imgActual;
    vc_state *state;
+   double LastYaw;
+
+   vector<vc_state> drones;
 
    bearingControl()
    {
@@ -18,6 +21,28 @@ public:
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
+      this->LastYaw = (*this->state).Yaw;
+
+      cout << "\n[INFO] Getting desired data for bearing control" << endl;
+
+      if (this->getDesiredData() < 0)
+      {
+         cout << "[ERROR] Desired ArUco not found" << endl;
+         ros::shutdown();
+         exit(-1);
+      }
+      cout << "[INFO] Desired data obtained" << endl;
+   }
+
+   bearingControl(vc_state *stated, vector<vc_state> drones)
+   {
+      this->imgDesired = (*stated).desired.img;
+      cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
+      this->imgActual = imgActual;
+      this->state = stated;
+      this->LastYaw = (*this->state).Yaw;
+
+      this->drones = drones;
 
       cout << "\n[INFO] Getting desired data for bearing control" << endl;
 
@@ -261,11 +286,14 @@ public:
 
    int getVels(Mat imgActual)
    {
-      if (this->getActualData(imgActual) < 0 || getHomography() < 0)
+      // if (this->getActualData(imgActual) < 0 || getHomography() < 0)
+      if (this->getActualData(imgActual) < 0)
       {
          cout << "[ERROR] Actual ArUco not found" << endl;
          return -1;
       }
+
+      cout << "[INFO] Getting velocities from Bearing-Only" << endl;
 
       Mat suma1 = Mat::zeros(3, 1, CV_64F), suma2 = Mat::zeros(3, 1, CV_64F);
       Mat suma1_w = Mat::zeros(3, 3, CV_64F);
@@ -305,17 +333,47 @@ public:
          else if (opc == 4)
          {
             temp = (*this->state).actual.bearings.col(i);
-            suma1 -= projOrtog(temp) * ((*this->state).I3 + (*this->state).Q) * (*this->state).desired.bearings.col(i);
+            // suma1 -= projOrtog(temp) * ((*this->state).I3 + (*this->state).Qi[i]) / 2.0 * (*this->state).desired.bearings.col(i);
+            // suma1_w -= ((*this->state).Qi[i].t() - (*this->state).Qi[i]);
 
-            suma1_w -= ((*this->state).Q.t() - (*this->state).Q);
+            Mat QiQj = composeR(
+                           (*this->state).groundTruth.at<double>(3, 0),
+                           (*this->state).groundTruth.at<double>(4, 0),
+                           (*this->state).groundTruth.at<double>(5, 0)
+            ).t() * composeR( 
+                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(3, 0),
+                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(4, 0),
+                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(5, 0)
+            );
+
+            // cout << "Qi: " << (*this->state).groundTruth.at<double>(3, 0) << " " <<
+            //                (*this->state).groundTruth.at<double>(4, 0) << " " <<
+            //                (*this->state).groundTruth.at<double>(5, 0) << endl;
+            // cout << "Qj: " << (*this->state).params.seguimiento.at<double>(i, 0)-1 << 
+            //                " -> " << (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(3, 0) << " " <<
+            //                (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(4, 0) << " " <<
+            //                (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(5, 0) << endl;
+            // cout << "Qi^t * Qj: " << QiQj << endl;
+
+            suma1 -= projOrtog(temp) * ( (*this->state).I3 + QiQj ) / 2.0 * (*this->state).desired.bearings.col(i);
+            suma1_w -= (QiQj.t() - QiQj);
          }
       }
 
+      // Update the velocity
+      Mat suma3 = suma1 + suma2;
+
       if (opc == 4)
       {
-         (*this->state).Q += (*this->state).Q * suma1_w;
+         (*this->state).Q = (*this->state).Q + (*this->state).dt * (*this->state).Q * (.5 * suma1_w);
+         cout << "[INFO] Actual Q: " << (*this->state).Q << endl;
          Mat decom = decomposeR((*this->state).Q);
-         (*this->state).Vyaw = -2*decom.at<double>(2, 0);
+         cout << "decom" << decom << endl;
+         (*this->state).Vyaw = decom.at<double>(2, 0);
+         // suma3 = (*this->state).R * (*this->state).Q * suma3;
+         // suma3 = (*this->state).Q * suma3;
+         // (*this->state).Vyaw = -(*this->state).Yaw;
+         // (*this->state).Yaw = decom.at<double>(2, 0);
       }
 
       // Error calculation
@@ -335,9 +393,6 @@ public:
            << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
            << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << endl;
 
-      // Update the velocity
-      Mat suma3 = suma1 + suma2;
-
       Mat tempSign = signMat(suma3);
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
@@ -347,73 +402,246 @@ public:
       (*this->state).Vy = (float)U_trans.at<double>(1, 0);
       (*this->state).Vz = (float)U_trans.at<double>(2, 0);
 
-      cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
-      cout << "Actual bearing: " << (*this->state).actual.bearings << endl;
+      // cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
+      // cout << "Actual bearing: " << (*this->state).actual.bearings << endl;
 
       return 0;
    }
 
    int getHomography()
    {
-      Mat actual32, desired32;
-      (*this->state).actual.points.convertTo(actual32, CV_32F);
-      (*this->state).desired.points.convertTo(desired32, CV_32F);
-;
-      findHomography(actual32, desired32, RANSAC).convertTo((*this->state).homography, CV_64F);
+      vector<Mat> Rs_decomp, ts_decomp, normals_decomp;
+      Mat actual32 = Mat::zeros(8, 2, CV_32F);
+      Mat desired32 = Mat::zeros(8, 2, CV_32F);
+      double Hnorm;
 
-      cout << "\nHomography: " << (*this->state).homography << endl;
+      vector<int> indexID;
 
-      // Normalization to ensure that ||c1|| = 1
-      double Hnorm = sqrt((*this->state).homography.at<double>(0, 0) * (*this->state).homography.at<double>(0, 0) +
-                          (*this->state).homography.at<double>(1, 0) * (*this->state).homography.at<double>(1, 0) +
-                          (*this->state).homography.at<double>(2, 0) * (*this->state).homography.at<double>(2, 0));
-      (*this->state).homography /= Hnorm;
-
-      vector<Mat> Rs_decomp, ts_decomp, normals_decomp, descomps;
-      Mat actual = Mat::zeros(3, 1, CV_64F);
-
-      actual.at<double>(0, 0) = (*this->state).Roll;
-      actual.at<double>(1, 0) = (*this->state).Pitch;
-      actual.at<double>(2, 0) = (*this->state).Yaw;
-
-      int sols = decomposeHomographyMat((*this->state).homography, (*state).params.K, Rs_decomp, ts_decomp, normals_decomp);
-      for (int i = 0; i < sols; i = i + 2)
+      // for (int32_t i = 0; i < 1; i++)
+      for (int32_t i = 0; i < (*this->state).actual.points.rows / 4; i++)
       {
-         descomps.push_back((*state).R * decomposeR(Rs_decomp[i]));
+         // vector<Mat> descomps;
+
+         (*this->state).actual.points.rowRange(i * 4, i * 4 + 4).convertTo(actual32.rowRange(0, 4), CV_32F);
+         (*this->state).desired.points.rowRange(i * 4, i * 4 + 4).convertTo(desired32.rowRange(0, 4), CV_32F);
+         // (*this->state).actual.points.rowRange(i * 4, i * 4 + 4).convertTo(actual32, CV_32F);
+         // (*this->state).desired.points.rowRange(i * 4, i * 4 + 4).convertTo(desired32, CV_32F);
+
+         puntoMedio(actual32.row(0), actual32.row(1)).copyTo(actual32.row(4));
+         puntoMedio(actual32.row(1), actual32.row(2)).copyTo(actual32.row(5));
+         puntoMedio(actual32.row(2), actual32.row(3)).copyTo(actual32.row(6));
+         puntoMedio(actual32.row(3), actual32.row(0)).copyTo(actual32.row(7));
+
+         puntoMedio(desired32.row(0), desired32.row(1)).copyTo(desired32.row(4));
+         puntoMedio(desired32.row(1), desired32.row(2)).copyTo(desired32.row(5));
+         puntoMedio(desired32.row(2), desired32.row(3)).copyTo(desired32.row(6));
+         puntoMedio(desired32.row(3), desired32.row(0)).copyTo(desired32.row(7));
+
+         // findHomography(actual32, desired32, 0).convertTo((*this->state).Hi[i], CV_64F);
+         // findHomography(actual32, desired32, RANSAC, 3).convertTo((*this->state).Hi[i], CV_64F);
+         findHomography(actual32, desired32, LMEDS).convertTo((*this->state).Hi[i], CV_64F);
+         // findHomography(actual32, desired32, RHO, 3).convertTo((*this->state).Hi[i], CV_64F);
+
+         if ((*this->state).Hi[i].empty())
+         {
+            cout << "[ERROR] Homography " << i << " not found" << endl;
+            return -1;
+         }
+
+         cout << "Homography " << i << ": " << (*this->state).Hi[i] << endl;
+
+         // Normalization to ensure that ||c1|| = 1
+         Hnorm = sqrt((*this->state).Hi[i].at<double>(0, 0) * (*this->state).Hi[i].at<double>(0, 0) +
+                      (*this->state).Hi[i].at<double>(1, 0) * (*this->state).Hi[i].at<double>(1, 0) +
+                      (*this->state).Hi[i].at<double>(2, 0) * (*this->state).Hi[i].at<double>(2, 0));
+         (*this->state).Hi[i] /= Hnorm;
+
+         (*state).Qi[i] = HtoR((*this->state).Hi[i]);
+
+         // Mat descom = decomposeR((*state).Qi[i]);
+         // cout << "R" << i << ": " << (*state).Qi[i] << endl;
+         // cout << "angles" << i << ": " << descom << endl;
+
+         // (*this->state).Roll = descom.at<double>(0, 0);
+         // (*this->state).Pitch = descom.at<double>(1, 0);
+         // (*this->state).Vyaw = descom.at<double>(2, 0);
+
+         // cout << "H" << i << ": " << (*this->state).Hi[i] << endl;
+
+         // int sols = decomposeHomographyMat((*this->state).Hi[i], (*state).params.K, Rs_decomp, ts_decomp, normals_decomp);
+         // for (int i = 0; i < sols; i++)
+         // {
+         //    cout << "R" << i << " = " << Rs_decomp[i] << endl;
+         //    cout << "t" << i << " = " << ts_decomp[i] << endl;
+         //    cout << "n" << i << " = " << normals_decomp[i] << endl << endl;
+         //    // cout << "R-tn" << i << " = " << Rs_decomp[i] - ts_decomp[i] * normals_decomp[i].t() << endl
+         //    //      << endl;
+         // }
+
+         // Mat actual = cameraPoseFromHomography((*this->state).Hi[i], (*state).Qi[i]);
+         // cout << "Pose: \n"
+         //      << (*state).Qi[i] << endl;
+
+         // for (int i = 0; i < sols; i = i + 2)
+         // {
+         //    descomps.push_back((*state).R * decomposeR(Rs_decomp[i]));
+         // }
+
+         // actual.at<double>(0, 0) = (*this->state).Roll;
+         // actual.at<double>(1, 0) = (*this->state).Pitch;
+         // actual.at<double>(2, 0) = (*this->state).Yaw;
+
+         // double cond1 = norm(descomps[0] - actual);
+         // double cond2 = norm(descomps[1] - actual);
+
+         // if (cond1 < cond2)
+         // {
+         //    descomps[0].copyTo(actual);
+         //    (*state).Qi[i] = composeR(descomps[0]);
+         // }
+         // else
+         // {
+         //    descomps[1].copyTo(actual);
+         //    (*state).Qi[i] = composeR(descomps[1]);
+         // }
+
+         // cout << "GOT  -> Roll: " << actual.at<double>(0, 0) << " Pitch: " << actual.at<double>(1, 0) << " Yaw: " << actual.at<double>(2, 0) << endl;
+         // cout << "REAL -> Roll: " << (*this->state).Roll << " Pitch: " << (*this->state).Pitch << " Yaw: " << (*this->state).Yaw << endl;
+
+         // cout << "Homography " << i << ": " << (*this->state).Hi[i] << endl;
+
+         Mat img_matches, imgActual, imgDesired;
+         imgActual = (*this->state).actual.img.clone();
+         imgDesired = (*this->state).desired.img.clone();
+
+         for (int j = 0; j < actual32.rows; j++)
+         {
+            circle(imgActual, Point(actual32.at<float>(j, 0), actual32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+            circle(imgDesired, Point(desired32.at<float>(j, 0), desired32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+         }
+
+         warpPerspective(imgActual, img_matches, (*this->state).Hi[i], imgDesired.size());
+         hconcat(imgDesired, img_matches, img_matches);
+
+         string name = "Homography " + to_string(i);
+         namedWindow(name, WINDOW_NORMAL);
+         resizeWindow(name, 850, 240);
+         imshow(name, img_matches);
+         waitKey(1);
       }
 
-      double cond1 = norm(descomps[0] - actual);
-      double cond2 = norm(descomps[1] - actual);
+      return 0;
+   }
 
-      if (cond1 < cond2)
+   Mat HtoR(Mat Homography)
+   {
+      Mat U, S, Vt;
+      SVD::compute(Homography, S, U, Vt);
+
+      double s1 = S.at<double>(0) / S.at<double>(1);
+      double s3 = S.at<double>(2) / S.at<double>(1);
+
+      double zeta = s1 - s3;
+
+      Mat ab = Mat::zeros(2, 1, CV_64F);
+      ab.at<double>(0) = sqrt(1 - s3 * s3);
+      ab.at<double>(1) = sqrt(s1 * s1 - 1);
+      normalize(ab, ab);
+
+      Mat cd = Mat::zeros(2, 1, CV_64F);
+      cd.at<double>(0) = 1 + s1 * s3;
+      cd.at<double>(1) = sqrt(1 - s3 * s3) * sqrt(s1 * s1 - 1);
+      normalize(cd, cd);
+
+      Mat ef = Mat::zeros(2, 1, CV_64F);
+      ef.at<double>(0) = -ab.at<double>(1) / s1;
+      ef.at<double>(1) = -ab.at<double>(0) / s3;
+      normalize(ef, ef);
+
+      Mat v1, v3;
+      Vt.row(0).copyTo(v1);
+      Vt.row(2).copyTo(v3);
+
+      Mat n1 = ab.at<double>(1) * v1 - ab.at<double>(0) * v3;
+      Mat n2 = ab.at<double>(1) * v1 + ab.at<double>(0) * v3;
+
+      Mat temp1 = Mat::zeros(3, 3, CV_64F);
+      temp1.at<double>(0, 2) = cd.at<double>(1);
+      temp1.at<double>(0, 0) = cd.at<double>(0);
+      temp1.at<double>(1, 1) = 1;
+      temp1.at<double>(2, 0) = -cd.at<double>(1);
+      temp1.at<double>(2, 2) = cd.at<double>(0);
+
+      Mat temp2 = Mat::zeros(3, 3, CV_64F);
+      temp2.at<double>(0, 0) = cd.at<double>(0);
+      temp2.at<double>(0, 2) = -cd.at<double>(1);
+      temp2.at<double>(1, 1) = 1;
+      temp2.at<double>(2, 0) = cd.at<double>(1);
+      temp2.at<double>(2, 2) = cd.at<double>(0);
+
+      Mat R1 = U * temp1 * Vt;
+      Mat R2 = U * temp2 * Vt;
+
+      Mat decom1 = decomposeR(R1);
+      Mat decom2 = decomposeR(R2);
+
+      this->LastYaw = (*this->state).Yaw;
+
+      if (abs(this->LastYaw - decom1.at<double>(2, 0)) < abs(this->LastYaw - decom2.at<double>(2, 0)))
       {
-         descomps[0].copyTo(actual);
-         (*state).Q = composeR(descomps[0]);
+         cout << "decom1: " << decom1 << endl;
+         cout << "decom2: " << decom2 << endl;
+         return R1;
       }
       else
       {
-         descomps[1].copyTo(actual);
-         (*state).Q = composeR(descomps[1]);
+         cout << "decom2: " << decom2 << endl;
+         cout << "decom1: " << decom1 << endl;
+         return R2;
       }
+   }
 
-      cout << "Get -> Roll: " << actual.at<double>(0, 0) << " Pitch: " << actual.at<double>(1, 0) << " Yaw: " << actual.at<double>(2, 0) << endl;
-      cout << "GT -> Roll: " << (*this->state).Roll << " Pitch: " << (*this->state).Pitch << " Yaw: " << (*this->state).Yaw << endl;
+   Mat cameraPoseFromHomography(Mat H, Mat toPose)
+   {
+      Mat pose = Mat::eye(3, 3, CV_64F); // 3x4 matrix, the camera pose
+      double norm1 = (double)norm(H.col(0));
+      double norm2 = (double)norm(H.col(1));
+      double tnorm = (norm1 + norm2) / 2.0; // Normalization value
 
-      // Mat img_matches;
-      // for (int i = 0; i < 8; i++)
-      // {
-      //    circle((*this->state).actual.img, Point((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      // }
+      // cout << "H:\n " << H << endl;
 
-      // warpPerspective((*this->state).actual.img, img_matches, H, (*this->state).actual.img.size());
-      // hconcat((*this->state).desired.img, img_matches, img_matches);
-      
-      // namedWindow("Homography", WINDOW_NORMAL);
-      // resizeWindow("Homography", 550, 310);
-      // imshow("Homography", img_matches);
-      // waitKey(1);
+      Mat p1 = H.col(0);    // Pointer to first column of H
+      Mat p2 = pose.col(0); // Pointer to first column of pose (empty)
 
-      return 0;
+      cv::normalize(p1, p2); // Normalize the rotation, and copies the column to pose
+      // cout << "p1:\n " << p1 << endl;
+      // cout << "p2:\n " << p2 << endl;
+
+      p1 = H.col(1);    // Pointer to second column of H
+      p2 = pose.col(1); // Pointer to second column of pose (empty)
+
+      cv::normalize(p1, p2); // Normalize the rotation and copies the column to pose
+      // cout << "p1:\n " << p1 << endl;
+      // cout << "p2:\n " << p2 << endl;
+
+      p1 = pose.col(0);
+      p2 = pose.col(1);
+
+      Mat p3 = p1.cross(p2); // Computes the cross-product of p1 and p2
+      Mat c2 = pose.col(2);  // Pointer to third column of pose
+      p3.copyTo(c2);         // Third column is the crossproduct of columns one and two
+      // cout << "p3:\n " << p3 << endl;
+      // cout << "c2:\n " << c2 << endl;
+
+      // pose.col(3) = H.col(2) / tnorm; // vector t [R|t] is the last column of pose
+      // cout << "H.col(2):\n " << H.col(2) << endl;
+      // cout << "tnorm:\n " << tnorm << endl;
+
+      pose.copyTo(toPose);
+
+      // cout << "Pose antes:\n" << pose << endl;
+      Mat descom = decomposeR(pose);
+      // cout << "Pose despues:\n" << descom << endl;
+      return descom;
    }
 };

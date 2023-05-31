@@ -55,11 +55,11 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg);
 void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg);
 
 /****************** FOR IMU CALLBACKS ******************/
-void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg);
-void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
-void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
-void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
-void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg);
 
 void saveStuff(int drone_id);
 
@@ -67,14 +67,14 @@ void saveStuff(int drone_id);
 Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs);
 
 /****************** SAVE REAL POSITION OF DRONES ******************/
-geometry_msgs::PoseStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4, pos_dron5;
+// geometry_msgs::PoseStamped pos_dron1, pos_dron2, pos_dron3, pos_dron4, pos_dron5;
 
 /****************** ARRAYS WITH DATA FOR EASY USAGE ******************/
 // vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
 vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4, poseCallback5};
-vector<void (*)(const sensor_msgs::Imu::ConstPtr &)> imuCallbacks = {imuCallback1, imuCallback2, imuCallback3, imuCallback4, imuCallback5};
-vector<geometry_msgs::PoseStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4, pos_dron5};
+// vector<void (*)(const sensor_msgs::Imu::ConstPtr &)> imuCallbacks = {imuCallback1, imuCallback2, imuCallback3, imuCallback4, imuCallback5};
+// vector<geometry_msgs::PoseStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4, pos_dron5};
 
 /****************** DECLARING OBJECTS TO RECEIVE IMAGE MESSAGES ******************/
 sensor_msgs::ImagePtr image_msg;
@@ -110,12 +110,12 @@ vector<bool> targets = {target1, target2, target3, target4, target5};
 ros::Publisher pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4, pos_pub_5;
 ros::Subscriber pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4, pos_sub_5;
 ros::Subscriber position_sub_1, position_sub_2, position_sub_3, position_sub_4, position_sub_5;
-ros::Subscriber imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4, imu_sub_5;
+// ros::Subscriber imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4, imu_sub_5;
 
 vector<ros::Publisher> pos_pubs = {pos_pub_1, pos_pub_2, pos_pub_3, pos_pub_4, pos_pub_5};
 vector<ros::Subscriber> pos_subs = {pos_sub_1, pos_sub_2, pos_sub_3, pos_sub_4, pos_sub_5};
 vector<ros::Subscriber> position_subs = {position_sub_1, position_sub_2, position_sub_3, position_sub_4, position_sub_5};
-vector<ros::Subscriber> imu_subs = {imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4, imu_sub_5};
+// vector<ros::Subscriber> imu_subs = {imu_sub_1, imu_sub_2, imu_sub_3, imu_sub_4, imu_sub_5};
 
 /****************** DATA FOR GRAPHICS ******************/
 vector<float> vel_x1, vel_x2, vel_x3, vel_x4, vel_x5;
