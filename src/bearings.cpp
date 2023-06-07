@@ -85,13 +85,13 @@ int main(int argc, char **argv)
 		rotDrone2 = RotationalControl(&states[1]);
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone3 = bearingControl(&states[2], states, 0);
+		bearDrone3 = bearingControl(&states[2], states);
 
 		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone4 = bearingControl(&states[3], states, 0);
+		bearDrone4 = bearingControl(&states[3], states);
 
 		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone5 = bearingControl(&states[4], states, 0);
+		bearDrone5 = bearingControl(&states[4], states);
 	}
 
 	/****************** MOVING TO POSES ******************/
