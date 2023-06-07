@@ -7,13 +7,15 @@ public:
    Mat imgDesiredGray;
    Mat imgActual;
    vc_state *state;
+   int mode;
 
    GUO()
    {
    }
 
-   GUO(vc_state *stated)
+   GUO(vc_state *stated, int mode)
    {
+      this->mode = mode;
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
@@ -33,190 +35,182 @@ public:
 
    int getDesiredData()
    {
-      vector<int> markerIds;
-      vector<vector<Point2f>> markerCorners, rejectedCandidates;
-      Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
-
-      try
+      if (this->mode == 0)
       {
-         aruco::detectMarkers(this->imgDesired, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      }
-      catch (Exception &e)
-      {
-         cout << "Exception: " << e.what() << endl;
-         return -1;
-      }
+         vector<int> markerIds;
+         vector<vector<Point2f>> markerCorners, rejectedCandidates;
+         Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
+         Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
-      for (int i = 0; i < markerIds.size(); i++)
-      {
-         cout << markerIds[i] << " ";
-      }
-      cout << endl;
-
-      int indice;
-
-      // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
-
-      (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-      (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-
-      for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
-      {
-         indice = -1;
-         for (int i = 0; i < markerIds.size(); i++)
+         try
          {
-            if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
-            {
-               cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
-               // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
-               indice = i;
-               break;
-            }
+            aruco::detectMarkers(this->imgDesired, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
          }
-
-         if (indice == -1)
+         catch (Exception &e)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << "Exception: " << e.what() << endl;
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2 = Mat::zeros(4, 3, CV_32F), temporal3;
-         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-
-         Mat Kinv;
-         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
-
-         for (int i = 0; i < 4; i++)
+         cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            temporal.at<float>(i, 0) = markerCorners[indice][i].x;
-            temporal.at<float>(i, 1) = markerCorners[indice][i].y;
-            temporal.at<float>(i, 2) = 1;
+            cout << markerIds[i] << " ";
+         }
+         cout << endl;
 
-            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+         int indice;
 
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+         (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+
+         for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
+         {
+            indice = -1;
+            for (int i = 0; i < markerIds.size(); i++)
+            {
+               if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
+               {
+                  // cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+                  indice = i;
+                  break;
+               }
+            }
+
+            if (indice == -1)
+            {
+               cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+               return -1;
+            }
+
+            Mat temporal = Mat::zeros(4, 3, CV_32F);
+            Mat temporal2 = Mat::zeros(4, 3, CV_32F), temporal3;
+
+            Mat Kinv;
+            (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
+            for (int i = 0; i < 4; i++)
+            {
+               temporal.at<float>(i, 0) = markerCorners[indice][i].x;
+               temporal.at<float>(i, 1) = markerCorners[indice][i].y;
+               temporal.at<float>(i, 2) = 1;
+
+               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+            }
+            temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          }
 
-         // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+         (*this->state).desired.markerIds = markerIds;
+         (*this->state).desired.markerCorners = markerCorners;
+      }
+      else if (this->mode == 1)
+      {
       }
 
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
-      (*this->state).desired.markerIds = markerIds;
-      (*this->state).desired.markerCorners = markerCorners;
 
       this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
-
-      // // draw detected markers on the image
-      // for (int i = 0; i < (*this->state).desired.points.rows; i++)
-      // {
-      //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      // }
-
-      // namedWindow("Desired", WINDOW_NORMAL);
-      // cv::resizeWindow("Desired", 550, 310);
-      // imshow("Desired", (*this->state).desired.img);
-      // waitKey(0);
-
+      string TEMPORAL = "Desired" + to_string(this->mode);
+      imshow(TEMPORAL, (*this->state).desired.img);
+      waitKey(0);
       return 0;
    }
 
    int getActualData(Mat actualImg)
    {
-      vector<int> markerIds;
-      vector<vector<Point2f>> markerCorners, rejectedCandidates;
-      Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
-
-      this->imgActual = actualImg;
-
-      try
+      if (this->mode == 0)
       {
-         aruco::detectMarkers(this->imgActual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      }
-      catch (Exception &e)
-      {
-         cout << "Exception: " << e.what() << endl;
-         return -1;
-      }
+         vector<int> markerIds;
+         vector<vector<Point2f>> markerCorners, rejectedCandidates;
+         Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
+         Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
-      cout << "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
-      for (int i = 0; i < markerIds.size(); i++)
-      {
-         cout << markerIds[i] << " ";
-      }
-      cout << endl;
+         this->imgActual = actualImg;
 
-      int marker_index = -1;
-      for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
-      {
-
-         for (int i = 0; i < markerIds.size(); i++)
+         try
          {
-            if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
-            {
-               cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
-               marker_index = i;
-               break;
-            }
+            aruco::detectMarkers(this->imgActual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
          }
-         if (marker_index == -1)
+         catch (Exception &e)
          {
-            cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
+            cout << "Exception: " << e.what() << endl;
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
-         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-
-         Mat Kinv;
-         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
-
-         for (int i = 0; i < 4; i++)
+         cout << "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
-            temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
-            temporal.at<float>(i, 2) = 1;
+            cout << markerIds[i] << " ";
+         }
+         cout << endl;
 
-            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+         int marker_index = -1;
+         for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
+         {
 
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            for (int i = 0; i < markerIds.size(); i++)
+            {
+               if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
+               {
+                  cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
+                  marker_index = i;
+                  break;
+               }
+            }
+            if (marker_index == -1)
+            {
+               cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
+               return -1;
+            }
+
+            Mat temporal = Mat::zeros(4, 3, CV_32F);
+            Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+
+            Mat Kinv;
+            (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
+            for (int i = 0; i < 4; i++)
+            {
+               temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
+               temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
+               temporal.at<float>(i, 2) = 1;
+
+               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+            }
+            temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
+            temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
+
+            break;
          }
 
-         // temporal3.convertTo((*this->state).actual.normPoints, CV_64F);
-         temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
-
-         break;
+         (*this->state).actual.markerIds = markerIds;
+         (*this->state).actual.markerCorners = markerCorners;
+      }
+      else if (this->mode == 1)
+      {
       }
 
-      // cout << "normPoints: " << (*this->state).actual.normPoints << endl;
-      // cout << "points: " << (*this->state).actual.points << endl;
+      (*this->state).actual.img = actualImg;
+      cvtColor((*this->state).actual.imgGray, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
 
-      (*this->state).actual.img = this->imgDesired;
-      (*this->state).actual.imgGray = this->imgDesiredGray;
-      (*this->state).actual.markerIds = markerIds;
-      (*this->state).actual.markerCorners = markerCorners;
-
-      this->toSphere((*this->state).actual.points, &(*this->state).actual.inSphere);
-
-      // // draw detected markers on the image
-      // for (int i = 0; i < (*this->state).actual.points.rows; i++)
-      // {
-      //    circle((*this->state).actual.img, Point((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      // }
-      // imshow("Actual", (*this->state).actual.img);
-      // waitKey(0);
+      this->toSphere(actualImg, &(*this->state).actual.inSphere);
 
       return 0;
+   }
+
+   void changeMode(int mode)
+   {
+      cout << "\n[INFO] Changing mode to " << mode << endl;
+      this->mode = mode;
+      this->imgDesired = (*this->state).desired.img;
+      if (this->getDesiredData() < 0)
+      {
+         cout << "[ERROR] Desired points in picture not found" << endl;
+         ros::shutdown();
+         exit(-1);
+      }
    }
 
    int getVels(Mat img // Image to be processed

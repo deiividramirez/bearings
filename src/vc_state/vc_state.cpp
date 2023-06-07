@@ -104,12 +104,11 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
         this->X = this->X + this->Vx * this->dt;
         this->Y = this->Y + this->Vy * this->dt;
         this->Z = this->Z + this->Vz * this->dt;
-        // this->Yaw = this->Yaw + this->Vyaw * this->dt;
-        this->Yaw = this->Vyaw;
+        this->Yaw = this->Yaw + this->Vyaw * this->dt;
 
-        // this->X = -3.75;
-        // this->Y = 0.1;
-        // this->Z = 1.7;
+        // this->X = -3.5;
+        // this->Y = -0.5;
+        // this->Z = 2.2;
         // this->Yaw = 0;
 
         cout << endl

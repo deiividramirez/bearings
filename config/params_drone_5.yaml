@@ -32,7 +32,7 @@ bearing:
 
 # Gain on linear velocities
 gainv: 4
-gainv_max: .1
+gainv_max: .5
 
 # Gain on angular velocities
 gainw: .01
@@ -55,7 +55,8 @@ flann_ratio: 0.7
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
 # control 4 (con rotaciones)
-control: 4
+# control 5 (con rotaciones Ground Truth)
+control: 5
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

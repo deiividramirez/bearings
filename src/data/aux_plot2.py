@@ -30,6 +30,8 @@ fig, ax = plt.subplots(
     len(DRONE_COUNT),
     sharex=True,
     num=f"Velocidades y errores para todos los drones",
+    # figsize is variable depending on the number of drones
+    figsize=(4* len(DRONE_COUNT), 5),
 )
 ax.shape = (4, len(DRONE_COUNT))
 

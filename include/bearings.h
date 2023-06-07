@@ -1,3 +1,9 @@
+/****************** CUSTOM LIBRARIES ******************/
+#include "vc_state/vc_state.h"
+
+#ifndef BEARING_TOOLS_H
+#define BEARING_TOOLS_H
+
 /****************** ROS LIBRARIES ******************/
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
@@ -26,13 +32,11 @@
 #include <stdlib.h>
 #include <iostream>
 
-/****************** CUSTOM LIBRARIES ******************/
-#include "vc_state/vc_state.h"
-
 /****************** FUNCTION NAMES ******************/
 
 /****************** FOR WRITING MATRIXES ******************/
 void writeFile(vector<float> &vec, const string &name);
+void loadImages();
 
 /****************** FOR CAMERA CALLBACKS ******************/
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
@@ -98,7 +102,7 @@ int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGE
 
 // For reading usage from yalm
 string DRONE_NAME;
-int DRONE_COUNT;
+int DRONE_COUNT, MODE;
 
 // For controlling target detection
 bool target1, target2, target3, target4, target5;
@@ -131,6 +135,7 @@ vector<float> lambda1_kd, lambda2_kd, lambda3_kd, lambda4_kd, lambda5_kd;
 vector<float> arr_x1, arr_x2, arr_x3, arr_x4, arr_x5;
 vector<float> arr_y1, arr_y2, arr_y3, arr_y4, arr_y5;
 vector<float> arr_z1, arr_z2, arr_z3, arr_z4, arr_z5;
+vector<float> arr_yaw1, arr_yaw2, arr_yaw3, arr_yaw4, arr_yaw5;
 vector<float> integral_x1, integral_x2, integral_x3, integral_x4, integral_x5;
 vector<float> integral_y1, integral_y2, integral_y3, integral_y4, integral_y5;
 vector<float> integral_z1, integral_z2, integral_z3, integral_z4, integral_z5;
@@ -148,6 +153,7 @@ vector<vector<float>> lambda_kd = {lambda1_kd, lambda2_kd, lambda3_kd, lambda4_k
 vector<vector<float>> X = {arr_x1, arr_x2, arr_x3, arr_x4, arr_x5};
 vector<vector<float>> Y = {arr_y1, arr_y2, arr_y3, arr_y4, arr_y5};
 vector<vector<float>> Z = {arr_z1, arr_z2, arr_z3, arr_z4, arr_z5};
+vector<vector<float>> YAW = {arr_yaw1, arr_yaw2, arr_yaw3, arr_yaw4, arr_yaw5};
 vector<vector<float>> integral_x = {integral_x1, integral_x2, integral_x3, integral_x4, integral_x5};
 vector<vector<float>> integral_y = {integral_y1, integral_y2, integral_y3, integral_y4, integral_y5};
 vector<vector<float>> integral_z = {integral_z1, integral_z2, integral_z3, integral_z4, integral_z5};
@@ -167,6 +173,8 @@ bearingControl bearDrone5;
 #include "vc_state/RotationalControl.h"
 RotationalControl rotDrone1;
 RotationalControl rotDrone2;
-RotationalControl rotDrone3;
-RotationalControl rotDrone4;
-RotationalControl rotDrone5;
+// RotationalControl rotDrone3;
+// RotationalControl rotDrone4;
+// RotationalControl rotDrone5;
+
+#endif

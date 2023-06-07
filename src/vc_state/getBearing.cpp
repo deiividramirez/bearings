@@ -54,7 +54,7 @@ int getBearing(Mat &actual_image,
    vector<int> markerIds;
    vector<vector<Point2f>> markerCorners, rejectedCandidates;
    Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
+   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
    try
    {
       aruco::detectMarkers(actual_image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);

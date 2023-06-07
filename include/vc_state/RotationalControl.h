@@ -19,7 +19,7 @@ public:
       this->imgActual = imgActual;
       this->state = stated;
 
-      cout << "\n[INFO] Getting desired data for Rotational control...";
+      cout << "[INFO] Getting desired data for Rotational control..." << endl;
 
       // if (this->getDesiredData() < 0)
       // {
@@ -35,7 +35,7 @@ public:
       vector<int> markerIds;
       vector<vector<Point2f>> markerCorners, rejectedCandidates;
       Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
+      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
       try
       {
@@ -148,7 +148,7 @@ public:
       // Choosing the gain for the control law
       double l0_Kp = 1 * (*this->state).Kv_max, linf_Kp = 10 * (*this->state).Kv;
       // double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-50 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
-      double lambda_Kp = .5;
+      double lambda_Kp = 1;
 
       cout << endl
            << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl;

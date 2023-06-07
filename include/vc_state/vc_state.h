@@ -1,5 +1,5 @@
-#ifndef IMG_TOOLS_H
-#define IMG_TOOLS_H
+#ifndef VC_STATE_H
+#define VC_STATE_H
 
 #include <cmath>
 #include <string>
@@ -15,6 +15,9 @@
 #include <opencv2/calib3d.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/features2d.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 
 using namespace cv;
 using namespace std;
@@ -79,25 +82,6 @@ typedef struct vc_desired_configuration
     cv::Mat img;
 } vc_desired_configuration;
 
-#endif
-
-#ifndef VC_STATE_H
-#define VC_STATE_H
-
-#include <string>
-#include <vector>
-#include <iostream>
-#include <ros/ros.h>
-#include <Eigen/Dense>
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/calib3d.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/features2d.hpp>
-#include <opencv2/video/tracking.hpp>
-#include <geometry_msgs/PointStamped.h>
-#include <geometry_msgs/PoseStamped.h>
 
 class vc_state
 {
@@ -125,7 +109,7 @@ public:
     Mat R;
     Mat Q;
     vector<Mat> Qi;
-    
+
     vector<Mat> Hi;
 
     Mat U_trans = Mat::zeros(3, 1, CV_64F);
@@ -176,11 +160,6 @@ typedef struct vecDist
 
 /****************** FUNCTIONS TO USE ******************/
 
-/****************** MAIN CONTROL FOR IMAGE BASED VISUAL SERVOING ******************/
-// int GUO(cv::Mat img,
-//         vc_state &state,
-//         vc_homograpy_matching_result &matching_result);
-
 /****************** FUNCTIONS TO USE ******************/
 
 /****************** SAVE DESIRED IMAGES FROM POSES ******************/
@@ -189,12 +168,6 @@ void saveDesired2f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg);
-
-// void saveDesired1b(const sensor_msgs::Image::ConstPtr &msg);
-// void saveDesired2b(const sensor_msgs::Image::ConstPtr &msg);
-// void saveDesired3b(const sensor_msgs::Image::ConstPtr &msg);
-// void saveDesired4b(const sensor_msgs::Image::ConstPtr &msg);
-// void saveDesired5b(const sensor_msgs::Image::ConstPtr &msg);
 
 /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
 int compute_descriptors(const cv::Mat &img,

@@ -182,6 +182,6 @@
 
   <xacro:include filename="$(find bearings)/description/camera_iris.xacro"/>
   <xacro:camera_base namespace="${namespace}" ></xacro:camera_base>
-  <xacro:under_camera namespace="${namespace}" ></xacro:under_camera>
+  <!-- <xacro:under_camera namespace="${namespace}" ></xacro:under_camera> -->
 
 </robot>

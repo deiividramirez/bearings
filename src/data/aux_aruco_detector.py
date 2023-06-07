@@ -13,7 +13,7 @@ gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
 parameters =  aruco.DetectorParameters()
 
-corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
 frame_markers = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
 
 # set window title

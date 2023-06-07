@@ -6,7 +6,7 @@
     <joint name="camera_joint" type="fixed">
       <parent link="${namespace}/base_link"/>
       <child link="camera_link"/>
-      <origin xyz="0.095 0 0" rpy="0 0 0"/>
+      <origin xyz="0.099 0 0" rpy="0 0 0"/>
     </joint>
 
     <link name="camera_link">
@@ -28,32 +28,37 @@
     <link name="camera_link_optical"></link>
 
     <gazebo reference="camera_link">
-      <material>Gazebo/Red</material>
+      <material>Gazebo/BlueGlow</material>
 
       <sensor type="camera" name="camera">
-        <pose> 0 0 0 0 0 0 </pose>
-        <visualize>false</visualize>
         <update_rate>30</update_rate>
+        <visualize>false</visualize>
         <camera>
           <!-- <horizontal_fov>1.0472</horizontal_fov> -->
+          <!-- <horizontal_fov>2.09</horizontal_fov> -->
           <!-- <horizontal_fov>2</horizontal_fov> -->
+          <!-- <horizontal_fov>1.6</horizontal_fov> -->
+          <!-- <horizontal_fov>1.75</horizontal_fov> -->
+          <!-- <horizontal_fov>1.3962634</horizontal_fov> -->
+          <!-- <horizontal_fov>0.3962634</horizontal_fov> -->
           <image>
+            <focal_length>700</focal_length>
             <width>1920</width>
             <height>1080</height>
             <format>R8G8B8</format>
           </image>
           <clip>
-            <near>0.01</near>            <!---->
-            <far>150</far>
+            <near>0.02</near>
+            <far>300</far>
           </clip>
-          <noise>
-            <type>gaussian</type>
+          <!-- <noise>
+            <type>gaussian</type> -->
             <!-- Noise is sampled independently per pixel on each frame.
             That pixel's noise value is added to each of its color
             channels, which at that point lie in the range [0,1]. -->
-            <mean>0.0</mean>
-            <stddev>0.007</stddev>
-          </noise>
+            <!-- <mean>0.0</mean>
+            <stddev>0.003</stddev>
+          </noise> -->
           <lens>
             <intrinsics>
               <fx>700</fx>
@@ -64,16 +69,25 @@
             </intrinsics>
           </lens>
         </camera>
+
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-          <frame_name>camera_link_optical</frame_name>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>0.0</updateRate>
           <cameraName>camera_base</cameraName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>camera_link_optical</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
         </plugin>
+
       </sensor>
+
     </gazebo>
-
-
   </xacro:macro>
-
 
   <xacro:macro name="under_camera" params="namespace">
 
@@ -91,7 +105,6 @@
         <material name="Red"/>
       </visual>
     </link>
-
 
     <joint name="camera_under_optical_joint" type="fixed">
       <parent link="camera_under_link"/>

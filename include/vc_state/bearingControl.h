@@ -7,7 +7,9 @@ public:
    Mat imgDesiredGray;
    Mat imgActual;
    vc_state *state;
-   double LastYaw;
+
+   int mode;
+   // double LastYaw;
 
    vector<vc_state> drones;
 
@@ -15,13 +17,14 @@ public:
    {
    }
 
-   bearingControl(vc_state *stated)
+   bearingControl(vc_state *stated, int mode)
    {
+      this->mode = mode;
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
-      this->LastYaw = (*this->state).Yaw;
+      // this->LastYaw = (*this->state).Yaw;
 
       cout << "\n[INFO] Getting desired data for bearing control" << endl;
 
@@ -34,13 +37,14 @@ public:
       cout << "[INFO] Desired data obtained" << endl;
    }
 
-   bearingControl(vc_state *stated, vector<vc_state> drones)
+   bearingControl(vc_state *stated, vector<vc_state> drones, int mode)
    {
+      this->mode = mode;
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
-      this->LastYaw = (*this->state).Yaw;
+      // this->LastYaw = (*this->state).Yaw;
 
       this->drones = drones;
 
@@ -57,236 +61,214 @@ public:
 
    int getDesiredData()
    {
-      vector<int> markerIds;
-      vector<vector<Point2f>> markerCorners, rejectedCandidates;
-      Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
-
-      try
+      if (this->mode == 0)
       {
-         aruco::detectMarkers(this->imgDesired, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      }
-      catch (Exception &e)
-      {
-         cout << "Exception: " << e.what() << endl;
-         return -1;
-      }
+         vector<int> markerIds;
+         vector<vector<Point2f>> markerCorners, rejectedCandidates;
+         Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
+         Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
-      for (int i = 0; i < markerIds.size(); i++)
-      {
-         cout << markerIds[i] << " ";
-      }
-      cout << endl;
-
-      int indice;
-
-      // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
-
-      (*this->state).desired.bearings = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
-      (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-      (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-
-      for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
-      {
-         indice = -1;
-         for (int i = 0; i < markerIds.size(); i++)
+         try
          {
-            if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
-            {
-               cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
-               // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
-               indice = i;
-               break;
-            }
+            aruco::detectMarkers(this->imgDesired, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
          }
-
-         if (indice == -1)
+         catch (Exception &e)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << "Exception: " << e.what() << endl;
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
-         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-         Mat Kinv;
-
-         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
-         for (int i = 0; i < 4; i++)
+         cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            temporal.at<float>(i, 0) = markerCorners[indice][i].x;
-            temporal.at<float>(i, 1) = markerCorners[indice][i].y;
-            temporal.at<float>(i, 2) = 1;
-
-            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
-
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            cout << markerIds[i] << " ";
          }
-         cout << "temporal2 brefore " << temporal2 << endl;
+         cout << endl;
 
-         // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.convertTo(temporal, CV_64F);
+         int indice;
 
-         Mat p1 = temporal.row(0);
-         Mat p2 = temporal.row(1);
-         Mat p3 = temporal.row(2);
-         Mat p4 = temporal.row(3);
+         // cout << "[INFO] Called getBearing for drone " << drone_id << endl;
 
-         // Mat pMedio = puntoMedio(p1, p2, p3, p4);
-         Mat pMedio = puntoMedio(temporal.row(0), temporal.row(1), temporal.row(2), temporal.row(3));
+         (*this->state).desired.bearings = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
+         (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
 
-         Mat temp2 = (*this->state).params.Kinv * pMedio;
-         temporal = temp2 / norm(temp2);
+         for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
+         {
+            indice = -1;
+            for (int i = 0; i < markerIds.size(); i++)
+            {
+               if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
+               {
+                  cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+                  // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
+                  indice = i;
+                  break;
+               }
+            }
 
-         double b1 = temporal.at<double>(2, 0);
-         double b2 = -temporal.at<double>(0, 0);
+            if (indice == -1)
+            {
+               cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+               return -1;
+            }
 
-         // (*this->state).desired.bearings.at<double>(0, marker_index) = cos((*state).Yaw) * b1 - sin((*state).Yaw) * b2;
-         // (*this->state).desired.bearings.at<double>(1, marker_index) = sin((*state).Yaw) * b1 + cos((*state).Yaw) * b2;
-         (*this->state).desired.bearings.at<double>(0, marker_index) = b1;
-         (*this->state).desired.bearings.at<double>(1, marker_index) = b2;
-         (*this->state).desired.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
+            Mat temporal = Mat::zeros(4, 3, CV_32F);
+            Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+            // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
+            Mat Kinv;
+
+            (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+            for (int i = 0; i < 4; i++)
+            {
+               temporal.at<float>(i, 0) = markerCorners[indice][i].x;
+               temporal.at<float>(i, 1) = markerCorners[indice][i].y;
+               temporal.at<float>(i, 2) = 1;
+
+               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+
+               // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
+               // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+            }
+            // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal.convertTo(temporal, CV_64F);
+
+            Mat p1 = temporal.row(0);
+            Mat p2 = temporal.row(1);
+            Mat p3 = temporal.row(2);
+            Mat p4 = temporal.row(3);
+
+            // Mat pMedio = puntoMedio(p1, p2, p3, p4);
+            Mat pMedio = puntoMedio(temporal.row(0), temporal.row(1), temporal.row(2), temporal.row(3));
+
+            Mat temp2 = (*this->state).params.Kinv * pMedio;
+            temporal = temp2 / norm(temp2);
+
+            double b1 = temporal.at<double>(2, 0);
+            double b2 = -temporal.at<double>(0, 0);
+
+            // (*this->state).desired.bearings.at<double>(0, marker_index) = cos((*state).Yaw) * b1 - sin((*state).Yaw) * b2;
+            // (*this->state).desired.bearings.at<double>(1, marker_index) = sin((*state).Yaw) * b1 + cos((*state).Yaw) * b2;
+            (*this->state).desired.bearings.at<double>(0, marker_index) = b1;
+            (*this->state).desired.bearings.at<double>(1, marker_index) = b2;
+            (*this->state).desired.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
+         }
+
+         (*this->state).desired.markerIds = markerIds;
+         (*this->state).desired.markerCorners = markerCorners;
+      }
+      else if (this->mode == 1)
+      {
       }
 
-      // cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
-      // cout << "State desired: " << (*this->state).params.bearing << endl;
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
-      (*this->state).desired.markerIds = markerIds;
-      (*this->state).desired.markerCorners = markerCorners;
-
-      // // draw detected markers on the image
-      // for (int i = 0; i < (*this->state).desired.points.rows; i++)
-      // {
-      //    circle((*this->state).desired.img, Point((*this->state).desired.points.at<double>(i, 0), (*this->state).desired.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      // }
-      // namedWindow("Desired", WINDOW_NORMAL);
-      // cv::resizeWindow("Desired", 550, 310);
-      // imshow("Desired", (*this->state).desired.img);
-      // waitKey(0);
 
       return 0;
    }
 
    int getActualData(Mat imgActual)
    {
-      vector<int> markerIds;
-      vector<vector<Point2f>> markerCorners, rejectedCandidates;
-      Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-      Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
-
-      try
+      if (this->mode == 0)
       {
-         aruco::detectMarkers(imgActual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-      }
-      catch (Exception &e)
-      {
-         cout << "Exception: " << e.what() << endl;
-         return -1;
-      }
+         vector<int> markerIds;
+         vector<vector<Point2f>> markerCorners, rejectedCandidates;
+         Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
+         Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
-      for (int i = 0; i < markerIds.size(); i++)
-      {
-         cout << markerIds[i] << " ";
-      }
-      cout << endl;
-
-      int indice;
-
-      (*this->state).actual.bearings = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
-      (*this->state).actual.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-      (*this->state).actual.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-
-      for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
-      {
-         indice = -1;
-         for (int i = 0; i < markerIds.size(); i++)
+         try
          {
-            if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
-            {
-               cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
-               // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
-               indice = i;
-               break;
-            }
+            aruco::detectMarkers(imgActual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
          }
-
-         if (indice == -1)
+         catch (Exception &e)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << "Exception: " << e.what() << endl;
             return -1;
          }
 
-         Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
-         // Mat temporal3 = Mat::zeros(4, 2, CV_32F);
-         Mat Kinv;
-
-         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
-         for (int i = 0; i < 4; i++)
+         cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         for (int i = 0; i < markerIds.size(); i++)
          {
-            temporal.at<float>(i, 0) = markerCorners[indice][i].x;
-            temporal.at<float>(i, 1) = markerCorners[indice][i].y;
-            temporal.at<float>(i, 2) = 1;
+            cout << markerIds[i] << " ";
+         }
+         cout << endl;
 
-            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+         int indice;
 
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
+         (*this->state).actual.bearings = Mat::zeros(3, (*state).params.seguimiento.rows, CV_64F);
+         (*this->state).actual.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).actual.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+
+         for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
+         {
+            indice = -1;
+            for (int i = 0; i < markerIds.size(); i++)
+            {
+               if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
+               {
+                  cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+                  indice = i;
+                  break;
+               }
+            }
+
+            if (indice == -1)
+            {
+               cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+               return -1;
+            }
+
+            Mat temporal = Mat::zeros(4, 3, CV_32F);
+            Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+            Mat Kinv;
+
+            (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+            for (int i = 0; i < 4; i++)
+            {
+               temporal.at<float>(i, 0) = markerCorners[indice][i].x;
+               temporal.at<float>(i, 1) = markerCorners[indice][i].y;
+               temporal.at<float>(i, 2) = 1;
+
+               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+            }
+            temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal.colRange(0, 2).convertTo((*this->state).actual.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            temporal.convertTo(temporal, CV_64F);
+
+            Mat printi = (*this->state).actual.normPoints - (*this->state).desired.normPoints;
+
+            Mat p1 = temporal.row(0);
+            Mat p2 = temporal.row(1);
+            Mat p3 = temporal.row(2);
+            Mat p4 = temporal.row(3);
+
+            Mat pMedio = puntoMedio(p1, p2, p3, p4);
+
+            Mat temp2 = (*this->state).params.Kinv * pMedio;
+            temporal = temp2 / norm(temp2);
+
+            (*this->state).actual.bearings.at<double>(0, marker_index) = temporal.at<double>(2, 0);
+            (*this->state).actual.bearings.at<double>(1, marker_index) = -temporal.at<double>(0, 0);
+            (*this->state).actual.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
          }
 
-         // temporal3.convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.colRange(0, 2).convertTo((*this->state).actual.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-         temporal.convertTo(temporal, CV_64F);
-
-         Mat printi = (*this->state).actual.normPoints - (*this->state).desired.normPoints;
-
-         Mat p1 = temporal.row(0);
-         Mat p2 = temporal.row(1);
-         Mat p3 = temporal.row(2);
-         Mat p4 = temporal.row(3);
-
-         Mat pMedio = puntoMedio(p1, p2, p3, p4);
-
-         Mat temp2 = (*this->state).params.Kinv * pMedio;
-         temporal = temp2 / norm(temp2);
-
-         // double b1 = temporal.at<double>(2, 0);
-         // double b2 = -temporal.at<double>(0, 0);
-         // (*this->state).actual.bearings.at<double>(0, marker_index) = cos((*state).Yaw) * b1 - sin((*state).Yaw) * b2;
-         // (*this->state).actual.bearings.at<double>(1, marker_index) = sin((*state).Yaw) * b1 + cos((*state).Yaw) * b2;
-         (*this->state).actual.bearings.at<double>(0, marker_index) = temporal.at<double>(2, 0);
-         (*this->state).actual.bearings.at<double>(1, marker_index) = -temporal.at<double>(0, 0);
-         (*this->state).actual.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
+         (*this->state).actual.markerIds = markerIds;
+         (*this->state).actual.markerCorners = markerCorners;
+      }
+      else if (this->mode == 1)
+      {
       }
 
       (*this->state).actual.img = imgActual;
-      // (*this->state).actual.imgGray = cvtColor(imgActual, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
-      (*this->state).actual.markerIds = markerIds;
-      (*this->state).actual.markerCorners = markerCorners;
-
-      // // draw detected markers on the image
-      // for (int i = 0; i < (*this->state).actual.points.rows; i++)
-      // {
-      //    circle((*this->state).actual.img, Point((*this->state).actual.points.at<double>(i, 0), (*this->state).actual.points.at<double>(i, 1)), 5, Scalar(0, 0, 255), 2);
-      // }
-      // namedWindow("Actual", WINDOW_NORMAL);
-      // cv::resizeWindow("Actual", 550, 310);
-      // imshow("Actual", (*this->state).actual.img);
-      // waitKey(1);
+      cvtColor(imgActual, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
 
       return 0;
    }
 
    int getVels(Mat imgActual)
    {
-      // if (this->getActualData(imgActual) < 0 || getHomography() < 0)
       if (this->getActualData(imgActual) < 0)
       {
          cout << "[ERROR] Actual ArUco not found" << endl;
@@ -301,30 +283,36 @@ public:
       Mat temp = Mat::zeros(3, 1, CV_64F), temp2 = Mat::zeros(3, 1, CV_64F);
 
       int opc = (*this->state).params.control;
+
+      if (opc == 4)
+      {
+         if (getHomography() < 0)
+         {
+            cout << "[ERROR] Homography not found" << endl;
+            return -1;
+         }
+      }
+
       for (int32_t i = 0; i < (*this->state).params.seguimiento.rows; i++)
       {
          if (opc == 0)
          {
-            // Control with position
             cout << "[INFO] Control with global position it is not available at the moment" << endl;
             exit(-1);
          }
          else if (opc == 1)
          {
-            // Control with difference of bearing
             cout << "[INFO] Control with difference of bearing" << endl;
             suma1 += ((*this->state).actual.bearings.col(i) - (*this->state).desired.bearings.col(i));
          }
          else if (opc == 2)
          {
-            // Control with bearing ortogonal projection
             cout << "[INFO] Control with bearing ortogonal projection" << endl;
             temp = (*this->state).actual.bearings.col(i);
             suma2 -= projOrtog(temp) * ((*this->state).desired.bearings.col(i));
          }
          else if (opc == 3)
          {
-            // Control with difference of bearings and orthogonal projection
             cout << "[INFO] Control with difference of bearings and orthogonal projection" << endl;
             temp = (*this->state).actual.bearings.col(i);
             suma1 += (*this->state).actual.bearings.col(i) - (*this->state).desired.bearings.col(i);
@@ -332,30 +320,26 @@ public:
          }
          else if (opc == 4)
          {
+            cout << "[INFO] Control with with bearing ortogonal projection and homography" << endl;
             temp = (*this->state).actual.bearings.col(i);
-            // suma1 -= projOrtog(temp) * ((*this->state).I3 + (*this->state).Qi[i]) / 2.0 * (*this->state).desired.bearings.col(i);
-            // suma1_w -= ((*this->state).Qi[i].t() - (*this->state).Qi[i]);
-
+            suma1 -= projOrtog(temp) * ((*this->state).I3 + (*this->state).Qi[i]) / 2.0 * (*this->state).desired.bearings.col(i);
+            suma1_w -= ((*this->state).Qi[i].t() - (*this->state).Qi[i]);
+         }
+         else if (opc == 5)
+         {
+            cout << "[INFO] Control with with bearing ortogonal projection and homography - GROUND TRUTH" << endl;
             Mat QiQj = composeR(
                            (*this->state).groundTruth.at<double>(3, 0),
                            (*this->state).groundTruth.at<double>(4, 0),
-                           (*this->state).groundTruth.at<double>(5, 0)
-            ).t() * composeR( 
-                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(3, 0),
-                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(4, 0),
-                                 (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(5, 0)
-            );
+                           (*this->state).groundTruth.at<double>(5, 0))
+                           .t() *
+                       composeR(
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(3, 0),
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(4, 0),
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(5, 0));
 
-            // cout << "Qi: " << (*this->state).groundTruth.at<double>(3, 0) << " " <<
-            //                (*this->state).groundTruth.at<double>(4, 0) << " " <<
-            //                (*this->state).groundTruth.at<double>(5, 0) << endl;
-            // cout << "Qj: " << (*this->state).params.seguimiento.at<double>(i, 0)-1 << 
-            //                " -> " << (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(3, 0) << " " <<
-            //                (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(4, 0) << " " <<
-            //                (this->drones[(*this->state).params.seguimiento.at<double>(i, 0)-1]).groundTruth.at<double>(5, 0) << endl;
-            // cout << "Qi^t * Qj: " << QiQj << endl;
-
-            suma1 -= projOrtog(temp) * ( (*this->state).I3 + QiQj ) / 2.0 * (*this->state).desired.bearings.col(i);
+            temp = (*this->state).actual.bearings.col(i);
+            suma1 -= projOrtog(temp) * ((*this->state).I3 + QiQj) / 2.0 * (*this->state).desired.bearings.col(i);
             suma1_w -= (QiQj.t() - QiQj);
          }
       }
@@ -363,17 +347,9 @@ public:
       // Update the velocity
       Mat suma3 = suma1 + suma2;
 
-      if (opc == 4)
+      if (opc == 4 || opc == 5)
       {
-         (*this->state).Q = (*this->state).Q + (*this->state).dt * (*this->state).Q * (.5 * suma1_w);
-         cout << "[INFO] Actual Q: " << (*this->state).Q << endl;
-         Mat decom = decomposeR((*this->state).Q);
-         cout << "decom" << decom << endl;
-         (*this->state).Vyaw = decom.at<double>(2, 0);
-         // suma3 = (*this->state).R * (*this->state).Q * suma3;
-         // suma3 = (*this->state).Q * suma3;
-         // (*this->state).Vyaw = -(*this->state).Yaw;
-         // (*this->state).Yaw = decom.at<double>(2, 0);
+         (*this->state).Vyaw = .3 * suma1_w.at<double>(1, 0);
       }
 
       // Error calculation
@@ -417,8 +393,7 @@ public:
 
       vector<int> indexID;
 
-      // for (int32_t i = 0; i < 1; i++)
-      for (int32_t i = 0; i < (*this->state).actual.points.rows / 4; i++)
+      for (int32_t i = 0; i < (*this->state).params.seguimiento.rows; i++)
       {
          // vector<Mat> descomps;
 
@@ -437,8 +412,9 @@ public:
          puntoMedio(desired32.row(2), desired32.row(3)).copyTo(desired32.row(6));
          puntoMedio(desired32.row(3), desired32.row(0)).copyTo(desired32.row(7));
 
+         Mat mascara;
          // findHomography(actual32, desired32, 0).convertTo((*this->state).Hi[i], CV_64F);
-         // findHomography(actual32, desired32, RANSAC, 3).convertTo((*this->state).Hi[i], CV_64F);
+         // findHomography(actual32, desired32, mascara, RANSAC, 3).convertTo((*this->state).Hi[i], CV_64F);
          findHomography(actual32, desired32, LMEDS).convertTo((*this->state).Hi[i], CV_64F);
          // findHomography(actual32, desired32, RHO, 3).convertTo((*this->state).Hi[i], CV_64F);
 
@@ -448,92 +424,85 @@ public:
             return -1;
          }
 
-         cout << "Homography " << i << ": " << (*this->state).Hi[i] << endl;
-
-         // Normalization to ensure that ||c1|| = 1
          Hnorm = sqrt((*this->state).Hi[i].at<double>(0, 0) * (*this->state).Hi[i].at<double>(0, 0) +
                       (*this->state).Hi[i].at<double>(1, 0) * (*this->state).Hi[i].at<double>(1, 0) +
                       (*this->state).Hi[i].at<double>(2, 0) * (*this->state).Hi[i].at<double>(2, 0));
          (*this->state).Hi[i] /= Hnorm;
 
-         (*state).Qi[i] = HtoR((*this->state).Hi[i]);
+         Mat QiQj = composeR(
+                        (*this->state).groundTruth.at<double>(3, 0),
+                        (*this->state).groundTruth.at<double>(4, 0),
+                        (*this->state).groundTruth.at<double>(5, 0))
+                        .t() *
+                    composeR(
+                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(3, 0),
+                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(4, 0),
+                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(5, 0));
 
-         // Mat descom = decomposeR((*state).Qi[i]);
-         // cout << "R" << i << ": " << (*state).Qi[i] << endl;
-         // cout << "angles" << i << ": " << descom << endl;
+         vector<Mat> Rs, ts, normals;
+         int sols = decomposeHomographyMat((*this->state).Hi[i], (*this->state).params.K, Rs, ts, normals);
 
-         // (*this->state).Roll = descom.at<double>(0, 0);
-         // (*this->state).Pitch = descom.at<double>(1, 0);
-         // (*this->state).Vyaw = descom.at<double>(2, 0);
-
-         // cout << "H" << i << ": " << (*this->state).Hi[i] << endl;
-
-         // int sols = decomposeHomographyMat((*this->state).Hi[i], (*state).params.K, Rs_decomp, ts_decomp, normals_decomp);
-         // for (int i = 0; i < sols; i++)
-         // {
-         //    cout << "R" << i << " = " << Rs_decomp[i] << endl;
-         //    cout << "t" << i << " = " << ts_decomp[i] << endl;
-         //    cout << "n" << i << " = " << normals_decomp[i] << endl << endl;
-         //    // cout << "R-tn" << i << " = " << Rs_decomp[i] - ts_decomp[i] * normals_decomp[i].t() << endl
-         //    //      << endl;
-         // }
-
-         // Mat actual = cameraPoseFromHomography((*this->state).Hi[i], (*state).Qi[i]);
-         // cout << "Pose: \n"
-         //      << (*state).Qi[i] << endl;
-
-         // for (int i = 0; i < sols; i = i + 2)
-         // {
-         //    descomps.push_back((*state).R * decomposeR(Rs_decomp[i]));
-         // }
-
-         // actual.at<double>(0, 0) = (*this->state).Roll;
-         // actual.at<double>(1, 0) = (*this->state).Pitch;
-         // actual.at<double>(2, 0) = (*this->state).Yaw;
-
-         // double cond1 = norm(descomps[0] - actual);
-         // double cond2 = norm(descomps[1] - actual);
-
-         // if (cond1 < cond2)
-         // {
-         //    descomps[0].copyTo(actual);
-         //    (*state).Qi[i] = composeR(descomps[0]);
-         // }
-         // else
-         // {
-         //    descomps[1].copyTo(actual);
-         //    (*state).Qi[i] = composeR(descomps[1]);
-         // }
-
-         // cout << "GOT  -> Roll: " << actual.at<double>(0, 0) << " Pitch: " << actual.at<double>(1, 0) << " Yaw: " << actual.at<double>(2, 0) << endl;
-         // cout << "REAL -> Roll: " << (*this->state).Roll << " Pitch: " << (*this->state).Pitch << " Yaw: " << (*this->state).Yaw << endl;
-
-         // cout << "Homography " << i << ": " << (*this->state).Hi[i] << endl;
-
-         Mat img_matches, imgActual, imgDesired;
-         imgActual = (*this->state).actual.img.clone();
-         imgDesired = (*this->state).desired.img.clone();
-
-         for (int j = 0; j < actual32.rows; j++)
+         if (sols < 1)
          {
-            circle(imgActual, Point(actual32.at<float>(j, 0), actual32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
-            circle(imgDesired, Point(desired32.at<float>(j, 0), desired32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+            cout << "[ERROR] Decomposition of homography " << i << " not found" << endl;
+            return -1;
+         }
+         else if (sols == 1)
+         {
+            (*state).Qi[i] = Rs[0];
+         }
+         else
+         {
+
+            cout << "[INFO] Found " << sols << " solutions for rotation in the homography " << i << endl;
+
+            Mat R1 = Rs[0];
+            Mat R2 = Rs[2];
+
+            if (norm(QiQj - R1) < norm(QiQj - R2))
+            {
+               cout << "\nR1\n"
+                    << R1 << endl;
+               cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+               cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+               (*state).Qi[i] = R1;
+            }
+            else
+            {
+               cout << "\nR2\n"
+                    << R2 << endl;
+               cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+               cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+               (*state).Qi[i] = R2;
+            }
          }
 
-         warpPerspective(imgActual, img_matches, (*this->state).Hi[i], imgDesired.size());
-         hconcat(imgDesired, img_matches, img_matches);
+         // (*state).Qi[i] = HtoR((*this->state).Hi[i], QiQj);
 
-         string name = "Homography " + to_string(i);
-         namedWindow(name, WINDOW_NORMAL);
-         resizeWindow(name, 850, 240);
-         imshow(name, img_matches);
-         waitKey(1);
+         // Mat img_matches, imgActual, imgDesired;
+         // imgActual = (*this->state).actual.img.clone();
+         // imgDesired = (*this->state).desired.img.clone();
+
+         // for (int j = 0; j < actual32.rows; j++)
+         // {
+         //    circle(imgActual, Point(actual32.at<float>(j, 0), actual32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+         //    circle(imgDesired, Point(desired32.at<float>(j, 0), desired32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+         // }
+
+         // warpPerspective(imgActual, img_matches, (*this->state).Hi[i], imgDesired.size());
+         // hconcat(imgDesired, img_matches, img_matches);
+
+         // string name = "Homography " + to_string(i);
+         // namedWindow(name, WINDOW_NORMAL);
+         // resizeWindow(name, 850, 240);
+         // imshow(name, img_matches);
+         // waitKey(1);
       }
 
       return 0;
    }
 
-   Mat HtoR(Mat Homography)
+   Mat HtoR(Mat Homography, Mat QiQj)
    {
       Mat U, S, Vt;
       SVD::compute(Homography, S, U, Vt);
@@ -579,24 +548,27 @@ public:
       temp2.at<double>(2, 0) = cd.at<double>(1);
       temp2.at<double>(2, 2) = cd.at<double>(0);
 
-      Mat R1 = U * temp1 * Vt;
-      Mat R2 = U * temp2 * Vt;
+      Mat R1 = (U * temp1 * Vt).t();
+      Mat R2 = (U * temp2 * Vt).t();
 
-      Mat decom1 = decomposeR(R1);
-      Mat decom2 = decomposeR(R2);
+      // cout << "R1: " << R1 << endl;
+      // cout << "QiQj: " << QiQj << endl;
+      // cout << "R2: " << R2 << endl;
 
-      this->LastYaw = (*this->state).Yaw;
-
-      if (abs(this->LastYaw - decom1.at<double>(2, 0)) < abs(this->LastYaw - decom2.at<double>(2, 0)))
+      if (norm(QiQj - R1) < norm(QiQj - R2))
       {
-         cout << "decom1: " << decom1 << endl;
-         cout << "decom2: " << decom2 << endl;
+         cout << "\nR1\n"
+              << R1 << endl;
+         cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+         cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
          return R1;
       }
       else
       {
-         cout << "decom2: " << decom2 << endl;
-         cout << "decom1: " << decom1 << endl;
+         cout << "\nR2\n"
+              << R2 << endl;
+         cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+         cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
          return R2;
       }
    }
