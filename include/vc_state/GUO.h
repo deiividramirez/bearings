@@ -1,4 +1,5 @@
 #include "vc_state/vc_state.h"
+#include <opencv2/core/cuda.hpp>
 
 class GUO
 {
@@ -8,6 +9,15 @@ public:
    Mat imgActual;
    vc_state *state;
    int mode;
+
+   // ORB detector;
+   vector<KeyPoint> keypoints1, keypoints2;
+   Mat descriptors1, descriptors2;
+   vector<DMatch> matches;
+   vector<Point2f> actualPoints, desiredPoints;
+   
+   Ptr<ORB> detector;
+
 
    GUO()
    {
@@ -29,6 +39,17 @@ public:
          ros::shutdown();
          exit(-1);
       }
+
+      // Setting the ORB detector
+      this->detector = ORB::create();
+      this->detector->setFastThreshold((*this->state).params.fastThreshold);
+      this->detector->setMaxFeatures((*this->state).params.nfeatures);
+      this->detector->setNLevels((*this->state).params.nlevels);
+      this->detector->setEdgeThreshold((*this->state).params.edgeThreshold);
+      this->detector->setFirstLevel((*this->state).params.firstLevel);
+      this->detector->setWTA_K((*this->state).params.WTA_K);
+      this->detector->setPatchSize((*this->state).params.patchSize);
+
 
       cout << "[INFO] Desired data obtained" << endl;
    }
@@ -103,18 +124,22 @@ public:
 
          (*this->state).desired.markerIds = markerIds;
          (*this->state).desired.markerCorners = markerCorners;
+         this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
       }
       else if (this->mode == 1)
       {
+         this->detector->detectAndCompute(this->imgDesiredGray, noArray(), this->keypoints1, this->descriptors1);
+         drawKeypoints(this->imgDesired, this->keypoints1, this->imgDesired, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+         imshow("Keypoints 1", this->imgDesired);
+         waitKey(0);
       }
 
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
 
-      this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
-      string TEMPORAL = "Desired" + to_string(this->mode);
-      imshow(TEMPORAL, (*this->state).desired.img);
-      waitKey(0);
+      // string TEMPORAL = "Desired" + to_string(this->mode);
+      // imshow(TEMPORAL, (*this->state).desired.img);
+      // waitKey(0);
       return 0;
    }
 

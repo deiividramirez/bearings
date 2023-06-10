@@ -8,7 +8,7 @@ path = Path(__file__).parent.absolute().parent.absolute()
 
 num = sys.argv[1] if len(sys.argv) == 2 else 1
 
-frame = cv2.imread(f"{path}/desired_{num}f.jpg")
+frame = cv2.imread(f"{path}/desired{num}_0.jpg")
 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
 parameters =  aruco.DetectorParameters()
