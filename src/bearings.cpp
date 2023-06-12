@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "bearings");
 	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns5"), gen("general");
 	vector<ros::NodeHandle> nhs = {nh, nh2, nh3, nh4, nh5};
-	
+
 	ros::Rate rate(30);
 
 	gen.getParam("MODE", MODE);
@@ -55,12 +55,12 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
-		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		// image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
-		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		if (DRONE_COUNT == 5)
-			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		// if (DRONE_COUNT == 5)
+		// 	image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
 	}
 
 	/****************** OPENING DESIRED IMAGES ******************/
@@ -72,26 +72,22 @@ int main(int argc, char **argv)
 		guoLider1 = GUO(&states[0], 0);
 		rotDrone1 = RotationalControl(&states[0]);
 
-		MODE = 1;
-		loadImages();
-		guoLider1.changeMode(1);
+		// cout << "\n[INFO] First leader initialized." << endl;
+		// ros::shutdown();
+		// exit(0);
 
-		cout << "\n[INFO] First leader initialized." << endl;
-		ros::shutdown();
-		exit(0);
+		// // Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		// guoLider2 = GUO(&states[1], 0);
+		// rotDrone2 = RotationalControl(&states[1]);
 
-		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		guoLider2 = GUO(&states[1], 0);
-		rotDrone2 = RotationalControl(&states[1]);
+		// // First follower -> Translational motion and Rotational motion (BEARING ONLY)
+		// bearDrone3 = bearingControl(&states[2], states);
 
-		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone3 = bearingControl(&states[2], states);
+		// // Second follower -> Translational motion and Rotational motion (BEARING ONLY)
+		// bearDrone4 = bearingControl(&states[3], states);
 
-		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone4 = bearingControl(&states[3], states);
-
-		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
-		bearDrone5 = bearingControl(&states[4], states);
+		// // Third follower -> Translational motion and Rotational motion (BEARING ONLY)
+		// bearDrone5 = bearingControl(&states[4], states);
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -358,6 +354,13 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
+		if (contIMG1 == 0 && MODE == 0)
+		{
+			MODE = 1;
+			loadImages();
+			guoLider1.changeMode(1);
+		}
+
 		if (guoLider1.getVels(actual) == 0)
 		{
 			cout << "\n[INFO] Controller part has been executed" << endl;
@@ -370,14 +373,15 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 		if (!SHOW_IMAGES)
 		{
+			Mat copy = actual.clone();
 			for (int i = 0; i < states[0].actual.points.rows; i++)
 			{
-				circle(actual, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-				circle(actual, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+				circle(copy, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(copy, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 			}
 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_1", 550, 310);
-			imshow("Frontal camera_1", actual);
+			imshow("Frontal camera_1", copy);
 			waitKey(1);
 		}
 		// }
@@ -859,60 +863,60 @@ int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0, c8 = 0, c9 = 0, c10 
 
 void saveDesired1f(const sensor_msgs::Image::ConstPtr &msg)
 {
-   // cout << "[INFO] Saving Desired 1f" << endl;
-   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// cout << "[INFO] Saving Desired 1f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-   string tempString = workspace;
-   tempString += "/src/bearings/src/desired1_" + to_string(MODE) + ".jpg";
-   imwrite(tempString, actual);
-   if (c1++ == 1)
-      cout << "[INFO] << Image 1 saved >> " << tempString << endl;
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired1_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c1++ == 1)
+		cout << "[INFO] << Image 1 saved >> " << tempString << endl;
 }
 
 void saveDesired2f(const sensor_msgs::Image::ConstPtr &msg)
 {
-   // cout << "[INFO] Saving Desired 2f" << endl;
-   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// cout << "[INFO] Saving Desired 2f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-   string tempString = workspace;
-   tempString += "/src/bearings/src/desired2_" + to_string(MODE) + ".jpg";
-   imwrite(tempString, actual);
-   if (c3++ == 1)
-      cout << "[INFO] << Image 2 saved >> " << tempString << endl;
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired2_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c3++ == 1)
+		cout << "[INFO] << Image 2 saved >> " << tempString << endl;
 }
 
 void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg)
 {
-   // cout << "[INFO] Saving Desired 3f" << endl;
-   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// cout << "[INFO] Saving Desired 3f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-   string tempString = workspace;
-   tempString += "/src/bearings/src/desired3_" + to_string(MODE) + ".jpg";
-   imwrite(tempString, actual);
-   if (c5++ == 1)
-      cout << "[INFO] << Image 3 saved >> " << tempString << endl;
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired3_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c5++ == 1)
+		cout << "[INFO] << Image 3 saved >> " << tempString << endl;
 }
 
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg)
 {
-   // cout << "[INFO] Saving Desired 4f" << endl;
-   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// cout << "[INFO] Saving Desired 4f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-   string tempString = workspace;
-   tempString += "/src/bearings/src/desired4_" + to_string(MODE) + ".jpg";
-   imwrite(tempString, actual);
-   if (c7++ == 1)
-      cout << "[INFO] << Image 4 saved >> " << tempString << endl;
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired4_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c7++ == 1)
+		cout << "[INFO] << Image 4 saved >> " << tempString << endl;
 }
 
 void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg)
 {
-   // cout << "[INFO] Saving Desired 4f" << endl;
-   Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// cout << "[INFO] Saving Desired 4f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-   string tempString = workspace;
-   tempString += "/src/bearings/src/desired5_" + to_string(MODE) + ".jpg";
-   imwrite(tempString, actual);
-   if (c9++ == 1)
-      cout << "[INFO] << Image 5 saved >> " << tempString << endl;
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired5_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c9++ == 1)
+		cout << "[INFO] << Image 5 saved >> " << tempString << endl;
 }

@@ -46,15 +46,16 @@ void vc_state::load(const ros::NodeHandle &nh)
              << this->R << endl;
 
         // Load error threshold parameter
-        this->params.feature_threshold = nh.param(std::string("feature_error_threshold"), std::numeric_limits<double>::max());
         // Load feature detector parameters
+        this->params.fastThreshold = nh.param(std::string("fastThreshold"), 20);
         this->params.nfeatures = nh.param(std::string("nfeatures"), 100);
-        this->params.scaleFactor = nh.param(std::string("scaleFactor"), 1.0);
         this->params.nlevels = nh.param(std::string("nlevels"), 5);
         this->params.edgeThreshold = nh.param(std::string("edgeThreshold"), 15);
+        this->params.feature_threshold = nh.param(std::string("feature_error_threshold"), std::numeric_limits<double>::max());
+        this->params.scaleFactor = nh.param(std::string("scaleFactor"), 1.0);
         this->params.patchSize = nh.param(std::string("patchSize"), 30);
-        this->params.fastThreshold = nh.param(std::string("fastThreshold"), 20);
         this->params.flann_ratio = nh.param(std::string("flann_ratio"), 0.7);
+        
         this->params.control = nh.param(std::string("control"), 1);
         this->params.camara = nh.param(std::string("camara"), 1);
 

@@ -6,18 +6,23 @@ class GUO
 public:
    Mat imgDesired;
    Mat imgDesiredGray;
-   Mat imgActual;
    vc_state *state;
    int mode;
 
    // ORB detector;
    vector<KeyPoint> keypoints1, keypoints2;
    Mat descriptors1, descriptors2;
-   vector<DMatch> matches;
+   vector<vector<DMatch>> matches;
    vector<Point2f> actualPoints, desiredPoints;
-   
-   Ptr<ORB> detector;
 
+   Ptr<ORB> detector;
+   FlannBasedMatcher matcher;
+   vector<DMatch> good_matches;
+
+   bool firstTime = false;
+
+   Mat oldImage;
+   Mat oldControl;
 
    GUO()
    {
@@ -28,7 +33,6 @@ public:
       this->mode = mode;
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
-      this->imgActual = imgActual;
       this->state = stated;
 
       cout << "\n[INFO] Getting desired data for GUO control...";
@@ -41,21 +45,27 @@ public:
       }
 
       // Setting the ORB detector
-      this->detector = ORB::create();
-      this->detector->setFastThreshold((*this->state).params.fastThreshold);
-      this->detector->setMaxFeatures((*this->state).params.nfeatures);
-      this->detector->setNLevels((*this->state).params.nlevels);
-      this->detector->setEdgeThreshold((*this->state).params.edgeThreshold);
-      this->detector->setFirstLevel((*this->state).params.firstLevel);
-      this->detector->setWTA_K((*this->state).params.WTA_K);
-      this->detector->setPatchSize((*this->state).params.patchSize);
+      this->detector = ORB::create((*stated).params.nfeatures,
+                                   (*stated).params.scaleFactor,
+                                   (*stated).params.nlevels,
+                                   (*stated).params.edgeThreshold,
+                                   (*stated).params.firstLevel,
+                                   (*stated).params.WTA_K,
+                                   (*stated).params.scoreType,
+                                   (*stated).params.patchSize,
+                                   (*stated).params.fastThreshold);
 
+      matcher = FlannBasedMatcher(new flann::LshIndexParams(20, 10, 2));
 
       cout << "[INFO] Desired data obtained" << endl;
    }
 
    int getDesiredData()
    {
+      (*this->state).desired.img = this->imgDesired;
+      cvtColor((*this->state).desired.img, (*this->state).desired.imgGray, COLOR_BGR2GRAY);
+      this->imgDesiredGray = (*this->state).desired.imgGray;
+
       if (this->mode == 0)
       {
          vector<int> markerIds;
@@ -129,22 +139,23 @@ public:
       else if (this->mode == 1)
       {
          this->detector->detectAndCompute(this->imgDesiredGray, noArray(), this->keypoints1, this->descriptors1);
-         drawKeypoints(this->imgDesired, this->keypoints1, this->imgDesired, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
-         imshow("Keypoints 1", this->imgDesired);
-         waitKey(0);
+         cout << "[INFO] Keypoints detected: " << this->keypoints1.size() << endl;
+         // drawKeypoints(this->imgDesired, this->keypoints1, this->imgDesired, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+         // namedWindow("Desired", WINDOW_NORMAL);
+         // resizeWindow("Desired", 960, 540);
+         // imshow("Desired", this->imgDesired);
+         // waitKey(0);
       }
-
-      (*this->state).desired.img = this->imgDesired;
-      (*this->state).desired.imgGray = this->imgDesiredGray;
-
-      // string TEMPORAL = "Desired" + to_string(this->mode);
-      // imshow(TEMPORAL, (*this->state).desired.img);
-      // waitKey(0);
       return 0;
    }
 
    int getActualData(Mat actualImg)
    {
+      (*this->state).actual.img.copyTo(this->oldImage);
+      (*this->state).actual.img = actualImg;
+      cvtColor((*this->state).actual.img, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
+      this->good_matches.clear();
+
       if (this->mode == 0)
       {
          vector<int> markerIds;
@@ -152,11 +163,9 @@ public:
          Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
          Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
-         this->imgActual = actualImg;
-
          try
          {
-            aruco::detectMarkers(this->imgActual, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+            aruco::detectMarkers((*this->state).actual.img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
          }
          catch (Exception &e)
          {
@@ -215,12 +224,135 @@ public:
       }
       else if (this->mode == 1)
       {
+         Mat Kinv;
+         (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
+
+         if (!this->firstTime)
+         {
+            this->firstTime = true;
+            this->detector->detectAndCompute((*this->state).actual.imgGray, noArray(), this->keypoints2, this->descriptors2);
+            this->matcher.knnMatch(this->descriptors1, this->descriptors2, this->matches, 2);
+
+            for (int i = 0; i < this->matches.size(); ++i)
+            {
+               if (this->matches[i][0].distance < this->matches[i][1].distance * (*this->state).params.flann_ratio)
+                  this->good_matches.push_back(this->matches[i][0]);
+            }
+
+            vector<Point2f> points1, points2;
+            for (size_t i = 0; i < this->good_matches.size(); i++)
+            {
+               points1.push_back(this->keypoints1[this->good_matches[i].queryIdx].pt);
+               points2.push_back(this->keypoints2[this->good_matches[i].trainIdx].pt);
+            }
+            Mat H = findHomography(points1, points2, RANSAC);
+            vector<DMatch> new_matches;
+            for (size_t i = 0; i < this->good_matches.size(); i++)
+            {
+               Mat p1 = Mat::ones(3, 1, CV_64F);
+               p1.at<double>(0, 0) = this->keypoints1[this->good_matches[i].queryIdx].pt.x;
+               p1.at<double>(1, 0) = this->keypoints1[this->good_matches[i].queryIdx].pt.y;
+               p1 = H * p1;
+               p1 = p1 / p1.at<double>(2, 0);
+               double dist = sqrt(pow(p1.at<double>(0, 0) - this->keypoints2[this->good_matches[i].trainIdx].pt.x, 2) + pow(p1.at<double>(1, 0) - this->keypoints2[this->good_matches[i].trainIdx].pt.y, 2));
+               if (dist < 5)
+               {
+                  new_matches.push_back(this->good_matches[i]);
+               }
+            }
+            this->good_matches = new_matches;
+
+            if (this->good_matches.size() <= 5)
+            {
+               cout << "[ERROR] There are no good matches" << endl;
+               return -1;
+            }
+
+            cout << "[INFO] Good matches: " << this->good_matches.size() << endl;
+
+            Orden();
+
+            Mat temporal3 = Mat::zeros(4, 3, CV_32F);
+            Mat temporal4 = Mat::zeros(4, 3, CV_32F);
+
+            for (int i = 0; i < 4; i++)
+            {
+               temporal3.at<float>(i, 0) = (*this->state).desired.points.at<double>(i, 0);
+               temporal3.at<float>(i, 1) = (*this->state).desired.points.at<double>(i, 1);
+               temporal3.at<float>(i, 2) = 1;
+
+               temporal4.row(i) = (Kinv * temporal3.row(i).t()).t();
+            }
+            temporal4.colRange(0, 2).convertTo((*this->state).desired.normPoints, CV_64F);
+            this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
+
+            // Mat img_matches;
+            // drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
+            //             Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+            // namedWindow("Good Matches", WINDOW_NORMAL);
+            // resizeWindow("Good Matches", 960, 270);
+            // imshow("Good Matches", img_matches);
+            // waitKey(0);
+
+            // ros::shutdown();
+            // exit(-1);
+         }
+         else
+         {
+            Mat oldGray;
+            cvtColor(this->oldImage, oldGray, COLOR_BGR2GRAY);
+
+            Mat new_points, status, error;
+            Mat actualTemp;
+            (*this->state).actual.points.convertTo(actualTemp, CV_32F);
+            calcOpticalFlowPyrLK(oldGray, (*this->state).actual.imgGray, actualTemp, new_points, status, error);
+
+            for (int i = 0; i < new_points.rows; i++)
+            {
+               circle((*this->state).actual.img, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
+               circle((*this->state).actual.img, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
+
+               circle(this->oldImage, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
+               circle(this->oldImage, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
+            }
+
+            // cout << "Old: " << (*this->state).actual.points << endl;
+            // cout << "New: " << new_points << endl;
+            new_points.convertTo((*this->state).actual.points, CV_64F);
+
+            // cout << "status: " << status << endl;
+            // cout << "error: " << error << endl;
+
+            // namedWindow("Old Matches", WINDOW_NORMAL);
+            // resizeWindow("Old Matches", 960, 540);
+            // imshow("Old Matches", this->oldImage);
+            // waitKey(1);
+
+            // namedWindow("Good Matches", WINDOW_NORMAL);
+            // resizeWindow("Good Matches", 960, 540);
+            // imshow("Good Matches", (*this->state).actual.img);
+            // waitKey(0);
+         }
+
+         Mat temporal = Mat::zeros(4, 3, CV_32F);
+         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+
+         for (int i = 0; i < 4; i++)
+         {
+            temporal.at<float>(i, 0) = (*this->state).actual.points.at<double>(i, 0);
+            temporal.at<float>(i, 1) = (*this->state).actual.points.at<double>(i, 1);
+            temporal.at<float>(i, 2) = 1;
+
+            temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+         }
+         temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
+         
+         // ros::shutdown();
+         // exit(-1);
       }
 
-      (*this->state).actual.img = actualImg;
-      cvtColor((*this->state).actual.imgGray, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
-
-      this->toSphere(actualImg, &(*this->state).actual.inSphere);
+      this->toSphere((*this->state).actual.points, &(*this->state).actual.inSphere);
 
       return 0;
    }
@@ -229,7 +361,16 @@ public:
    {
       cout << "\n[INFO] Changing mode to " << mode << endl;
       this->mode = mode;
+      this->firstTime = false;
       this->imgDesired = (*this->state).desired.img;
+      cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
+
+      this->oldControl = Mat::zeros(1, 4, CV_64F);
+      this->oldControl.at<double>(0, 0) = (*this->state).Vx;
+      this->oldControl.at<double>(0, 1) = (*this->state).Vy;
+      this->oldControl.at<double>(0, 2) = (*this->state).Vz;
+      this->oldControl.at<double>(0, 3) = (*this->state).Vyaw;
+
       if (this->getDesiredData() < 0)
       {
          cout << "[ERROR] Desired points in picture not found" << endl;
@@ -247,15 +388,18 @@ public:
       vector<vecDist> distancias;
       this->getActualData(img);
 
+      cout << "Actual points: " << (*this->state).actual.points << endl;
+      cout << "Actual sphere: " << (*this->state).actual.inSphere << endl;
+      cout << "Desired points: " << (*this->state).desired.points << endl;
+      cout << "Desired sphere: " << (*this->state).desired.inSphere << endl;
+
       // Send images points to sphere model by generic camera model
       // toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
 
       // Calculate the distances between the points in the sphere
       distances((*this->state).desired.inSphere, (*this->state).actual.inSphere, distancias, (*this->state).params);
-      // and sorting these distance for choose the greater ones
-      // sort(distancias.begin(), distancias.end(), mayorQue);
 
-      // // Get interaction matrix and error vector with distances
+      // Get interaction matrix and error vector with distances
       L = Lvl((*this->state).actual.inSphere, distancias, (*this->state).params);
       Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
 
@@ -478,5 +622,130 @@ public:
       pi.release();
       pj.release();
       return L;
+   }
+
+   int MinBy(Mat puntos, Mat desired, Mat *ordenFinal)
+   {
+      // Make buuble sort with norm of the difference between points and key
+      *ordenFinal = Mat::zeros(1, 4, CV_32S) - 1;
+      Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
+      Mat p1, p2;
+      vector<Mat> keys;
+
+      keys.push_back((Mat_<double>(1, 2) << 480, 270));
+      keys.push_back((Mat_<double>(1, 2) << 480, 810));
+      keys.push_back((Mat_<double>(1, 2) << 1440, 270));
+      keys.push_back((Mat_<double>(1, 2) << 1440, 810));
+
+      int conteoExterno = 0;
+      for (Mat key : keys)
+      {
+         p1 = desired.clone();
+         p2 = puntos.clone();
+         for (int i = 0; i < p2.rows; i++)
+         {
+            orden.at<int>(0, i) = i;
+         }
+
+         for (int i = 0; i < p2.rows; i++)
+         {
+            for (int j = 0; j < p2.rows - 1; j++)
+            {
+               Mat diff1 = p2.row(j) - key;
+               Mat diff2 = p2.row(i) - key;
+               if (norm(diff1) > norm(diff2))
+               {
+                  double temp = p2.at<double>(j, 0);
+                  double temp3 = p1.at<double>(j, 0);
+                  p1.at<double>(j, 0) = p1.at<double>(i, 0);
+                  p2.at<double>(j, 0) = p2.at<double>(i, 0);
+                  p1.at<double>(i, 0) = temp3;
+                  p2.at<double>(i, 0) = temp;
+
+                  temp = p2.at<double>(j, 1);
+                  temp3 = p1.at<double>(j, 1);
+                  p1.at<double>(j, 1) = p1.at<double>(i, 1);
+                  p2.at<double>(j, 1) = p2.at<double>(i, 1);
+                  p1.at<double>(i, 1) = temp3;
+                  p2.at<double>(i, 1) = temp;
+
+                  int temp2 = orden.at<int>(0, j);
+                  orden.at<int>(0, j) = orden.at<int>(0, i);
+                  orden.at<int>(0, i) = temp2;
+               }
+            }
+         }
+
+         int conteo = 0;
+         for (int i = 0; i < orden.rows; i++)
+         {
+            for (int index = 0; index <= (*ordenFinal).cols; index++)
+            {
+               if ((300. <= p1.at<double>(conteo, 0) <= (1920. - 300.) &&
+                    300. <= p1.at<double>(conteo, 1) <= (1080. - 300.)) ||
+                   orden.at<int>(0, index) == (*ordenFinal).at<int>(0, index))
+               {
+                  conteo++;
+                  continue;
+               }
+            }
+            (*ordenFinal).at<int>(0, conteoExterno) = orden.at<int>(0, conteo);
+            break;
+         }
+
+         conteoExterno++;
+      }
+      return 0;
+   }
+
+   int Orden()
+   {
+      Mat puntosAct, puntosDes;
+      for (int i = 0; i < this->good_matches.size(); i++)
+      {
+         Mat temp = (Mat_<double>(1, 2) << this->keypoints2[this->good_matches[i].trainIdx].pt.x, this->keypoints2[this->good_matches[i].trainIdx].pt.y);
+         Mat temp2 = (Mat_<double>(1, 2) << this->keypoints1[this->good_matches[i].queryIdx].pt.x, this->keypoints1[this->good_matches[i].queryIdx].pt.y);
+         if (i == 0)
+         {
+            puntosAct = temp.clone();
+            puntosDes = temp2.clone();
+         }
+         else
+         {
+            vconcat(puntosAct, temp, puntosAct);
+            vconcat(puntosDes, temp2, puntosDes);
+         }
+      }
+
+      Mat orden;
+      MinBy(puntosAct, puntosDes, &orden);
+
+      (this->state)->actual.points = Mat::zeros(4, 2, CV_64F);
+      (this->state)->desired.points = Mat::zeros(4, 2, CV_64F);
+      (this->state)->actual.points.at<Point2d>(0, 0) = puntosAct.at<Point2d>(orden.at<int>(0, 0), 0);
+      (this->state)->actual.points.at<Point2d>(0, 1) = puntosAct.at<Point2d>(orden.at<int>(0, 1), 0);
+      (this->state)->actual.points.at<Point2d>(0, 2) = puntosAct.at<Point2d>(orden.at<int>(0, 2), 0);
+      (this->state)->actual.points.at<Point2d>(0, 3) = puntosAct.at<Point2d>(orden.at<int>(0, 3), 0);
+
+      (this->state)->desired.points.at<Point2d>(0, 0) = puntosDes.at<Point2d>(orden.at<int>(0, 0), 0);
+      (this->state)->desired.points.at<Point2d>(0, 1) = puntosDes.at<Point2d>(orden.at<int>(0, 1), 0);
+      (this->state)->desired.points.at<Point2d>(0, 2) = puntosDes.at<Point2d>(orden.at<int>(0, 2), 0);
+      (this->state)->desired.points.at<Point2d>(0, 3) = puntosDes.at<Point2d>(orden.at<int>(0, 3), 0);
+
+      // for (int i = 0; i < 4; i++)
+      // {
+      //    circle(this->state->actual.img, (this->state)->actual.points.at<Point2d>(0, i), 5, Scalar(0, 0, 255), -1);
+      //    circle(this->imgDesired, (this->state)->desired.points.at<Point2d>(0, i), 5, Scalar(0, 0, 255), -1);
+      // }
+
+      // namedWindow("Actual", WINDOW_NORMAL);
+      // resizeWindow("Actual", 960, 540);
+      // imshow("Actual", this->state->actual.img);
+      // namedWindow("Desired", WINDOW_NORMAL);
+      // resizeWindow("Desired", 960, 540);
+      // imshow("Desired", this->imgDesired);
+      // waitKey(0);
+
+      return 0;
    }
 };
