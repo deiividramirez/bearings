@@ -270,7 +270,11 @@ public:
 
             cout << "[INFO] Good matches: " << this->good_matches.size() << endl;
 
-            Orden();
+            if (Orden() < 0)
+            {
+               cout << "[ERROR] Orden function failed" << endl;
+               return -1;
+            }
 
             Mat temporal3 = Mat::zeros(4, 3, CV_32F);
             Mat temporal4 = Mat::zeros(4, 3, CV_32F);
@@ -307,22 +311,23 @@ public:
             Mat actualTemp;
             (*this->state).actual.points.convertTo(actualTemp, CV_32F);
             calcOpticalFlowPyrLK(oldGray, (*this->state).actual.imgGray, actualTemp, new_points, status, error);
-
-            for (int i = 0; i < new_points.rows; i++)
-            {
-               circle((*this->state).actual.img, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
-               circle((*this->state).actual.img, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
-
-               circle(this->oldImage, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
-               circle(this->oldImage, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
-            }
-
-            // cout << "Old: " << (*this->state).actual.points << endl;
-            // cout << "New: " << new_points << endl;
             new_points.convertTo((*this->state).actual.points, CV_64F);
 
-            // cout << "status: " << status << endl;
-            // cout << "error: " << error << endl;
+            // if (sum(status)[0] < 4)
+            // {
+            //    cout << "[ERROR] There are no good matches" << endl;
+            //    this->firstTime = false;
+            //    return -1;
+            // }
+
+            // for (int i = 0; i < new_points.rows; i++)
+            // {
+            // circle((*this->state).actual.img, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
+            // circle((*this->state).actual.img, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
+
+            //    circle(this->oldImage, (*this->state).actual.points.at<Point2d>(i, 0), 3, Scalar(0, 0, 255), -1);
+            //    circle(this->oldImage, new_points.at<Point2f>(i, 0), 3, Scalar(0, 255, 0), -1);
+            // }
 
             // namedWindow("Old Matches", WINDOW_NORMAL);
             // resizeWindow("Old Matches", 960, 540);
@@ -332,7 +337,7 @@ public:
             // namedWindow("Good Matches", WINDOW_NORMAL);
             // resizeWindow("Good Matches", 960, 540);
             // imshow("Good Matches", (*this->state).actual.img);
-            // waitKey(0);
+            // waitKey(1);
          }
 
          Mat temporal = Mat::zeros(4, 3, CV_32F);
@@ -347,9 +352,7 @@ public:
             temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
          }
          temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
-         
-         // ros::shutdown();
-         // exit(-1);
+         temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
       }
 
       this->toSphere((*this->state).actual.points, &(*this->state).actual.inSphere);
@@ -384,17 +387,13 @@ public:
    {
       cout << "\n[INFO] Getting velocities from GUO control..." << endl;
 
-      Mat U, U_temp, L, Lo;
+      Mat U_temp, L, Lo;
       vector<vecDist> distancias;
-      this->getActualData(img);
-
-      cout << "Actual points: " << (*this->state).actual.points << endl;
-      cout << "Actual sphere: " << (*this->state).actual.inSphere << endl;
-      cout << "Desired points: " << (*this->state).desired.points << endl;
-      cout << "Desired sphere: " << (*this->state).desired.inSphere << endl;
-
-      // Send images points to sphere model by generic camera model
-      // toSphere((*this->state).actual.points, (*this->state).actual.inSphere);
+      if (this->getActualData(img) < 0)
+      {
+         cout << "[ERROR] Actual points in picture not found" << endl;
+         return -1;
+      }
 
       // Calculate the distances between the points in the sphere
       distances((*this->state).desired.inSphere, (*this->state).actual.inSphere, distancias, (*this->state).params);
@@ -407,6 +406,8 @@ public:
       {
          ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
       }
+
+      // cout << "ERROR: " << ERROR << endl;
 
       // Get the Penrose pseudo-inverse of the interaction matrix
       double det = 0.0;
@@ -443,31 +444,23 @@ public:
 
       Mat tempError = robust(ERROR);
       U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
-
-      // // cout << "[INFO] Error: " << ERROR.t() << endl;
-      // // cout << "[INFO] Error robusto: " << tempError.t() << endl;
-      // // exit(-1);
-
-      // FIll with zeros the control law in rotation 3x1
-      U = Mat::zeros(6, 1, CV_64F);
-      U_temp.copyTo(U.rowRange(0, 3));
+      // U_temp = Lo * (-lambda_Kp * ERROR );
 
       // Send the control law to the camera
       if ((*this->state).params.camara == 1)
       {
-         (*this->state).Vx = -(float)U.at<double>(2, 0);
-         (*this->state).Vy = (float)U.at<double>(0, 0);
-         (*this->state).Vz = (float)U.at<double>(1, 0);
+         (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
+         (*this->state).Vy = (float)U_temp.at<double>(0, 0);
+         (*this->state).Vz = (float)U_temp.at<double>(1, 0);
       }
       else
       {
-         (*this->state).Vx = (float)U.at<double>(1, 0);
-         (*this->state).Vy = (float)U.at<double>(0, 0);
-         (*this->state).Vz = (float)U.at<double>(2, 0);
+         (*this->state).Vx = (float)U_temp.at<double>(1, 0);
+         (*this->state).Vy = (float)U_temp.at<double>(0, 0);
+         (*this->state).Vz = (float)U_temp.at<double>(2, 0);
       }
 
       // Free the memory
-      U.release();
       U_temp.release();
       L.release();
       Lo.release();
@@ -513,8 +506,6 @@ public:
 
       // NUM = 16; // Number of points to calculate the distance
       NUM = p2.rows; // Number of points to calculate the distance
-
-      cout << "DISTANCIAS" << endl;
 
       for (int i = 0; i < NUM; i++)
       {
@@ -628,73 +619,123 @@ public:
    {
       // Make buuble sort with norm of the difference between points and key
       *ordenFinal = Mat::zeros(1, 4, CV_32S) - 1;
-      Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
-      Mat p1, p2;
+      // Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
+      Mat p2;
       vector<Mat> keys;
 
+      double argMIN1 = 200;
+      double argMAX1 = 1920 - 200;
+
+      double argMIN2 = 200;
+      double argMAX2 = 1080 - 200;
+
       keys.push_back((Mat_<double>(1, 2) << 480, 270));
-      keys.push_back((Mat_<double>(1, 2) << 480, 810));
       keys.push_back((Mat_<double>(1, 2) << 1440, 270));
       keys.push_back((Mat_<double>(1, 2) << 1440, 810));
+      keys.push_back((Mat_<double>(1, 2) << 480, 810));
 
       int conteoExterno = 0;
       for (Mat key : keys)
       {
-         p1 = desired.clone();
-         p2 = puntos.clone();
+         vector<int> orden;
+         // puntos.copyTo(p2);
+         desired.copyTo(p2);
+
          for (int i = 0; i < p2.rows; i++)
          {
-            orden.at<int>(0, i) = i;
+            orden.push_back(i);
          }
 
+         // bubble sort for the points - key
          for (int i = 0; i < p2.rows; i++)
          {
-            for (int j = 0; j < p2.rows - 1; j++)
+            for (int j = 0; j < p2.rows - i - 1; j++)
             {
-               Mat diff1 = p2.row(j) - key;
-               Mat diff2 = p2.row(i) - key;
-               if (norm(diff1) > norm(diff2))
+               Mat diff1 = key - p2.row(j);
+               Mat diff2 = key - p2.row(j + 1);
+               if (norm(diff1, NORM_L2) > norm(diff2, NORM_L2))
                {
-                  double temp = p2.at<double>(j, 0);
-                  double temp3 = p1.at<double>(j, 0);
-                  p1.at<double>(j, 0) = p1.at<double>(i, 0);
-                  p2.at<double>(j, 0) = p2.at<double>(i, 0);
-                  p1.at<double>(i, 0) = temp3;
-                  p2.at<double>(i, 0) = temp;
+                  Mat aux;
+                  p2.row(j).copyTo(aux);
+                  p2.row(j + 1).copyTo(p2.row(j));
+                  aux.copyTo(p2.row(j + 1));
 
-                  temp = p2.at<double>(j, 1);
-                  temp3 = p1.at<double>(j, 1);
-                  p1.at<double>(j, 1) = p1.at<double>(i, 1);
-                  p2.at<double>(j, 1) = p2.at<double>(i, 1);
-                  p1.at<double>(i, 1) = temp3;
-                  p2.at<double>(i, 1) = temp;
-
-                  int temp2 = orden.at<int>(0, j);
-                  orden.at<int>(0, j) = orden.at<int>(0, i);
-                  orden.at<int>(0, i) = temp2;
+                  int auxInt = orden[j];
+                  orden[j] = orden[j + 1];
+                  orden[j + 1] = auxInt;
                }
             }
          }
 
          int conteo = 0;
-         for (int i = 0; i < orden.rows; i++)
+         for (int i = 0; i < orden.size(); i++)
          {
-            for (int index = 0; index <= (*ordenFinal).cols; index++)
+            if (!(argMIN1 <= desired.at<double>(orden[conteo], 0) && desired.at<double>(orden[conteo], 0) <= argMAX1 && argMIN2 <= desired.at<double>(orden[conteo], 1) && desired.at<double>(orden[conteo], 1) <= argMAX2))
             {
-               if ((300. <= p1.at<double>(conteo, 0) <= (1920. - 300.) &&
-                    300. <= p1.at<double>(conteo, 1) <= (1080. - 300.)) ||
-                   orden.at<int>(0, index) == (*ordenFinal).at<int>(0, index))
+               conteo++;
+               continue;
+            }
+
+            bool flag = false;
+            for (int index = 0; index < (*ordenFinal).cols; index++)
+            {
+               if (orden[conteo] == (*ordenFinal).at<int>(0, index))
                {
                   conteo++;
-                  continue;
+                  flag = true;
+                  break;
+               }
+               if ((*ordenFinal).at<int>(0, index) != -1)
+               {
+                  Mat temp = desired.row(orden[conteo]) - desired.row((*ordenFinal).at<int>(0, index));
+                  // cout << "\ndesired.row(orden[conteo]) " << desired.row(orden[conteo]) << endl;
+                  // cout << "desired.row((*ordenFinal).at<int>(0, index)) " << desired.row((*ordenFinal).at<int>(0, index)) << endl;
+                  // cout << "norm(temp) " << norm(temp) << endl;
+                  if (norm(temp) < 100)
+                  {
+                     conteo++;
+                     flag = true;
+                     break;
+                  }
                }
             }
-            (*ordenFinal).at<int>(0, conteoExterno) = orden.at<int>(0, conteo);
-            break;
-         }
 
+            if (flag)
+            {
+               continue;
+            }
+            else
+            {
+               (*ordenFinal).at<int>(0, conteoExterno) = orden[conteo];
+               break;
+            }
+         }
+         // cout << "Key: " << key << " - conteo: " << conteo << " - Orden: " << orden[conteo] << endl;
          conteoExterno++;
       }
+
+      // show the image with all the posible points and the chosen one with the key
+      // Mat temporal = this->imgDesired.clone();
+      // for (Mat key : keys)
+      // {
+      //    circle(temporal, key.at<Point2d>(0, 0), 5, Scalar(0, 0, 255), -1);
+      // }
+      // for (int i = 0; i < 4; i++)
+      // {
+      //    circle(temporal, desired.at<Point2d>(ordenFinal->at<int>(0, i), 0), 5, Scalar(0, 255, 0), -1);
+      // }
+
+      // line(temporal, Point(argMIN1, 0), Point(argMIN1, temporal.rows), Scalar(0, 0, 255), 2);
+      // line(temporal, Point(argMAX1, 0), Point(argMAX1, temporal.rows), Scalar(0, 0, 255), 2);
+      // line(temporal, Point(0, argMIN2), Point(temporal.cols, argMIN2), Scalar(0, 0, 255), 2);
+      // line(temporal, Point(0, argMAX2), Point(temporal.cols, argMAX2), Scalar(0, 0, 255), 2);
+
+      // namedWindow("Desired", WINDOW_NORMAL);
+      // resizeWindow("Desired", 960, 540);
+      // imshow("Desired", temporal);
+      // waitKey(0);
+      // ros::shutdown();
+      // exit(-1);
       return 0;
    }
 
@@ -719,25 +760,38 @@ public:
 
       Mat orden;
       MinBy(puntosAct, puntosDes, &orden);
+      // cout << "[INFO] Orden: " << orden << endl;
 
-      (this->state)->actual.points = Mat::zeros(4, 2, CV_64F);
-      (this->state)->desired.points = Mat::zeros(4, 2, CV_64F);
-      (this->state)->actual.points.at<Point2d>(0, 0) = puntosAct.at<Point2d>(orden.at<int>(0, 0), 0);
-      (this->state)->actual.points.at<Point2d>(0, 1) = puntosAct.at<Point2d>(orden.at<int>(0, 1), 0);
-      (this->state)->actual.points.at<Point2d>(0, 2) = puntosAct.at<Point2d>(orden.at<int>(0, 2), 0);
-      (this->state)->actual.points.at<Point2d>(0, 3) = puntosAct.at<Point2d>(orden.at<int>(0, 3), 0);
+      for (int i = 0; i < orden.cols; i++)
+      {
+         if (orden.at<int>(0, i) == -1)
+         {
+            this->firstTime = false;
+            return -1;
+         }
+      }
 
-      (this->state)->desired.points.at<Point2d>(0, 0) = puntosDes.at<Point2d>(orden.at<int>(0, 0), 0);
-      (this->state)->desired.points.at<Point2d>(0, 1) = puntosDes.at<Point2d>(orden.at<int>(0, 1), 0);
-      (this->state)->desired.points.at<Point2d>(0, 2) = puntosDes.at<Point2d>(orden.at<int>(0, 2), 0);
-      (this->state)->desired.points.at<Point2d>(0, 3) = puntosDes.at<Point2d>(orden.at<int>(0, 3), 0);
+      (*this->state).actual.points = Mat::zeros(4, 2, CV_64F);
+      (*this->state).desired.points = Mat::zeros(4, 2, CV_64F);
+
+      (*this->state).actual.points.at<Point2d>(0, 0) = puntosAct.at<Point2d>(orden.at<int>(0, 0), 0);
+      (*this->state).actual.points.at<Point2d>(0, 1) = puntosAct.at<Point2d>(orden.at<int>(0, 1), 0);
+      (*this->state).actual.points.at<Point2d>(0, 2) = puntosAct.at<Point2d>(orden.at<int>(0, 2), 0);
+      (*this->state).actual.points.at<Point2d>(0, 3) = puntosAct.at<Point2d>(orden.at<int>(0, 3), 0);
+
+      (*this->state).desired.points.at<Point2d>(0, 0) = puntosDes.at<Point2d>(orden.at<int>(0, 0), 0);
+      (*this->state).desired.points.at<Point2d>(0, 1) = puntosDes.at<Point2d>(orden.at<int>(0, 1), 0);
+      (*this->state).desired.points.at<Point2d>(0, 2) = puntosDes.at<Point2d>(orden.at<int>(0, 2), 0);
+      (*this->state).desired.points.at<Point2d>(0, 3) = puntosDes.at<Point2d>(orden.at<int>(0, 3), 0);
+
+      // cout << "[INFO] Actual points: " << (*this->state).actual.points << endl;
+      // cout << "[INFO] Desired points: " << (*this->state).desired.points << endl;
 
       // for (int i = 0; i < 4; i++)
       // {
       //    circle(this->state->actual.img, (this->state)->actual.points.at<Point2d>(0, i), 5, Scalar(0, 0, 255), -1);
       //    circle(this->imgDesired, (this->state)->desired.points.at<Point2d>(0, i), 5, Scalar(0, 0, 255), -1);
       // }
-
       // namedWindow("Actual", WINDOW_NORMAL);
       // resizeWindow("Actual", 960, 540);
       // imshow("Actual", this->state->actual.img);
@@ -745,6 +799,10 @@ public:
       // resizeWindow("Desired", 960, 540);
       // imshow("Desired", this->imgDesired);
       // waitKey(0);
+
+      // waitKey(0);
+      // ros::shutdown();
+      // exit(0);
 
       return 0;
    }

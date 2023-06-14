@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.5.1 commit date:2023-04-24, commit time:18:11, hash:e1ccd9d4a1d3</authoring_tool>
     </contributor>
-    <created>2023-06-11T19:21:41</created>
-    <modified>2023-06-11T19:21:41</modified>
+    <created>2023-06-14T16:49:07</created>
+    <modified>2023-06-14T16:49:07</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -108,6 +108,169 @@
             </emission>
             <diffuse>
               <texture texture="office-wall-art-frame-variation_jpg-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_005-effect">
+      <profile_COMMON>
+        <newparam sid="_0171004sala-colorida-23_jpg-surface">
+          <surface type="2D">
+            <init_from>_0171004sala-colorida-23_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="_0171004sala-colorida-23_jpg-sampler">
+          <sampler2D>
+            <source>_0171004sala-colorida-23_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="_0171004sala-colorida-23_jpg-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_008-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_009-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.02315337 0.02315337 0.01850022 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_012-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_013-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.04666509 0.04518621 0.04091519 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_010-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_011-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.05286066 0.05286066 0.05286066 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_006-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_007-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.04518621 0.04373503 0.04231142 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -226,6 +389,9 @@
     </effect>
   </library_effects>
   <library_images>
+    <image id="_0171004sala-colorida-23_jpg" name="_0171004sala-colorida-23_jpg">
+      <init_from>20171004sala-colorida-23.jpg</init_from>
+    </image>
     <image id="_x4_96_png" name="_x4_96_png">
       <init_from>4x4_96.png</init_from>
     </image>
@@ -261,6 +427,33 @@
     <material id="Material_002-material" name="Material.002">
       <instance_effect url="#Material_002-effect"/>
     </material>
+    <material id="Material_005-material" name="Material.005">
+      <instance_effect url="#Material_005-effect"/>
+    </material>
+    <material id="Material_008-material" name="Material.008">
+      <instance_effect url="#Material_008-effect"/>
+    </material>
+    <material id="Material_009-material" name="Material.009">
+      <instance_effect url="#Material_009-effect"/>
+    </material>
+    <material id="Material_012-material" name="Material.012">
+      <instance_effect url="#Material_012-effect"/>
+    </material>
+    <material id="Material_013-material" name="Material.013">
+      <instance_effect url="#Material_013-effect"/>
+    </material>
+    <material id="Material_010-material" name="Material.010">
+      <instance_effect url="#Material_010-effect"/>
+    </material>
+    <material id="Material_011-material" name="Material.011">
+      <instance_effect url="#Material_011-effect"/>
+    </material>
+    <material id="Material_006-material" name="Material.006">
+      <instance_effect url="#Material_006-effect"/>
+    </material>
+    <material id="Material_007-material" name="Material.007">
+      <instance_effect url="#Material_007-effect"/>
+    </material>
     <material id="Cube001_004-material" name="Cube001.004">
       <instance_effect url="#Cube001_004-effect"/>
     </material>
@@ -278,7 +471,7 @@
     <geometry id="Cube_005-mesh" name="Cube.005">
       <mesh>
         <source id="Cube_005-mesh-positions">
-          <float_array id="Cube_005-mesh-positions-array" count="24">-2.6 -0.09999996 -3 -2.6 -0.09999996 3 -2.6 0.09999996 -3 -2.6 0.09999996 3 7.6 -0.09999996 -3 7.6 -0.09999996 3 7.6 0.09999996 -3 7.6 0.09999996 3</float_array>
+          <float_array id="Cube_005-mesh-positions-array" count="24">-2.6 -0.09999996 -3 -2.6 -0.09999996 3 -2.6 0.09999996 -3 -2.6 0.09999996 3 7.5 -0.09999996 -3 7.5 -0.09999996 3 7.5 0.09999996 -3 7.5 0.09999996 3</float_array>
           <technique_common>
             <accessor source="#Cube_005-mesh-positions-array" count="8" stride="3">
               <param name="X" type="float"/>
@@ -320,7 +513,7 @@
     <geometry id="Cube_004-mesh" name="Cube.004">
       <mesh>
         <source id="Cube_004-mesh-positions">
-          <float_array id="Cube_004-mesh-positions-array" count="24">-2.6 -0.09999996 -3 -2.6 -0.09999996 3 -2.6 0.09999996 -3 -2.6 0.09999996 3 7.6 -0.09999996 -3 7.6 -0.09999996 3 7.6 0.09999996 -3 7.6 0.09999996 3</float_array>
+          <float_array id="Cube_004-mesh-positions-array" count="24">-2.6 -0.09999996 -3 -2.6 -0.09999996 3 -2.6 0.09999996 -3 -2.6 0.09999996 3 7.5 -0.09999996 -3 7.5 -0.09999996 3 7.5 0.09999996 -3 7.5 0.09999996 3</float_array>
           <technique_common>
             <accessor source="#Cube_004-mesh-positions-array" count="8" stride="3">
               <param name="X" type="float"/>
@@ -441,7 +634,7 @@
           <input semantic="TEXCOORD" source="#Cube_007-mesh-map-0" offset="2" set="1"/>
           <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 5 2 6 0 2 7 4 2 8 6 3 9 0 3 10 2 3 11 3 4 12 5 4 13 7 4 14 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 5 2 24 1 2 25 0 2 26 6 3 27 4 3 28 0 3 29 3 4 30 1 4 31 5 4 32</p>
         </triangles>
-        <triangles material="Material_002-material" count="2">
+        <triangles material="Material_005-material" count="2">
           <input semantic="VERTEX" source="#Cube_007-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube_007-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube_007-mesh-map-0" offset="2" set="1"/>
@@ -483,11 +676,17 @@
         <vertices id="Cube_012-mesh-vertices">
           <input semantic="POSITION" source="#Cube_012-mesh-positions"/>
         </vertices>
-        <triangles count="12">
+        <triangles material="Material_008-material" count="10">
           <input semantic="VERTEX" source="#Cube_012-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube_012-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube_012-mesh-map-0" offset="2" set="1"/>
-          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+          <p>1 0 0 2 0 1 0 0 2 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+        </triangles>
+        <triangles material="Material_009-material" count="2">
+          <input semantic="VERTEX" source="#Cube_012-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_012-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_012-mesh-map-0" offset="2" set="1"/>
+          <p>3 1 3 6 1 4 2 1 5 3 1 21 7 1 22 6 1 23</p>
         </triangles>
       </mesh>
     </geometry>
@@ -525,11 +724,17 @@
         <vertices id="Cube_013-mesh-vertices">
           <input semantic="POSITION" source="#Cube_013-mesh-positions"/>
         </vertices>
-        <triangles count="12">
+        <triangles material="Material_012-material" count="10">
           <input semantic="VERTEX" source="#Cube_013-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube_013-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube_013-mesh-map-0" offset="2" set="1"/>
-          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+        </triangles>
+        <triangles material="Material_013-material" count="2">
+          <input semantic="VERTEX" source="#Cube_013-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_013-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_013-mesh-map-0" offset="2" set="1"/>
+          <p>5 3 9 0 3 10 4 3 11 5 3 27 1 3 28 0 3 29</p>
         </triangles>
       </mesh>
     </geometry>
@@ -567,11 +772,17 @@
         <vertices id="Cube-mesh-vertices">
           <input semantic="POSITION" source="#Cube-mesh-positions"/>
         </vertices>
-        <triangles count="12">
+        <triangles material="Material_010-material" count="10">
           <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="1"/>
-          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 3 5 33 1 5 34 5 5 35</p>
+        </triangles>
+        <triangles material="Material_011-material" count="2">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="1"/>
+          <p>6 4 12 0 4 13 2 4 14 6 4 30 4 4 31 0 4 32</p>
         </triangles>
       </mesh>
     </geometry>
@@ -609,11 +820,17 @@
         <vertices id="Cube_010-mesh-vertices">
           <input semantic="POSITION" source="#Cube_010-mesh-positions"/>
         </vertices>
-        <triangles count="12">
+        <triangles material="Material_006-material" count="10">
           <input semantic="VERTEX" source="#Cube_010-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube_010-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube_010-mesh-map-0" offset="2" set="1"/>
-          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 3 5 15 5 5 16 7 5 17 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32 3 5 33 1 5 34 5 5 35</p>
+          <p>1 0 0 2 0 1 0 0 2 3 1 3 6 1 4 2 1 5 7 2 6 4 2 7 6 2 8 5 3 9 0 3 10 4 3 11 6 4 12 0 4 13 2 4 14 1 0 18 3 0 19 2 0 20 3 1 21 7 1 22 6 1 23 7 2 24 5 2 25 4 2 26 5 3 27 1 3 28 0 3 29 6 4 30 4 4 31 0 4 32</p>
+        </triangles>
+        <triangles material="Material_007-material" count="2">
+          <input semantic="VERTEX" source="#Cube_010-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_010-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_010-mesh-map-0" offset="2" set="1"/>
+          <p>3 5 15 5 5 16 7 5 17 3 5 33 1 5 34 5 5 35</p>
         </triangles>
       </mesh>
     </geometry>
@@ -830,25 +1047,72 @@
               <instance_material symbol="Material_002-material" target="#Material_002-material">
                 <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
               </instance_material>
+              <instance_material symbol="Material_005-material" target="#Material_005-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
             </technique_common>
           </bind_material>
         </instance_geometry>
       </node>
       <node id="Izquierda" name="Izquierda" type="NODE">
         <matrix sid="transform">0.7 0 0 0 0 0.7 0 -5.5 0 0 0.7 2.85 0 0 0 1</matrix>
-        <instance_geometry url="#Cube_012-mesh" name="Izquierda"/>
+        <instance_geometry url="#Cube_012-mesh" name="Izquierda">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_008-material" target="#Material_008-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Material_009-material" target="#Material_009-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
       <node id="Derecha" name="Derecha" type="NODE">
         <matrix sid="transform">0.7 0 0 0 0 0.7 0 5.5 0 0 0.7 2.85 0 0 0 1</matrix>
-        <instance_geometry url="#Cube_013-mesh" name="Derecha"/>
+        <instance_geometry url="#Cube_013-mesh" name="Derecha">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_012-material" target="#Material_012-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Material_013-material" target="#Material_013-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
       <node id="Arriba" name="Arriba" type="NODE">
         <matrix sid="transform">0.7 0 0 0 0 0.7 0 0 0 0 0.85 5.150003 0 0 0 1</matrix>
-        <instance_geometry url="#Cube-mesh" name="Arriba"/>
+        <instance_geometry url="#Cube-mesh" name="Arriba">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_010-material" target="#Material_010-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Material_011-material" target="#Material_011-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
       <node id="Abajo" name="Abajo" type="NODE">
         <matrix sid="transform">0.7 0 0 0 0 0.7 0 0 0 0 0.7 0.7 0 0 0 1</matrix>
-        <instance_geometry url="#Cube_010-mesh" name="Abajo"/>
+        <instance_geometry url="#Cube_010-mesh" name="Abajo">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_006-material" target="#Material_006-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Material_007-material" target="#Material_007-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
       <node id="_1" name="11" type="NODE">
         <matrix sid="transform">0.2 0 0 0.28 0 0.4 0 -3 0 0 0.4 1 0 0 0 1</matrix>

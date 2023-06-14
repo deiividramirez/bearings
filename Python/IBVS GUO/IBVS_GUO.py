@@ -65,8 +65,8 @@ target_camera.set_position(target_x,
 p_target = target_camera.projection(w_points, n_points)
 
 # =========================== ACTUAL CAMERA AND INITIAL POSITION ===========================
-init_x = 6.0                     # Initial camera position 'x'
-init_y = -8.0                    # Initial camera position 'y'
+init_x = 0.0                     # Initial camera position 'x'
+init_y = 0.0                    # Initial camera position 'y'
 init_z = 10.0                    # Initial camera position 'z'
 init_pitch = np.deg2rad(0.0)     # Degrees to radians 'x'
 init_roll = np.deg2rad(0.0)      # Degrees to radians 'y'
@@ -207,10 +207,10 @@ while(countIndex < steps and err_pix > 1e-5):
     integrald_array[:, countIndex] = integrald[:,0]
 
     U = np.concatenate((
-                    -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
+                    # -lamb*Lo @ error,                                                       # CONTROL ORIGINAL
                     # -Lo @ (lamb*error + .5*integral),                                       # CONTROL INTEGRAL
                     # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) ),                 # CONTROL DESLIZANTE
-                    # Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .005*integrald),   # CONTROL DESLIZANTE INTEGRAL     
+                    Lo @ ( -lamb * np.abs(error)**(1/2) * np.sign(error) - .005*integrald),   # CONTROL DESLIZANTE INTEGRAL     
                     lamb*np.array([[target_roll - roll], 
                                    [target_pitch - pitch], 
                                    [target_yaw - yaw]])

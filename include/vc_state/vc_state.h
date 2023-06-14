@@ -19,6 +19,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
 
+# define M_PI 3.14159265358979323846 /* pi */
+
 using namespace cv;
 using namespace std;
 

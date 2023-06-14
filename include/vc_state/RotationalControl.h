@@ -94,14 +94,8 @@ public:
             temporal.at<float>(i, 2) = 1;
 
             temporal2.row(i) = Kinv * temporal.row(i).t();
-
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
-
-         
       }
-
 
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
@@ -161,7 +155,7 @@ public:
       }
 
       U_temp = -lambda_Kp * Lo * ERROR_I;
-      (*this->state).Vyaw = U_temp.at<double>(1, 0);
+      // (*this->state).Vyaw = U_temp.at<double>(1, 0);
 
       // free memory
       U_temp.release();
@@ -194,5 +188,4 @@ public:
 
       return L;
    }
-   
 };
