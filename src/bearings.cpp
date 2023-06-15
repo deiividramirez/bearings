@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
-		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		// image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
 		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
@@ -361,8 +361,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		// if (states[0].error < .2 && MODE == 0)
+		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
+		if (states[0].error < CHANGE_THRESHOLD && MODE == 0)
 		{
 			cout << "\n[INFO] << In target >>" << endl;
 			MODE = 1;
@@ -370,21 +370,9 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
-
-			t0L1 = states[0].t;
-			tfL1 = t0L1 + 2.5;
-
-			t0L2 = states[1].t;
-			tfL2 = t0L2 + 2.5;
 		}
 
-		if (MODE == 1 && states[0].t < tfL1)
-		{
-			states[0].Vx *= (1 - cos(M_PI * (states[0].t - t0L1) / (tfL1 - t0L1))) * .5;
-			states[0].Vy *= (1 - cos(M_PI * (states[0].t - t0L1) / (tfL1 - t0L1))) * .5;
-			states[0].Vz *= (1 - cos(M_PI * (states[0].t - t0L1) / (tfL1 - t0L1))) * .5;
-			states[0].Vyaw *= (1 - cos(M_PI * (states[0].t - t0L1) / (tfL1 - t0L1))) * .5;
-		}
+		
 
 		if (!SHOW_IMAGES)
 		{
@@ -451,29 +439,29 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		{
-			cout << "\n[INFO] << In target >>" << endl;
-			MODE = 1;
-			loadImages();
+		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
+		// {
+		// 	cout << "\n[INFO] << In target >>" << endl;
+		// 	MODE = 1;
+		// 	loadImages();
 
-			guoLider1.changeMode(MODE);
-			guoLider2.changeMode(MODE);
+		// 	guoLider1.changeMode(MODE);
+		// 	guoLider2.changeMode(MODE);
 
-			t0L1 = states[0].t;
-			tfL1 = t0L1 + 2.5;
+		// 	t0L1 = states[0].t;
+		// 	tfL1 = t0L1 + 2.5;
 
-			t0L2 = states[1].t;
-			tfL2 = t0L2 + 2.5;
-		}
+		// 	t0L2 = states[1].t;
+		// 	tfL2 = t0L2 + 2.5;
+		// }
 
-		if (MODE == 1 && states[1].t < tfL2)
-		{
-			states[1].Vx *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-			states[1].Vy *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-			states[1].Vz *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-			states[1].Vyaw *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-		}
+		// if (MODE == 1 && states[1].t < tfL2)
+		// {
+		// 	states[1].Vx *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
+		// 	states[1].Vy *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
+		// 	states[1].Vz *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
+		// 	states[1].Vyaw *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
+		// }
 
 		if (!SHOW_IMAGES)
 		{

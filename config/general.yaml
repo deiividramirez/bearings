@@ -6,7 +6,7 @@ LIM_MAX: 2000  # Maximum number of iterations for each drone
 SAVE_DESIRED_IMAGES: 0
 MODE: 0
 
-CHANGE_THRESHOLD: 0.2
+CHANGE_THRESHOLD: 1
 
 SAVE_IMAGES: 0
 SHOW_IMAGES: 0

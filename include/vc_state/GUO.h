@@ -24,6 +24,8 @@ public:
    Mat oldImage;
    Mat oldControl;
 
+   double t0L = 0.0, tfL = 2.0;
+
    GUO()
    {
    }
@@ -368,11 +370,11 @@ public:
       this->imgDesired = (*this->state).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
 
-      this->oldControl = Mat::zeros(1, 4, CV_64F);
-      this->oldControl.at<double>(0, 0) = (*this->state).Vx;
-      this->oldControl.at<double>(0, 1) = (*this->state).Vy;
-      this->oldControl.at<double>(0, 2) = (*this->state).Vz;
-      this->oldControl.at<double>(0, 3) = (*this->state).Vyaw;
+      // this->oldControl = Mat::zeros(1, 4, CV_64F);
+      // this->oldControl.at<double>(0, 0) = (*this->state).Vx;
+      // this->oldControl.at<double>(0, 1) = (*this->state).Vy;
+      // this->oldControl.at<double>(0, 2) = (*this->state).Vz;
+      // this->oldControl.at<double>(0, 3) = (*this->state).Vyaw;
 
       if (this->getDesiredData() < 0)
       {
@@ -380,6 +382,9 @@ public:
          ros::shutdown();
          exit(-1);
       }
+
+      t0L = (*this->state).t;
+      tfL = (*this->state).t + 2.5;
    }
 
    int getVels(Mat img // Image to be processed
@@ -446,18 +451,24 @@ public:
       U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
       // U_temp = Lo * (-lambda_Kp * ERROR );
 
+      double smooth;
+      if ((*this->state).t < tfL)
+         smooth = smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+      else
+         smooth = 1;
+
       // Send the control law to the camera
       if ((*this->state).params.camara == 1)
       {
-         (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
-         (*this->state).Vy = (float)U_temp.at<double>(0, 0);
-         (*this->state).Vz = (float)U_temp.at<double>(1, 0);
+         (*this->state).Vx = smooth * -(float)U_temp.at<double>(2, 0);
+         (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
+         (*this->state).Vz = smooth * (float)U_temp.at<double>(1, 0);
       }
       else
       {
-         (*this->state).Vx = (float)U_temp.at<double>(1, 0);
-         (*this->state).Vy = (float)U_temp.at<double>(0, 0);
-         (*this->state).Vz = (float)U_temp.at<double>(2, 0);
+         (*this->state).Vx = smooth * (float)U_temp.at<double>(1, 0);
+         (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
+         (*this->state).Vz = smooth * (float)U_temp.at<double>(2, 0);
       }
 
       // Free the memory

@@ -107,9 +107,6 @@ int DRONE_COUNT, MODE, CHANGE_THRESHOLD;
 // For controlling target detection
 bool target1, target2, target3, target4, target5;
 
-double t0L1, t0L2;
-double tfL1, tfL2;
-
 // Vector arrays for easy usage
 vector<bool> targets = {target1, target2, target3, target4, target5};
 

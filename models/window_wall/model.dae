@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.5.1 commit date:2023-04-24, commit time:18:11, hash:e1ccd9d4a1d3</authoring_tool>
     </contributor>
-    <created>2023-06-14T16:49:07</created>
-    <modified>2023-06-14T16:49:07</modified>
+    <created>2023-06-14T17:41:11</created>
+    <modified>2023-06-14T17:41:11</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -19,7 +19,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.04091519 0.03560132 0.02955683 1</color>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -36,7 +36,24 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.02415763 0.02217389 0.0159963 1</color>
+              <color sid="diffuse">1 1 1 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Material_014-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -151,7 +168,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.8 0.8 0.8 1</color>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -185,7 +202,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.8 0.8 0.8 1</color>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -219,7 +236,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.8 0.8 0.8 1</color>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -253,7 +270,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <color sid="diffuse">0.8 0.8 0.8 1</color>
+              <color sid="diffuse">1 1 1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -418,6 +435,9 @@
     <material id="Material_004-material" name="Material.004">
       <instance_effect url="#Material_004-effect"/>
     </material>
+    <material id="Material_014-material" name="Material.014">
+      <instance_effect url="#Material_014-effect"/>
+    </material>
     <material id="Material-material" name="Material">
       <instance_effect url="#Material-effect"/>
     </material>
@@ -555,7 +575,7 @@
     <geometry id="Cube_003-mesh" name="Cube.003">
       <mesh>
         <source id="Cube_003-mesh-positions">
-          <float_array id="Cube_003-mesh-positions-array" count="24">-2.6 -7 0 -2.6 -7 0.1999999 -2.6 7 0 -2.6 7 0.1999999 7.6 -7 0 7.6 -7 0.1999999 7.6 7 0 7.6 7 0.1999999</float_array>
+          <float_array id="Cube_003-mesh-positions-array" count="24">-2.6 -7 0 -2.6 -7 0.1999999 -2.6 7 0 -2.6 7 0.1999999 7.5 -7 0 7.5 -7 0.1999999 7.5 7 0 7.5 7 0.1999999</float_array>
           <technique_common>
             <accessor source="#Cube_003-mesh-positions-array" count="8" stride="3">
               <param name="X" type="float"/>
@@ -586,7 +606,7 @@
         <vertices id="Cube_003-mesh-vertices">
           <input semantic="POSITION" source="#Cube_003-mesh-positions"/>
         </vertices>
-        <triangles count="12">
+        <triangles material="Material_014-material" count="12">
           <input semantic="VERTEX" source="#Cube_003-mesh-vertices" offset="0"/>
           <input semantic="NORMAL" source="#Cube_003-mesh-normals" offset="1"/>
           <input semantic="TEXCOORD" source="#Cube_003-mesh-map-0" offset="2" set="1"/>
@@ -1031,7 +1051,15 @@
       </node>
       <node id="Floor" name="Floor" type="NODE">
         <matrix sid="transform">1 0 0 -7.5 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
-        <instance_geometry url="#Cube_003-mesh" name="Floor"/>
+        <instance_geometry url="#Cube_003-mesh" name="Floor">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_014-material" target="#Material_014-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
       <node id="Back__Wall" name="Back  Wall" type="NODE">
         <matrix sid="transform">0.3333333 0 0 -10 0 0.7 0 0 0 0 0.7368422 4.053 0 0 0 1</matrix>
@@ -1115,7 +1143,7 @@
         </instance_geometry>
       </node>
       <node id="_1" name="11" type="NODE">
-        <matrix sid="transform">0.2 0 0 0.28 0 0.4 0 -3 0 0 0.4 1 0 0 0 1</matrix>
+        <matrix sid="transform">0.2 0 0 0.28 0 0.4 0 -4.45 0 0 0.4 1.8 0 0 0 1</matrix>
         <instance_geometry url="#Cube_001-mesh" name="11">
           <bind_material>
             <technique_common>
@@ -1127,7 +1155,7 @@
         </instance_geometry>
       </node>
       <node id="_0" name="10" type="NODE">
-        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 3 0 0 0.4 1 0 0 0 1</matrix>
+        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 4.45 0 0 0.4 1.8 0 0 0 1</matrix>
         <instance_geometry url="#Cube_008-mesh" name="10">
           <bind_material>
             <technique_common>
@@ -1139,7 +1167,7 @@
         </instance_geometry>
       </node>
       <node id="_12" name="01" type="NODE">
-        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 -3 0 0 0.4 4.7 0 0 0 1</matrix>
+        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 -4.45 0 0 0.4 3.9 0 0 0 1</matrix>
         <instance_geometry url="#Cube_006-mesh" name="01">
           <bind_material>
             <technique_common>
@@ -1151,7 +1179,7 @@
         </instance_geometry>
       </node>
       <node id="_02" name="00" type="NODE">
-        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 3 0 0 0.4 4.700016 0 0 0 1</matrix>
+        <matrix sid="transform">0.1 0 0 0.21 0 0.4 0 4.45 0 0 0.4 3.9 0 0 0 1</matrix>
         <instance_geometry url="#Cube_002-mesh" name="00">
           <bind_material>
             <technique_common>
