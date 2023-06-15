@@ -136,8 +136,7 @@ public:
       Mat ERROR = (*this->state).desired.normPoints - (*this->state).actual.normPoints;
 
       (*this->state).error_pix = norm(ERROR, NORM_L2);
-
-      cout << "[INFO] Error actual en pix " << (*this->state).error_pix << endl;
+      // cout << "[INFO] Error actual en pix " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
       double l0_Kp = 1 * (*this->state).Kv_max, linf_Kp = 10 * (*this->state).Kv;

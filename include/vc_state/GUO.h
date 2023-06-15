@@ -37,15 +37,6 @@ public:
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->state = stated;
 
-      cout << "\n[INFO] Getting desired data for GUO control...";
-
-      if (this->getDesiredData() < 0)
-      {
-         cout << "[ERROR] Desired ArUco not found" << endl;
-         ros::shutdown();
-         exit(-1);
-      }
-
       // Setting the ORB detector
       this->detector = ORB::create((*stated).params.nfeatures,
                                    (*stated).params.scaleFactor,
@@ -57,14 +48,22 @@ public:
                                    (*stated).params.patchSize,
                                    (*stated).params.fastThreshold);
 
+      // Setting the FLANN matcher
       matcher = FlannBasedMatcher(new flann::LshIndexParams(20, 10, 2));
 
+      cout << "\n[INFO] Getting desired data for GUO control..." << endl;
+      if (this->getDesiredData() < 0)
+      {
+         cout << "[ERROR] Desired ArUco not found" << endl;
+         ros::shutdown();
+         exit(-1);
+      }
       cout << "[INFO] Desired data obtained" << endl;
    }
 
    int getDesiredData()
    {
-      (*this->state).desired.img = this->imgDesired;
+      this->imgDesired = (*this->state).desired.img;
       cvtColor((*this->state).desired.img, (*this->state).desired.imgGray, COLOR_BGR2GRAY);
       this->imgDesiredGray = (*this->state).desired.imgGray;
 
@@ -142,11 +141,13 @@ public:
       {
          this->detector->detectAndCompute(this->imgDesiredGray, noArray(), this->keypoints1, this->descriptors1);
          cout << "[INFO] Keypoints detected: " << this->keypoints1.size() << endl;
+
          // drawKeypoints(this->imgDesired, this->keypoints1, this->imgDesired, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
          // namedWindow("Desired", WINDOW_NORMAL);
          // resizeWindow("Desired", 960, 540);
          // imshow("Desired", this->imgDesired);
          // waitKey(0);
+         // destroyWindow("Desired");
       }
       return 0;
    }
@@ -241,12 +242,22 @@ public:
                   this->good_matches.push_back(this->matches[i][0]);
             }
 
+            cout << "[INFO] Matches: " << this->matches.size() << endl;
+
+            if (this->good_matches.size() <= 5)
+            {
+               cout << "[ERROR] There are no good matches" << endl;
+               this->firstTime = false;
+               return -1;
+            }
+
             vector<Point2f> points1, points2;
             for (size_t i = 0; i < this->good_matches.size(); i++)
             {
                points1.push_back(this->keypoints1[this->good_matches[i].queryIdx].pt);
                points2.push_back(this->keypoints2[this->good_matches[i].trainIdx].pt);
             }
+
             Mat H = findHomography(points1, points2, RANSAC);
             vector<DMatch> new_matches;
             for (size_t i = 0; i < this->good_matches.size(); i++)
@@ -370,11 +381,15 @@ public:
       this->imgDesired = (*this->state).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
 
+
       // this->oldControl = Mat::zeros(1, 4, CV_64F);
       // this->oldControl.at<double>(0, 0) = (*this->state).Vx;
       // this->oldControl.at<double>(0, 1) = (*this->state).Vy;
       // this->oldControl.at<double>(0, 2) = (*this->state).Vz;
       // this->oldControl.at<double>(0, 3) = (*this->state).Vyaw;
+
+      t0L = (*this->state).t;
+      tfL = (*this->state).t + 2.5;
 
       if (this->getDesiredData() < 0)
       {
@@ -383,8 +398,11 @@ public:
          exit(-1);
       }
 
-      t0L = (*this->state).t;
-      tfL = (*this->state).t + 2.5;
+      cout << "[INFO] Desired image has been changed" << endl;
+
+      imshow("Desired", this->imgDesired);
+      waitKey(0);
+      destroyWindow("Desired");
    }
 
    int getVels(Mat img // Image to be processed
@@ -424,7 +442,7 @@ public:
       }
 
       (*this->state).error = norm(ERROR, NORM_L1);
-      cout << "[INFO] Error actual: " << (*this->state).error << endl;
+      // cout << "[INFO] Error actual: " << (*this->state).error << endl;
 
       // Mat ERROR_PIX = (*this->state).actual.points - (*this->state).desired.points;
       // (*this->state).error_pix = norm(ERROR_PIX, NORM_L2);
@@ -448,28 +466,27 @@ public:
       (*this->state).integral_error6 += (*this->state).dt * tempSign;
 
       Mat tempError = robust(ERROR);
-      U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
+      // U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
+      U_temp = Lo * (-lambda_Kp * tempError);
       // U_temp = Lo * (-lambda_Kp * ERROR );
 
-      double smooth;
+      double smooth = 1;
       if ((*this->state).t < tfL)
          smooth = smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
-      else
-         smooth = 1;
 
       // Send the control law to the camera
-      if ((*this->state).params.camara == 1)
-      {
-         (*this->state).Vx = smooth * -(float)U_temp.at<double>(2, 0);
-         (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
-         (*this->state).Vz = smooth * (float)U_temp.at<double>(1, 0);
-      }
-      else
-      {
-         (*this->state).Vx = smooth * (float)U_temp.at<double>(1, 0);
-         (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
-         (*this->state).Vz = smooth * (float)U_temp.at<double>(2, 0);
-      }
+      // if ((*this->state).params.camara == 1)
+      // {
+      (*this->state).Vx = smooth * -(float)U_temp.at<double>(2, 0);
+      (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
+      (*this->state).Vz = smooth * (float)U_temp.at<double>(1, 0);
+      // }
+      // else
+      // {
+      //    (*this->state).Vx = smooth * (float)U_temp.at<double>(1, 0);
+      //    (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
+      //    (*this->state).Vz = smooth * (float)U_temp.at<double>(2, 0);
+      // }
 
       // Free the memory
       U_temp.release();
@@ -699,9 +716,6 @@ public:
                if ((*ordenFinal).at<int>(0, index) != -1)
                {
                   Mat temp = desired.row(orden[conteo]) - desired.row((*ordenFinal).at<int>(0, index));
-                  // cout << "\ndesired.row(orden[conteo]) " << desired.row(orden[conteo]) << endl;
-                  // cout << "desired.row((*ordenFinal).at<int>(0, index)) " << desired.row((*ordenFinal).at<int>(0, index)) << endl;
-                  // cout << "norm(temp) " << norm(temp) << endl;
                   if (norm(temp) < 100)
                   {
                      conteo++;
@@ -771,7 +785,6 @@ public:
 
       Mat orden;
       MinBy(puntosAct, puntosDes, &orden);
-      // cout << "[INFO] Orden: " << orden << endl;
 
       for (int i = 0; i < orden.cols; i++)
       {

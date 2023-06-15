@@ -3,10 +3,12 @@ DRONE: bebop2
 DRONE_COUNT: 5  # 4 to 5 drones
 LIM_MAX: 2000  # Maximum number of iterations for each drone
 
-SAVE_DESIRED_IMAGES: 0
-MODE: 0
+SAVE_DESIRED_IMAGES: 0 # True to save desired images
 
-CHANGE_THRESHOLD: 1
+MODE: 0 # 0: First desired image (outside), 1: Second desired image (inside)
+INIT_MODE: 1 # 0: Aruco Markers, 1: Descriptor Matching
+
+CHANGE_THRESHOLD: .1
 
 SAVE_IMAGES: 0
 SHOW_IMAGES: 0

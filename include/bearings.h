@@ -102,10 +102,13 @@ int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGE
 
 // For reading usage from yalm
 string DRONE_NAME;
-int DRONE_COUNT, MODE, CHANGE_THRESHOLD;
+int DRONE_COUNT, MODE, INIT_MODE;
+
+double CHANGE_THRESHOLD;
 
 // For controlling target detection
 bool target1, target2, target3, target4, target5;
+bool change1 = false, change2 = false;
 
 // Vector arrays for easy usage
 vector<bool> targets = {target1, target2, target3, target4, target5};

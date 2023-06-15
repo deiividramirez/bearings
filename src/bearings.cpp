@@ -17,6 +17,7 @@ int main(int argc, char **argv)
 	gen.getParam("MODE", MODE);
 	gen.getParam("LIM_MAX", LIM_MAX);
 	gen.getParam("DRONE", DRONE_NAME);
+	gen.getParam("INIT_MODE", INIT_MODE);
 	gen.getParam("DRONE_COUNT", DRONE_COUNT);
 	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
 	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
@@ -70,11 +71,11 @@ int main(int argc, char **argv)
 		loadImages();
 
 		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		guoLider1 = GUO(&states[0], 0);
+		guoLider1 = GUO(&states[0], INIT_MODE);
 		rotDrone1 = RotationalControl(&states[0]);
 
 		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		guoLider2 = GUO(&states[1], 0);
+		guoLider2 = GUO(&states[1], INIT_MODE);
 		rotDrone2 = RotationalControl(&states[1]);
 
 		// // First follower -> Translational motion and Rotational motion (BEARING ONLY)
@@ -350,7 +351,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << endl;
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-
 		if (guoLider1.getVels(actual) == 0)
 		{
 			cout << "\n[INFO] Controller part has been executed" << endl;
@@ -361,18 +361,20 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
+		cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << endl;
+
 		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		if (states[0].error < CHANGE_THRESHOLD && MODE == 0)
+		// if (states[0].error < CHANGE_THRESHOLD && MODE == 0)
+		if (states[0].error < CHANGE_THRESHOLD && !change1)
 		{
 			cout << "\n[INFO] << In target >>" << endl;
 			MODE = 1;
+			change1 = true;
 			loadImages();
 
 			guoLider1.changeMode(MODE);
-			guoLider2.changeMode(MODE);
+			// guoLider2.changeMode(MODE);
 		}
-
-		
 
 		if (!SHOW_IMAGES)
 		{
@@ -387,7 +389,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			imshow("Frontal camera_1", copy);
 			waitKey(1);
 		}
-		// }
 
 		// Saving images
 		string saveIMG;
@@ -395,13 +396,11 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 		else
 		{
 			saveIMG = "/src/bearings/src/data/img/1_1.jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
 		contIMG1++;
@@ -428,7 +427,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback for Drone 2 iter: " << contIMG2 << " <=============" << endl;
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-
 		if (guoLider2.getVels(actual) == 0)
 		{
 			cout << "\n[INFO] Controller part has been executed" << endl;
@@ -439,29 +437,17 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << "[ERROR] No ArUco were found." << endl;
 		}
 
-		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		// {
-		// 	cout << "\n[INFO] << In target >>" << endl;
-		// 	MODE = 1;
-		// 	loadImages();
+		// if (states[1].error < CHANGE_THRESHOLD && MODE == 0)
+		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
+		{
+			cout << "\n[INFO] << In target >>" << endl;
+			MODE = 1;
+			INIT_MODE = 1;
+			loadImages();
 
-		// 	guoLider1.changeMode(MODE);
-		// 	guoLider2.changeMode(MODE);
-
-		// 	t0L1 = states[0].t;
-		// 	tfL1 = t0L1 + 2.5;
-
-		// 	t0L2 = states[1].t;
-		// 	tfL2 = t0L2 + 2.5;
-		// }
-
-		// if (MODE == 1 && states[1].t < tfL2)
-		// {
-		// 	states[1].Vx *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-		// 	states[1].Vy *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-		// 	states[1].Vz *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-		// 	states[1].Vyaw *= (1 - cos(M_PI * (states[1].t - t0L2) / (tfL2 - t0L2))) * .5;
-		// }
+			guoLider1.changeMode(MODE);
+			guoLider2.changeMode(MODE);
+		}
 
 		if (!SHOW_IMAGES)
 		{
@@ -475,7 +461,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			imshow("Frontal camera_2", actual);
 			waitKey(1);
 		}
-		// }
 
 		// Saving images
 		string saveIMG;
@@ -483,13 +468,11 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 		else
 		{
 			saveIMG = "/src/bearings/src/data/img/2_1.jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
 		contIMG2++;
@@ -781,6 +764,8 @@ void loadImages()
 			exit(0);
 		}
 	}
+
+	cout << "[INFO] Reference images loaded" << endl;
 }
 
 /*************** SAVE MATRIX TO FILE ***************/
