@@ -24,6 +24,9 @@ public:
    Mat oldImage;
    Mat oldControl;
 
+   double argMIN1, argMAX1, argMIN2, argMAX2;
+   Mat maskMat;
+
    double t0L = 0.0, tfL = 2.0;
 
    GUO()
@@ -50,6 +53,15 @@ public:
 
       // Setting the FLANN matcher
       matcher = FlannBasedMatcher(new flann::LshIndexParams(20, 10, 2));
+
+      argMIN1 = 200;
+      argMAX1 = 1920 - 200;
+
+      argMIN2 = 200;
+      argMAX2 = 1080 - 200;
+
+      maskMat = Mat::zeros(1080, 1920, CV_8U);
+      rectangle(maskMat, Point(argMIN1, argMIN2), Point(argMAX1, argMAX2), Scalar(255, 255, 255), -1);
 
       cout << "\n[INFO] Getting desired data for GUO control..." << endl;
       if (this->getDesiredData() < 0)
@@ -139,15 +151,16 @@ public:
       }
       else if (this->mode == 1)
       {
-         this->detector->detectAndCompute(this->imgDesiredGray, noArray(), this->keypoints1, this->descriptors1);
+         this->detector->detectAndCompute(this->imgDesiredGray, maskMat, this->keypoints1, this->descriptors1);
          cout << "[INFO] Keypoints detected: " << this->keypoints1.size() << endl;
 
-         // drawKeypoints(this->imgDesired, this->keypoints1, this->imgDesired, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
-         // namedWindow("Desired", WINDOW_NORMAL);
-         // resizeWindow("Desired", 960, 540);
-         // imshow("Desired", this->imgDesired);
-         // waitKey(0);
-         // destroyWindow("Desired");
+         Mat temp;
+         drawKeypoints(this->imgDesired, this->keypoints1, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+         namedWindow("Desired", WINDOW_NORMAL);
+         resizeWindow("Desired", 960, 540);
+         imshow("Desired", temp);
+         waitKey(0);
+         destroyWindow("Desired");
       }
       return 0;
    }
@@ -155,7 +168,7 @@ public:
    int getActualData(Mat actualImg)
    {
       (*this->state).actual.img.copyTo(this->oldImage);
-      (*this->state).actual.img = actualImg;
+      actualImg.copyTo((*this->state).actual.img);
       cvtColor((*this->state).actual.img, (*this->state).actual.imgGray, COLOR_BGR2GRAY);
       this->good_matches.clear();
 
@@ -232,8 +245,10 @@ public:
 
          if (!this->firstTime)
          {
+            cout << "[INFO] Getting new information from images" << endl;
+
             this->firstTime = true;
-            this->detector->detectAndCompute((*this->state).actual.imgGray, noArray(), this->keypoints2, this->descriptors2);
+            this->detector->detectAndCompute((*this->state).actual.imgGray, maskMat, this->keypoints2, this->descriptors2);
             this->matcher.knnMatch(this->descriptors1, this->descriptors2, this->matches, 2);
 
             for (int i = 0; i < this->matches.size(); ++i)
@@ -303,14 +318,15 @@ public:
             temporal4.colRange(0, 2).convertTo((*this->state).desired.normPoints, CV_64F);
             this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
 
-            // Mat img_matches;
-            // drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
-            //             Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+            Mat img_matches;
+            drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
+                        Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-            // namedWindow("Good Matches", WINDOW_NORMAL);
-            // resizeWindow("Good Matches", 960, 270);
-            // imshow("Good Matches", img_matches);
-            // waitKey(0);
+            namedWindow("Good Matches", WINDOW_NORMAL);
+            resizeWindow("Good Matches", 960, 270);
+            imshow("Good Matches", img_matches);
+            waitKey(0);
+            destroyWindow("Good Matches");
 
             // ros::shutdown();
             // exit(-1);
@@ -381,7 +397,6 @@ public:
       this->imgDesired = (*this->state).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
 
-
       // this->oldControl = Mat::zeros(1, 4, CV_64F);
       // this->oldControl.at<double>(0, 0) = (*this->state).Vx;
       // this->oldControl.at<double>(0, 1) = (*this->state).Vy;
@@ -423,30 +438,20 @@ public:
 
       // Get interaction matrix and error vector with distances
       L = Lvl((*this->state).actual.inSphere, distancias, (*this->state).params);
-      Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
-
-      for (int i = 0; i < distancias.size(); i++)
-      {
-         ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
-      }
-
-      // cout << "ERROR: " << ERROR << endl;
 
       // Get the Penrose pseudo-inverse of the interaction matrix
       double det = 0.0;
       Lo = Moore_Penrose_PInv(L, det);
-      if (det < 1e-8)
+      if (!(det > 1e-8))
       {
          cout << "[ERROR] DET = ZERO --> det = " << det << endl;
-         return -2;
+         return -1;
       }
 
+      Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
+      for (int i = 0; i < distancias.size(); i++)
+         ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
       (*this->state).error = norm(ERROR, NORM_L1);
-      // cout << "[INFO] Error actual: " << (*this->state).error << endl;
-
-      // Mat ERROR_PIX = (*this->state).actual.points - (*this->state).desired.points;
-      // (*this->state).error_pix = norm(ERROR_PIX, NORM_L2);
-      // cout << "[INFO] Error pix: " << (*this->state).error_pix << endl;
 
       // Choosing the gain for the control law
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
@@ -650,12 +655,6 @@ public:
       // Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
       Mat p2;
       vector<Mat> keys;
-
-      double argMIN1 = 200;
-      double argMAX1 = 1920 - 200;
-
-      double argMIN2 = 200;
-      double argMAX2 = 1080 - 200;
 
       keys.push_back((Mat_<double>(1, 2) << 480, 270));
       keys.push_back((Mat_<double>(1, 2) << 1440, 270));
