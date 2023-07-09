@@ -1,20 +1,19 @@
+# DRONE TYPE: bebop2 or iris
 DRONE: bebop2
 # DRONE: iris
-DRONE_COUNT: 5  # 4 to 5 drones
-LIM_MAX: 2000  # Maximum number of iterations for each drone
 
-SAVE_DESIRED_IMAGES: 0 # True to save desired images
+# How many drones are used and the maximum number of iterations
+DRONE_COUNT: 5 # 4 to 5 drones
+LIM_MAX: 2000 # Maximum number of iterations for each drone
 
-MODE: 0 # 0: First desired image (outside), 1: Second desired image (inside)
+# Use or not use descriptor matching for obtaining the points and threshold to change the desired image from outside to inside
 INIT_MODE: 1 # 0: Aruco Markers, 1: Descriptor Matching
+CHANGE_THRESHOLD: .1 # Threshold to change the desired image from outside to inside
 
-CHANGE_THRESHOLD: .1
+# Save the desired images (when setting eveything up for the first time)
+SAVE_DESIRED_IMAGES: 0 # True to save desired images
+MODE: 0 # 0: First desired image (outside), 1: Second desired image (inside)
 
-SAVE_IMAGES: 0
-SHOW_IMAGES: 0
-
-cam_drone_1: 1
-cam_drone_2: 1
-cam_drone_3: 1
-cam_drone_4: 1
-cam_drone_5: 1
+# Saving and showing images
+SAVE_IMAGES: 0 # True to save images
+SHOW_IMAGES: 0 # True to show images

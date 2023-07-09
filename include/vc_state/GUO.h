@@ -154,13 +154,13 @@ public:
          this->detector->detectAndCompute(this->imgDesiredGray, maskMat, this->keypoints1, this->descriptors1);
          cout << "[INFO] Keypoints detected: " << this->keypoints1.size() << endl;
 
-         Mat temp;
-         drawKeypoints(this->imgDesired, this->keypoints1, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
-         namedWindow("Desired", WINDOW_NORMAL);
-         resizeWindow("Desired", 960, 540);
-         imshow("Desired", temp);
-         waitKey(0);
-         destroyWindow("Desired");
+         // Mat temp;
+         // drawKeypoints(this->imgDesired, this->keypoints1, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+         // namedWindow("Desired keypoints", WINDOW_NORMAL);
+         // resizeWindow("Desired keypoints", 960, 540);
+         // imshow("Desired keypoints", temp);
+         // waitKey(0);
+         // destroyWindow("Desired keypoints");
       }
       return 0;
    }
@@ -246,9 +246,21 @@ public:
          if (!this->firstTime)
          {
             cout << "[INFO] Getting new information from images" << endl;
+            this->keypoints2.clear();
+            this->descriptors2.release();
+            this->matches.clear();
+            this->good_matches.clear();
 
-            this->firstTime = true;
             this->detector->detectAndCompute((*this->state).actual.imgGray, maskMat, this->keypoints2, this->descriptors2);
+
+            // Mat temp;
+            // drawKeypoints(actualImg, this->keypoints2, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+            // namedWindow("Actual keypoints", WINDOW_NORMAL);
+            // resizeWindow("Actual keypoints", 960, 540);
+            // imshow("Actual keypoints", temp);
+            // waitKey(0);
+            // destroyWindow("Actual keypoints");
+
             this->matcher.knnMatch(this->descriptors1, this->descriptors2, this->matches, 2);
 
             for (int i = 0; i < this->matches.size(); ++i)
@@ -330,6 +342,7 @@ public:
 
             // ros::shutdown();
             // exit(-1);
+            this->firstTime = true;
          }
          else
          {
@@ -406,6 +419,9 @@ public:
       t0L = (*this->state).t;
       tfL = (*this->state).t + 2.5;
 
+      this->keypoints1.clear();
+      this->descriptors1.release();
+
       if (this->getDesiredData() < 0)
       {
          cout << "[ERROR] Desired points in picture not found" << endl;
@@ -415,9 +431,9 @@ public:
 
       cout << "[INFO] Desired image has been changed" << endl;
 
-      imshow("Desired", this->imgDesired);
-      waitKey(0);
-      destroyWindow("Desired");
+      // imshow("Desired", this->imgDesired);
+      // waitKey(0);
+      // destroyWindow("Desired");
    }
 
    int getVels(Mat img // Image to be processed

@@ -75,8 +75,8 @@ int main(int argc, char **argv)
 		rotDrone1 = RotationalControl(&states[0]);
 
 		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		guoLider2 = GUO(&states[1], INIT_MODE);
-		rotDrone2 = RotationalControl(&states[1]);
+		// guoLider2 = GUO(&states[1], INIT_MODE);
+		// rotDrone2 = RotationalControl(&states[1]);
 
 		// // First follower -> Translational motion and Rotational motion (BEARING ONLY)
 		// bearDrone3 = bearingControl(&states[2], states);
@@ -442,7 +442,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			cout << "\n[INFO] << In target >>" << endl;
 			MODE = 1;
-			INIT_MODE = 1;
 			loadImages();
 
 			guoLider1.changeMode(MODE);
