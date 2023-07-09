@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	{
 		/****************** FOR CONTROL LAW ******************/
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
-		// image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
 
 		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
 		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
@@ -76,8 +76,8 @@ int main(int argc, char **argv)
 		rotDrone1 = RotationalControl(&states[0]);
 
 		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		// guoLider2 = GUO(&states[1], INIT_MODE);
-		// rotDrone2 = RotationalControl(&states[1]);
+		guoLider2 = GUO(&states[1], INIT_MODE);
+		rotDrone2 = RotationalControl(&states[1]);
 
 		// // First follower -> Translational motion and Rotational motion (BEARING ONLY)
 		// bearDrone3 = bearingControl(&states[2], states);
@@ -348,15 +348,13 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	*/
 	if (states[0].initialized && !states[0].in_target)
 	{
-		// width terminal  size
 		cout << CYAN_C << endl
-			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << endl;
-		cout << RESET_C;
+			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << RESET_C << endl;
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 		if (guoLider1.getVels(actual) == 0)
 		{
-			cout << GREEN_C "\n[INFO] Controller part has been executed" << RESET_C << endl;
+			cout << GREEN_C "\n[INFO] Controller part has been executed" << RESET_C;
 			rotDrone1.getVels(actual);
 		}
 		else
@@ -364,19 +362,17 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
-		cout << BLUE_C << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << RESET_C << endl;
+		// cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << endl;
 
-		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		// if (states[0].error < CHANGE_THRESHOLD && MODE == 0)
-		if (states[0].error < CHANGE_THRESHOLD && !change1)
+		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && !change)
 		{
 			cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
 			MODE = 1;
-			change1 = true;
+			change = true;
 			loadImages();
 
 			guoLider1.changeMode(MODE);
-			// guoLider2.changeMode(MODE);
+			guoLider2.changeMode(MODE);
 		}
 
 		if (!SHOW_IMAGES)
@@ -426,13 +422,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 	*/
 	if (states[1].initialized && !states[1].in_target)
 	{
-		cout << endl
-			  << "=============> BEGIN IMGCallback for Drone 2 iter: " << contIMG2 << " <=============" << endl;
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback for Drone 2 iter: " << contIMG2 << " <=============" << RESET_C << endl;
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 		if (guoLider2.getVels(actual) == 0)
 		{
-			cout << "\n[INFO] Controller part has been executed";
+			cout << GREEN_C << "\n[INFO] Controller part has been executed" << RESET_C;
 			rotDrone2.getVels(actual);
 		}
 		else
@@ -440,11 +436,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
-		// if (states[1].error < CHANGE_THRESHOLD && MODE == 0)
-		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
+
+
+		if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && !change)
 		{
-			cout << "\n[INFO] << In target >>" << endl;
+			cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
 			MODE = 1;
+			change = true;
 			loadImages();
 
 			guoLider1.changeMode(MODE);
@@ -453,14 +451,15 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 
 		if (!SHOW_IMAGES)
 		{
+			Mat copy = actual.clone();
 			for (int i = 0; i < states[1].actual.points.rows; i++)
 			{
-				circle(actual, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-				circle(actual, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+				circle(copy, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(copy, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 			}
 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_2", 550, 310);
-			imshow("Frontal camera_2", actual);
+			imshow("Frontal camera_2", copy);
 			waitKey(1);
 		}
 

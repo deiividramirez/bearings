@@ -108,7 +108,7 @@ double CHANGE_THRESHOLD;
 
 // For controlling target detection
 bool target1, target2, target3, target4, target5;
-bool change1 = false, change2 = false;
+bool change = false;
 
 // Vector arrays for easy usage
 vector<bool> targets = {target1, target2, target3, target4, target5};

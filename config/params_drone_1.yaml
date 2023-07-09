@@ -1,14 +1,8 @@
 # The camera intrinsic parameters matrix
 # 3x3 matrix
-# Iris
 camera_intrinsic_parameters: [700,   0,    960,
                               0,    700,   540,
                               0,     0,     1]
-
-# Bebop2
-# camera_intrinsic_parameters: [1505,   0,    2043,
-#                               0,    1505,   1446,
-#                               0,     0,     1]
 
 R: [0, 0, -1,
     1, 0, 0,
@@ -21,19 +15,14 @@ seguimiento:
   len: 1
   data: [99] #97 or 99
 
-bearing: 
-  rows: 0
-  cols: 0
-  data: []
+# bearing: 
+#   rows: 0
+#   cols: 0
+#   data: []
 
 # Gain on linear velocities
-############################################################
-# Para el control #1
 gainv: 3
-gainv_max: .2
-############################################################
-# Para el control #2
-# gain_v: .4
+gainv_max: .5
 
 # Gain on angular velocities
 gainw: .01
@@ -52,11 +41,6 @@ flann_ratio: 0.7
 
 ############################################################
 # Cambio de control 1 (1/dist) o 2 (dist).
-control: 1
+control: 2
 
-############################################################
-# Cambio de cámara 0, 1 o 2.
-# 1 Para cámara de iris - frontal
-# 2 Para cámara de iris - abajo
-# 3 Para cámara de iris - Ambas
 camara: 1
