@@ -1,6 +1,25 @@
 #ifndef VC_STATE_H
 #define VC_STATE_H
 
+#define RESET_C "\033[0m"
+#define BLACK_C "\033[30m"              /* Black */
+#define RED_C "\033[31m"                /* Red */
+#define GREEN_C "\033[32m"              /* Green */
+#define YELLOW_C "\033[33m"             /* Yellow */
+#define BLUE_C "\033[34m"               /* Blue */
+#define MAGENTA_C "\033[35m"            /* Magenta */
+#define CYAN_C "\033[36m"               /* Cyan */
+#define WHITE_C "\033[37m"              /* White */
+#define BOLDBLACK_C "\033[1m\033[30m"   /* Bold Black */
+#define BOLDRED_C "\033[1m\033[31m"     /* Bold Red */
+#define BOLDGREEN_C "\033[1m\033[32m"   /* Bold Green */
+#define BOLDYELLOW_C "\033[1m\033[33m"  /* Bold Yellow */
+#define BOLDBLUE_C "\033[1m\033[34m"    /* Bold Blue */
+#define BOLDMAGENTA_C "\033[1m\033[35m" /* Bold Magenta */
+#define BOLDCYAN_C "\033[1m\033[36m"    /* Bold Cyan */
+#define BOLDWHITE_C "\033[1m\033[37m"   /* Bold White */
+#define M_PI 3.14159265358979323846     /* pi */
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -18,8 +37,6 @@
 #include <opencv2/video/tracking.hpp>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
-
-# define M_PI 3.14159265358979323846 /* pi */
 
 using namespace cv;
 using namespace std;
@@ -83,7 +100,6 @@ typedef struct vc_desired_configuration
     std::vector<cv::KeyPoint> kp;
     cv::Mat img;
 } vc_desired_configuration;
-
 
 class vc_state
 {

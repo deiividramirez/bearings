@@ -113,11 +113,11 @@ std::pair<Eigen::VectorXd, float> vc_state::update()
         // this->Yaw = 0;
 
         cout << endl
-             << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
+             << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
              << "SENDING THIS POS >>" << endl
              << "X: " << this->X << " - Y: " << this->Y << " - Z: " << this->Z << " - Yaw: " << this->Yaw << endl
              << "Vx: " << this->Vx << " - Vy: " << this->Vy << " - Vz: " << this->Vz << " - Vyaw: " << this->Vyaw << endl
-             << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
+             << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl
              << endl;
 
         // ros::Duration(0.1).sleep();

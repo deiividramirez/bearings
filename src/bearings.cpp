@@ -7,6 +7,7 @@ using namespace std;
 /****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
 {
+	cout << RESET_C << endl;
 	/****************** ROS INITIALIZING ******************/
 	ros::init(argc, argv, "bearings");
 	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns5"), gen("general");
@@ -29,19 +30,19 @@ int main(int argc, char **argv)
 		states[i].load(nhs[i]);
 	}
 
-	cout << "\n[INFO] All Nodes have been initialized." << endl;
+	cout << GREEN_C << "\n[INFO] All Nodes have been initialized." << RESET_C << endl;
 
 	image_transport::ImageTransport it1(nh), it2(nh2), it3(nh3), it4(nh4), it5(nh5);
 	image_transport::Subscriber image_sub_1f, image_sub_1b, image_sub_2f, image_sub_2b, image_sub_3f, image_sub_3b, image_sub_4f, image_sub_4b, image_sub_5f, image_sub_5b;
 
 	/****************** CREATING PUBLISHER AND SUBSCRIBER ******************/
 
-	cout << "\n\n[INFO] DRONE: " << DRONE_NAME << endl;
+	cout << GREEN_C << "\n\n[INFO] DRONE: " << DRONE_NAME << endl;
 	cout << "[INFO] DRONE_COUNT: " << DRONE_COUNT << endl;
 	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True" : "False") << endl;
-	cout << "[INFO] Max iterations: " << LIM_MAX << endl;
+	cout << "[INFO] Max iterations: " << LIM_MAX << RESET_C << endl;
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
@@ -129,7 +130,7 @@ int main(int argc, char **argv)
 
 		if (contIMG1, contIMG2, contIMG3, contIMG4 > LIM_MAX || contGEN > 4 * LIM_MAX)
 		{
-			cout << "[ERROR] No convergence, quitting" << endl;
+			cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
 			ros::shutdown();
 			exit(0);
 		}
@@ -206,7 +207,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		// Getting the bearings from camera's drone
 		if (bearDrone3.getVels(actual) < 0)
 		{
-			cout << "[ERROR] Bearing control failed" << endl;
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
 		}
 		else
 		{
@@ -258,7 +259,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		// Getting the bearings from camera's drone
 		if (bearDrone4.getVels(actual) < 0)
 		{
-			cout << "[ERROR] Bearing control failed" << endl;
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
 		}
 
 		// Saving images
@@ -306,7 +307,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		// Getting the bearings from camera's drone
 		if (bearDrone5.getVels(actual) < 0)
 		{
-			cout << "[ERROR] Bearing control failed" << endl;
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
 		}
 
 		// Saving images
@@ -347,27 +348,29 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	*/
 	if (states[0].initialized && !states[0].in_target)
 	{
-		cout << endl
+		// width terminal  size
+		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << endl;
+		cout << RESET_C;
 
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 		if (guoLider1.getVels(actual) == 0)
 		{
-			cout << "\n[INFO] Controller part has been executed" << endl;
+			cout << GREEN_C "\n[INFO] Controller part has been executed" << RESET_C << endl;
 			rotDrone1.getVels(actual);
 		}
 		else
 		{
-			cout << "[ERROR] No ArUco were found." << endl;
+			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
-		cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << endl;
+		cout << BLUE_C << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << RESET_C << endl;
 
 		// if (states[0].error < CHANGE_THRESHOLD && states[1].error < CHANGE_THRESHOLD && MODE == 0)
 		// if (states[0].error < CHANGE_THRESHOLD && MODE == 0)
 		if (states[0].error < CHANGE_THRESHOLD && !change1)
 		{
-			cout << "\n[INFO] << In target >>" << endl;
+			cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
 			MODE = 1;
 			change1 = true;
 			loadImages();
@@ -429,12 +432,12 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 		if (guoLider2.getVels(actual) == 0)
 		{
-			cout << "\n[INFO] Controller part has been executed" << endl;
+			cout << "\n[INFO] Controller part has been executed";
 			rotDrone2.getVels(actual);
 		}
 		else
 		{
-			cout << "[ERROR] No ArUco were found." << endl;
+			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
 		// if (states[1].error < CHANGE_THRESHOLD && MODE == 0)
@@ -695,7 +698,7 @@ void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 // FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
 void saveStuff(int i)
 {
-	cout << "\n[INFO] Saving data for drone " + to_string(i + 1) << endl;
+	cout << CYAN_C << "\n[INFO] Saving data for drone " + to_string(i + 1) << RESET_C << endl;
 
 	times[i].push_back(states[i].t);
 
@@ -718,14 +721,14 @@ void saveStuff(int i)
 		integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
 		integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
 		integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
-		cout << "[INFO] Integral error: " << states[i].integral_error6.t() << endl;
+		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error6.t() << RESET_C << endl;
 	}
 	else
 	{
 		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
 		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
 		integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
-		cout << "[INFO] Integral error: " << states[i].integral_error.t() << endl;
+		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error.t() << RESET_C << endl;
 	}
 
 	X[i].push_back(states[i].X);
@@ -747,7 +750,7 @@ void saveStuff(int i)
 
 void loadImages()
 {
-	cout << "\n[INFO] Loading reference images with mode " << MODE << endl;
+	cout << GREEN_C << "\n[INFO] Loading reference images with mode " << MODE << RESET_C << endl;
 
 	string image_dir = workspace;
 	image_dir += "/src/bearings/src/desired";
@@ -757,14 +760,14 @@ void loadImages()
 		states[i].desired.img = imread(image_dir + to_string(i + 1) + "_" + to_string(MODE) + ".jpg", IMREAD_COLOR);
 		if (states[i].desired.img.empty())
 		{
-			cout << "[ERROR] Could not open or find the reference image for drone " << i + 1 << endl;
-			cout << "[ERROR] No dir >> " << image_dir + to_string(i + 1) + "_" + to_string(MODE) + ".jpg" << endl;
+			cout << RED_C << "[ERROR] Could not open or find the reference image for drone " << i + 1 << RESET_C << endl;
+			cout << RED_C << "[ERROR] No dir >> " << image_dir + to_string(i + 1) + "_" + to_string(MODE) + ".jpg" << RESET_C << endl;
 			ros::shutdown();
 			exit(0);
 		}
 	}
 
-	cout << "[INFO] Reference images loaded" << endl;
+	cout << GREEN_C << "[INFO] Reference images loaded" << RESET_C << endl;
 }
 
 /*************** SAVE MATRIX TO FILE ***************/

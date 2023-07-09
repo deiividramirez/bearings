@@ -63,14 +63,14 @@ public:
       maskMat = Mat::zeros(1080, 1920, CV_8U);
       rectangle(maskMat, Point(argMIN1, argMIN2), Point(argMAX1, argMAX2), Scalar(255, 255, 255), -1);
 
-      cout << "\n[INFO] Getting desired data for GUO control..." << endl;
+      cout << GREEN_C << "\n[INFO] Getting desired data for GUO control..." << RESET_C << endl;
       if (this->getDesiredData() < 0)
       {
-         cout << "[ERROR] Desired ArUco not found" << endl;
+         cout << RED_C << RED_C << "[ERROR] Desired ArUco not found" << RESET_C << RESET_C << endl;
          ros::shutdown();
          exit(-1);
       }
-      cout << "[INFO] Desired data obtained" << endl;
+      cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
    }
 
    int getDesiredData()
@@ -92,16 +92,16 @@ public:
          }
          catch (Exception &e)
          {
-            cout << "Exception: " << e.what() << endl;
+            cout << RED_C << "Exception: " << e.what() << RESET_C << endl;
             return -1;
          }
 
-         cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         cout << GREEN_C << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
          for (int i = 0; i < markerIds.size(); i++)
          {
             cout << markerIds[i] << " ";
          }
-         cout << endl;
+         cout << RESET_C << endl;
 
          int indice;
 
@@ -123,7 +123,7 @@ public:
 
             if (indice == -1)
             {
-               cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+               cout << RED_C << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << RESET_C << endl;
                return -1;
             }
 
@@ -152,7 +152,7 @@ public:
       else if (this->mode == 1)
       {
          this->detector->detectAndCompute(this->imgDesiredGray, maskMat, this->keypoints1, this->descriptors1);
-         cout << "[INFO] Keypoints detected: " << this->keypoints1.size() << endl;
+         cout << GREEN_C <<  "[INFO] Keypoints detected: " << this->keypoints1.size() << RESET_C << endl;
 
          // Mat temp;
          // drawKeypoints(this->imgDesired, this->keypoints1, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
@@ -185,16 +185,16 @@ public:
          }
          catch (Exception &e)
          {
-            cout << "Exception: " << e.what() << endl;
+            cout << RED_C << "Exception: " << e.what() << RESET_C << endl;
             return -1;
          }
 
-         cout << "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         cout << GREEN_C <<  "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
          for (int i = 0; i < markerIds.size(); i++)
          {
             cout << markerIds[i] << " ";
          }
-         cout << endl;
+         cout << RESET_C << endl;
 
          int marker_index = -1;
          for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
@@ -211,7 +211,7 @@ public:
             }
             if (marker_index == -1)
             {
-               cout << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << endl;
+               cout << RED_C << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << RESET_C << endl;
                return -1;
             }
 
@@ -245,7 +245,7 @@ public:
 
          if (!this->firstTime)
          {
-            cout << "[INFO] Getting new information from images" << endl;
+            cout << GREEN_C << "[INFO] Getting new information from images" << RESET_C << endl;
             this->keypoints2.clear();
             this->descriptors2.release();
             this->matches.clear();
@@ -273,7 +273,7 @@ public:
 
             if (this->good_matches.size() <= 5)
             {
-               cout << "[ERROR] There are no good matches" << endl;
+               cout << RED_C << "[ERROR] There are no good matches" << RESET_C << endl;
                this->firstTime = false;
                return -1;
             }
@@ -304,15 +304,15 @@ public:
 
             if (this->good_matches.size() <= 5)
             {
-               cout << "[ERROR] There are no good matches" << endl;
+               cout << RED_C << "[ERROR] There are no good matches" << RESET_C << endl;
                return -1;
             }
 
-            cout << "[INFO] Good matches: " << this->good_matches.size() << endl;
+            cout << GREEN_C << "[INFO] Good matches: " << this->good_matches.size() << RESET_C << endl;
 
             if (Orden() < 0)
             {
-               cout << "[ERROR] Orden function failed" << endl;
+               cout << RED_C << "[ERROR] Orden function failed" << RESET_C << endl;
                return -1;
             }
 
@@ -334,11 +334,11 @@ public:
             drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
                         Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-            namedWindow("Good Matches", WINDOW_NORMAL);
-            resizeWindow("Good Matches", 960, 270);
-            imshow("Good Matches", img_matches);
-            waitKey(0);
-            destroyWindow("Good Matches");
+            // namedWindow("Good Matches", WINDOW_NORMAL);
+            // resizeWindow("Good Matches", 960, 270);
+            // imshow("Good Matches", img_matches);
+            // waitKey(0);
+            // destroyWindow("Good Matches");
 
             // ros::shutdown();
             // exit(-1);
@@ -357,7 +357,7 @@ public:
 
             // if (sum(status)[0] < 4)
             // {
-            //    cout << "[ERROR] There are no good matches" << endl;
+            //    cout << RED_C << "[ERROR] There are no good matches" << RESET_C << endl;
             //    this->firstTime = false;
             //    return -1;
             // }
@@ -404,7 +404,7 @@ public:
 
    void changeMode(int mode)
    {
-      cout << "\n[INFO] Changing mode to " << mode << endl;
+      cout << MAGENTA_C << "\n[INFO] Changing mode to " << mode << RESET_C << endl;
       this->mode = mode;
       this->firstTime = false;
       this->imgDesired = (*this->state).desired.img;
@@ -424,12 +424,12 @@ public:
 
       if (this->getDesiredData() < 0)
       {
-         cout << "[ERROR] Desired points in picture not found" << endl;
+         cout << RED_C << "[ERROR] Desired points in picture not found" << RESET_C << endl;
          ros::shutdown();
          exit(-1);
       }
 
-      cout << "[INFO] Desired image has been changed" << endl;
+      cout << MAGENTA_C << "[INFO] Desired image has been changed" << RESET_C << endl;
 
       // imshow("Desired", this->imgDesired);
       // waitKey(0);
@@ -439,13 +439,13 @@ public:
    int getVels(Mat img // Image to be processed
    )
    {
-      cout << "\n[INFO] Getting velocities from GUO control..." << endl;
+      cout << GREEN_C << "\n[INFO] Getting velocities from GUO control..." << RESET_C << endl;
 
       Mat U_temp, L, Lo;
       vector<vecDist> distancias;
       if (this->getActualData(img) < 0)
       {
-         cout << "[ERROR] Actual points in picture not found" << endl;
+         cout << RED_C << "[ERROR] Actual points in picture not found" << RESET_C << endl;
          return -1;
       }
 
@@ -460,7 +460,7 @@ public:
       Lo = Moore_Penrose_PInv(L, det);
       if (!(det > 1e-8))
       {
-         cout << "[ERROR] DET = ZERO --> det = " << det << endl;
+         cout << RED_C << "[ERROR] DET = ZERO --> det = " << det << RESET_C << endl;
          return -1;
       }
 
@@ -476,9 +476,9 @@ public:
       double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
       double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
 
-      cout << endl
+      cout << YELLOW_C << endl
            << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl
-           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << endl;
+           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
 
       (*this->state).lambda_kp = lambda_Kp;
       (*this->state).lambda_kv = lambda_Kv;
@@ -589,7 +589,7 @@ public:
                }
                else
                {
-                  cout << "[ERROR] Control variable is not valid" << endl;
+                  cout << RED_C << "[ERROR] Control variable is not valid" << RESET_C << endl;
                   return -1;
                }
                distancias.push_back(tmpDist);
@@ -635,7 +635,7 @@ public:
       Mat L = Mat::zeros(n, 3, CV_64F);    // Interaction matrix
       Mat pi, pj;                          // Temporal points for calculation
       double s;
-      cout << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << endl;
+      cout << RED_C << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << RESET_C << endl;
 
       for (int i = 0; i < n; i++)
       {
@@ -652,7 +652,7 @@ public:
          }
          else
          {
-            cout << "[Error] Control parameter not valid" << endl;
+            cout << RED_C << "[Error] Control parameter not valid" << RESET_C << endl;
             return L;
          }
          temp = s * ((pi * ortoProj(pj)) + (pj * ortoProj(pi)));

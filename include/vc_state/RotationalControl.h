@@ -23,7 +23,7 @@ public:
 
       // if (this->getDesiredData() < 0)
       // {
-      //    cout << "[ERROR] Desired ArUco not found" << endl;
+      //    cout << RED_C << "[ERROR] Desired ArUco not found" << RESET_C << endl;
       //    ros::shutdown();
       //    exit(-1);
       // }
@@ -77,7 +77,7 @@ public:
 
          if (indice == -1)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << RED_C << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << RESET_C << endl;
             return -1;
          }
 
@@ -117,7 +117,7 @@ public:
 
    int getVels(Mat img)
    {
-      cout << "\n[INFO] Getting velocities from Rotational control..." << endl;
+      cout << GREEN_C << "\n[INFO] Getting velocities from Rotational control..." << RESET_C << endl;
 
       Mat U, U_temp, L, Lo;
       vector<vecDist> distancias;
@@ -129,7 +129,7 @@ public:
       Lo = Moore_Penrose_PInv(L, det);
       if (det < 1e-8)
       {
-         cout << "[ERROR] DET = ZERO --> det = " << det << endl;
+         cout << RED_C << "[ERROR] DET = ZERO --> det = " << det << RESET_C << endl;
          return -1;
       }
 
@@ -143,8 +143,9 @@ public:
       // double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-50 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
       double lambda_Kp = 1;
 
-      cout << endl
-           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl;
+      cout << YELLOW_C << endl
+           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << RESET_C << endl
+           << endl;
 
       Mat ERROR_I = Mat::zeros(2 * (*this->state).actual.normPoints.rows, 1, CV_64F);
       for (int i = 0; i < (*this->state).actual.normPoints.rows; i++)
