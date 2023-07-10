@@ -152,7 +152,7 @@ public:
       else if (this->mode == 1)
       {
          this->detector->detectAndCompute(this->imgDesiredGray, maskMat, this->keypoints1, this->descriptors1);
-         cout << GREEN_C <<  "[INFO] Keypoints detected: " << this->keypoints1.size() << RESET_C << endl;
+         cout << GREEN_C << "[INFO] Keypoints detected: " << this->keypoints1.size() << RESET_C << endl;
 
          // Mat temp;
          // drawKeypoints(this->imgDesired, this->keypoints1, temp, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
@@ -189,7 +189,7 @@ public:
             return -1;
          }
 
-         cout << GREEN_C <<  "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+         cout << GREEN_C << "[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
          for (int i = 0; i < markerIds.size(); i++)
          {
             cout << markerIds[i] << " ";
@@ -480,27 +480,27 @@ public:
            << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl
            << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
 
-      (*this->state).lambda_kp = lambda_Kp;
-      (*this->state).lambda_kv = lambda_Kv;
+      double smooth = 1;
+      if ((*this->state).t < tfL)
+         smooth = smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+
+      (*this->state).lambda_kp = smooth * lambda_Kp;
+      (*this->state).lambda_kv = smooth * lambda_Kv;
 
       Mat tempSign = signMat(ERROR);
       (*this->state).integral_error6 += (*this->state).dt * tempSign;
 
       Mat tempError = robust(ERROR);
-      // U_temp = Lo * (-lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error6);
-      U_temp = Lo * (-lambda_Kp * tempError);
-      // U_temp = Lo * (-lambda_Kp * ERROR );
-
-      double smooth = 1;
-      if ((*this->state).t < tfL)
-         smooth = smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+      U_temp = Lo * (-(*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error6);
+      // U_temp = Lo * (-(*this->state).lambda_kp * tempError);
+      // U_temp = Lo * (-(*this->state).lambda_kp * ERROR );
 
       // Send the control law to the camera
       // if ((*this->state).params.camara == 1)
       // {
-      (*this->state).Vx = smooth * -(float)U_temp.at<double>(2, 0);
-      (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
-      (*this->state).Vz = smooth * (float)U_temp.at<double>(1, 0);
+      (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
+      (*this->state).Vy = (float)U_temp.at<double>(0, 0);
+      (*this->state).Vz = (float)U_temp.at<double>(1, 0);
       // }
       // else
       // {
