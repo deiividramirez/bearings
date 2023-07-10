@@ -33,10 +33,12 @@ bearing:
 # Gain on linear velocities
 gainv: 4
 gainv_max: .5
+gainv_prime: -20
 
 # Gain on angular velocities
-gainw: .01
-gainw_max: .0001
+gainw: .2
+gainw_max: .01
+gainw_prime: -0.6
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01

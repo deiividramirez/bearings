@@ -97,6 +97,9 @@ void vc_state::load(const ros::NodeHandle &nh)
 
         // Load sampling time parameter
         this->dt = nh.param(std::string("dt"), 0.01);
+
+        this->kv_prima = nh.param(std::string("gainv_prime"), 1.0);
+        this->kw_prima = nh.param(std::string("gainw_prime"), 1.0);
 }
 
 std::pair<Eigen::VectorXd, float> vc_state::update()

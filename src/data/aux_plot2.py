@@ -31,13 +31,13 @@ fig, ax = plt.subplots(
     sharex=True,
     num=f"Velocidades y errores para todos los drones",
     # figsize is variable depending on the number of drones
-    figsize=(4* len(DRONE_COUNT), 5),
+    figsize=(4 * len(DRONE_COUNT), 5),
 )
 ax.shape = (4, len(DRONE_COUNT))
 
 for index, dron in enumerate(DRONE_COUNT):
     err = np.loadtxt(f"{path}/out/out_errors_{dron}.txt")
-    err_pix = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
+    err_pix_real = np.loadtxt(f"{path}/out/out_errors_pix_{dron}.txt")
     time = np.loadtxt(f"{path}/out/out_time_{dron}.txt")
     vx = np.loadtxt(f"{path}/out/out_Vx_{dron}.txt")
     vy = np.loadtxt(f"{path}/out/out_Vy_{dron}.txt")
@@ -62,12 +62,31 @@ for index, dron in enumerate(DRONE_COUNT):
         f"""
 Drone {dron}
 Tiempo total -> {time[-1]}
-Error final -> {err[-1]}
+Error final -> {err[-1]}, Max -> {max(err[NUM:])}
+Error pixels final -> {err_pix_real[-1]}, Max -> {max(err_pix_real[NUM:])}
 Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     """
     )
 
     ax[0][index].title.set_text(f"Drone {dron}")
+    if np.any(err_pix_real != 0):
+        err_pix = (err_pix_real) / max(err_pix_real[NUM + 10 :]) * max(err[NUM:])
+        ax[0][index].plot(time[NUM:], err_pix[NUM:], "r", label="Error (px)")
+        ax[0][index].plot(
+            [time[NUM], time[-1]],
+            [err_pix[-1], err_pix[-1]],
+            "r--",
+            label=f"y={err_pix[-1]:.3f}",
+            alpha=0.5,
+        )
+        ax[0][index].plot(
+            [time[NUM], time[-1]],
+            [err_pix_real[-1], err_pix_real[-1]],
+            "r--",
+            label=f"y={err_pix_real[-1]:.3f}",
+            alpha=0.5,
+        )
+
     ax[0][index].plot(time[NUM:], err[NUM:], "purple", label="Error (c)")
     ax[0][index].plot(
         [time[NUM], time[-1]],
@@ -77,16 +96,6 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         label=f"y={err[-1]:.3f}",
         alpha=0.5,
     )
-    if np.any(err_pix != 0):
-        err_pix = (err_pix) / max(err_pix[NUM + 10 :]) * max(err[NUM:])
-        ax[0][index].plot(time[NUM:], err_pix[NUM:], "r", label="Error (px)")
-        ax[0][index].plot(
-            [time[NUM], time[-1]],
-            [err_pix[-1], err_pix[-1]],
-            "r--",
-            label=f"y={err_pix[-1]:.3f}",
-            alpha=0.5,
-        )
 
     box = ax[0][index].get_position()
     ax[0][index].set_position([box.x0, box.y0, box.width * 0.99, box.height])

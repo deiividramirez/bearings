@@ -471,43 +471,36 @@ public:
 
       // Choosing the gain for the control law
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-.3 * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
+      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
 
-      double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-      double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
-
-      cout << YELLOW_C << endl
-           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << endl
-           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
+      // double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
+      // double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
+      
+      // lambda_Kp = 3;
+      // lambda_Kv = 3;
 
       double smooth = 1;
       if ((*this->state).t < tfL)
-         smooth = smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+         smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
 
       (*this->state).lambda_kp = smooth * lambda_Kp;
-      (*this->state).lambda_kv = smooth * lambda_Kv;
+      // (*this->state).lambda_kv = smooth * lambda_Kv;
 
-      Mat tempSign = signMat(ERROR);
-      (*this->state).integral_error6 += (*this->state).dt * tempSign;
+      cout << YELLOW_C << endl
+           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << RESET_C << endl;
+         //   << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
+      
+      // Mat tempSign = signMat(ERROR);
+      // (*this->state).integral_error6 += (*this->state).dt * tempSign;
 
-      Mat tempError = robust(ERROR);
-      U_temp = Lo * (-(*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error6);
+      // Mat tempError = robust(ERROR);
+      // U_temp = Lo * (-(*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error6);
       // U_temp = Lo * (-(*this->state).lambda_kp * tempError);
-      // U_temp = Lo * (-(*this->state).lambda_kp * ERROR );
+      U_temp = Lo * (-(*this->state).lambda_kp * ERROR );
 
-      // Send the control law to the camera
-      // if ((*this->state).params.camara == 1)
-      // {
       (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
       (*this->state).Vy = (float)U_temp.at<double>(0, 0);
       (*this->state).Vz = (float)U_temp.at<double>(1, 0);
-      // }
-      // else
-      // {
-      //    (*this->state).Vx = smooth * (float)U_temp.at<double>(1, 0);
-      //    (*this->state).Vy = smooth * (float)U_temp.at<double>(0, 0);
-      //    (*this->state).Vz = smooth * (float)U_temp.at<double>(2, 0);
-      // }
 
       // Free the memory
       U_temp.release();
@@ -635,7 +628,7 @@ public:
       Mat L = Mat::zeros(n, 3, CV_64F);    // Interaction matrix
       Mat pi, pj;                          // Temporal points for calculation
       double s;
-      cout << RED_C << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << RESET_C << endl;
+      cout << YELLOW_C << (params.control == 1 ? "Control 1: 1/dist" : "Control 2: dist") << RESET_C << endl;
 
       for (int i = 0; i < n; i++)
       {

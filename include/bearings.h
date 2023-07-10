@@ -39,7 +39,7 @@ void writeFile(vector<float> &vec, const string &name);
 void loadImages();
 
 /****************** FOR CAMERA CALLBACKS ******************/
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
+void imageCallback1(const sensor_msgs::Image::ConstPtr &msg);
 void imageCallback2(const sensor_msgs::Image::ConstPtr &msg);
 // void imageCallback3(const sensor_msgs::Image::ConstPtr &msg);
 // void imageCallback4(const sensor_msgs::Image::ConstPtr &msg);
@@ -75,7 +75,7 @@ Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs);
 
 /****************** ARRAYS WITH DATA FOR EASY USAGE ******************/
 // vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2, imageCallback3, imageCallback4};
-vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback, imageCallback2};
+vector<void (*)(const sensor_msgs::Image::ConstPtr &)> imageCallbacks = {imageCallback1, imageCallback2};
 vector<void (*)(const geometry_msgs::Pose::ConstPtr &)> posesCallback = {poseCallback1, poseCallback2, poseCallback3, poseCallback4, poseCallback5};
 // vector<void (*)(const sensor_msgs::Imu::ConstPtr &)> imuCallbacks = {imuCallback1, imuCallback2, imuCallback3, imuCallback4, imuCallback5};
 // vector<geometry_msgs::PoseStamped> pos_dron = {pos_dron1, pos_dron2, pos_dron3, pos_dron4, pos_dron5};

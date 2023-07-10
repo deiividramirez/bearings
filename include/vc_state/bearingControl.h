@@ -12,6 +12,8 @@ public:
 
    vector<vc_state> drones;
 
+   double t0L = 0.0, tfL = 2.0;
+
    bearingControl()
    {
    }
@@ -24,15 +26,15 @@ public:
       this->state = stated;
       // this->LastYaw = (*this->state).Yaw;
 
-      cout << "\n[INFO] Getting desired data for bearing control" << endl;
+      cout << GREEN_C << "\n[INFO] Getting desired data for bearing control" << RESET_C << endl;
 
       if (this->getDesiredData() < 0)
       {
-         cout << "[ERROR] Desired ArUco not found" << endl;
+         cout << RED_C << "[ERROR] Desired ArUco not found" << RESET_C << endl;
          ros::shutdown();
          exit(-1);
       }
-      cout << "[INFO] Desired data obtained" << endl;
+      cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
    }
 
    bearingControl(vc_state *stated, vector<vc_state> drones)
@@ -45,15 +47,15 @@ public:
 
       this->drones = drones;
 
-      cout << "\n[INFO] Getting desired data for bearing control" << endl;
+      cout << GREEN_C << "\n[INFO] Getting desired data for bearing control" << RESET_C << endl;
 
       if (this->getDesiredData() < 0)
       {
-         cout << "[ERROR] Desired ArUco not found" << endl;
+         cout << RED_C << "[ERROR] Desired ArUco not found" << RESET_C << endl;
          ros::shutdown();
          exit(-1);
       }
-      cout << "[INFO] Desired data obtained" << endl;
+      cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
    }
 
    int getDesiredData()
@@ -69,16 +71,16 @@ public:
       }
       catch (Exception &e)
       {
-         cout << "Exception: " << e.what() << endl;
+         cout << RED_C << "Exception: " << e.what() << RESET_C << endl;
          return -1;
       }
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+      cout << GREEN_C << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
       for (int i = 0; i < markerIds.size(); i++)
       {
          cout << markerIds[i] << " ";
       }
-      cout << endl;
+      cout << RESET_C << endl;
 
       int indice;
 
@@ -95,7 +97,7 @@ public:
          {
             if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
             {
-               cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+               cout << GREEN_C << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << RESET_C << endl;
                // cout << "[INFO] Marker corners: " << markerCorners[i] << endl;
                indice = i;
                break;
@@ -104,7 +106,7 @@ public:
 
          if (indice == -1)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << RED_C << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << RESET_C << endl;
             return -1;
          }
 
@@ -173,16 +175,16 @@ public:
       }
       catch (Exception &e)
       {
-         cout << "Exception: " << e.what() << endl;
+         cout << RED_C << "Exception: " << e.what() << RESET_C << endl;
          return -1;
       }
 
-      cout << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
+      cout << GREEN_C << "\n[INFO] Markers detected: " << markerIds.size() << " with marker ids: ";
       for (int i = 0; i < markerIds.size(); i++)
       {
          cout << markerIds[i] << " ";
       }
-      cout << endl;
+      cout << RESET_C << endl;
 
       int indice;
 
@@ -205,7 +207,7 @@ public:
 
          if (indice == -1)
          {
-            cout << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << endl;
+            cout << RED_C << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << RESET_C << endl;
             return -1;
          }
 
@@ -256,11 +258,11 @@ public:
    {
       if (this->getActualData(imgActual) < 0)
       {
-         cout << "[ERROR] Actual ArUco not found" << endl;
+         cout << RED_C << "[ERROR] Actual ArUco not found" << RESET_C << endl;
          return -1;
       }
 
-      cout << "[INFO] Getting velocities from Bearing-Only" << endl;
+      cout << GREEN_C << "[INFO] Getting velocities from Bearing-Only" << RESET_C << endl;
 
       Mat suma1 = Mat::zeros(3, 1, CV_64F), suma2 = Mat::zeros(3, 1, CV_64F);
       Mat suma1_w = Mat::zeros(3, 3, CV_64F);
@@ -273,46 +275,44 @@ public:
       {
          if (getHomography() < 0)
          {
-            cout << "[ERROR] Homography not found" << endl;
+            cout << RED_C << "[ERROR] Homography not found" << RESET_C << endl;
             return -1;
          }
       }
 
       for (int32_t i = 0; i < (*this->state).params.seguimiento.rows; i++)
       {
+         temp = (*this->state).actual.bearings.col(i);
          if (opc == 0)
          {
-            cout << "[INFO] Control with global position it is not available at the moment" << endl;
+            cout << GREEN_C << "[INFO] Control with global position it is not available at the moment" << RESET_C << endl;
             exit(-1);
          }
          else if (opc == 1)
          {
-            cout << "[INFO] Control with difference of bearing" << endl;
+            cout << GREEN_C << "[INFO] Control with difference of bearing" << RESET_C << endl;
             suma1 += ((*this->state).actual.bearings.col(i) - (*this->state).desired.bearings.col(i));
          }
          else if (opc == 2)
          {
-            cout << "[INFO] Control with bearing ortogonal projection" << endl;
-            temp = (*this->state).actual.bearings.col(i);
+            cout << GREEN_C << "[INFO] Control with bearing ortogonal projection" << RESET_C << endl;
             suma2 -= projOrtog(temp) * ((*this->state).desired.bearings.col(i));
          }
          else if (opc == 3)
          {
-            cout << "[INFO] Control with difference of bearings and orthogonal projection" << endl;
-            temp = (*this->state).actual.bearings.col(i);
+            cout << GREEN_C << "[INFO] Control with difference of bearings and orthogonal projection" << RESET_C << endl;
             suma1 += (*this->state).actual.bearings.col(i) - (*this->state).desired.bearings.col(i);
             suma2 -= projOrtog(temp) * ((*this->state).desired.bearings.col(i));
          }
          else if (opc == 4)
          {
-            cout << "[INFO] Control with with bearing ortogonal projection and homography" << endl;
-            temp = (*this->state).actual.bearings.col(i);
+            cout << GREEN_C << "[INFO] Control with with bearing ortogonal projection and homography" << RESET_C << endl;
             suma1 -= projOrtog(temp) * ((*this->state).I3 + (*this->state).Qi[i]) / 2.0 * (*this->state).desired.bearings.col(i);
             suma1_w -= ((*this->state).Qi[i].t() - (*this->state).Qi[i]);
          }
          else if (opc == 5)
          {
-            cout << "[INFO] Control with with bearing ortogonal projection and homography - GROUND TRUTH" << endl;
+            cout << GREEN_C << "[INFO] Control with with bearing ortogonal projection and homography - GROUND TRUTH" << RESET_C << endl;
             Mat QiQj = composeR(
                            (*this->state).groundTruth.at<double>(3, 0),
                            (*this->state).groundTruth.at<double>(4, 0),
@@ -323,8 +323,29 @@ public:
                            (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(4, 0),
                            (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(5, 0));
 
-            temp = (*this->state).actual.bearings.col(i);
             suma1 -= projOrtog(temp) * ((*this->state).I3 + QiQj) / 2.0 * (*this->state).desired.bearings.col(i);
+            suma1_w -= (QiQj.t() - QiQj);
+         }
+         else if (opc == 6)
+         {
+            cout << GREEN_C << "[INFO] Control with with difference of bearings and homography" << RESET_C << endl;
+            suma1 += temp - ((*this->state).I3 + (*this->state).Qi[i]) / 2.0 * (*this->state).desired.bearings.col(i);
+            suma1_w -= ((*this->state).Qi[i].t() - (*this->state).Qi[i]);
+         }
+         else if (opc == 7)
+         {
+            cout << GREEN_C << "[INFO] Control with with difference of bearings and homography - GROUND TRUTH" << RESET_C << endl;
+            Mat QiQj = composeR(
+                           (*this->state).groundTruth.at<double>(3, 0),
+                           (*this->state).groundTruth.at<double>(4, 0),
+                           (*this->state).groundTruth.at<double>(5, 0))
+                           .t() *
+                       composeR(
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(3, 0),
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(4, 0),
+                           (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(5, 0));
+
+            suma1 += temp - ((*this->state).I3 + QiQj) / 2.0 * (*this->state).desired.bearings.col(i);
             suma1_w -= (QiQj.t() - QiQj);
          }
       }
@@ -342,29 +363,33 @@ public:
       (*this->state).error = norm((*this->state).actual.bearings - (*this->state).desired.bearings, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);
 
+      double smooth = 1;
+      if ((*this->state).t < tfL)
+         smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-3 * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
-      (*this->state).lambda_kp = lambda_Kp;
+      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
+      (*this->state).lambda_kp = smooth * lambda_Kp;
 
       double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-      double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.4 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
-      (*this->state).lambda_kv = lambda_Kv;
+      double lambda_Kv = (l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
+      (*this->state).lambda_kv = smooth * lambda_Kv;
 
-      cout << endl
+      cout << YELLOW_C << endl
            << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
-           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << endl;
+           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
 
       Mat tempSign = signMat(suma3);
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      Mat U_trans = lambda_Kp * tempError - lambda_Kv * (*this->state).integral_error;
+      Mat U_trans = (*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error;
       (*this->state).Vx = (float)U_trans.at<double>(0, 0);
       (*this->state).Vy = (float)U_trans.at<double>(1, 0);
       (*this->state).Vz = (float)U_trans.at<double>(2, 0);
 
-      // cout << "Desired bearing: " << (*this->state).desired.bearings << endl;
-      // cout << "Actual bearing: " << (*this->state).actual.bearings << endl;
+      cout << "[INFO] Desired bearing: " << (*this->state).desired.bearings << endl;
+      cout << "[INFO] Actual bearing: " << (*this->state).actual.bearings << endl;
 
       return 0;
    }
@@ -405,7 +430,7 @@ public:
 
          if ((*this->state).Hi[i].empty())
          {
-            cout << "[ERROR] Homography " << i << " not found" << endl;
+            cout << RED_C << "[ERROR] Homography " << i << " not found" << RESET_C << endl;
             return -1;
          }
 
@@ -429,7 +454,7 @@ public:
 
          if (sols < 1)
          {
-            cout << "[ERROR] Decomposition of homography " << i << " not found" << endl;
+            cout << RED_C << "[ERROR] Decomposition of homography " << i << " not found" << RESET_C << endl;
             return -1;
          }
          else if (sols == 1)
@@ -439,25 +464,25 @@ public:
          else
          {
 
-            cout << "[INFO] Found " << sols << " solutions for rotation in the homography " << i << endl;
+            cout << GREEN_C << "[INFO] Found " << sols << " solutions for rotation in the homography " << i << endl;
 
             Mat R1 = Rs[0];
             Mat R2 = Rs[2];
 
             if (norm(QiQj - R1) < norm(QiQj - R2))
             {
-               cout << "\nR1\n"
-                    << R1 << endl;
-               cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-               cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+               // cout << "\nR1\n"
+               //      << R1 << endl;
+               // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+               // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
                (*state).Qi[i] = R1;
             }
             else
             {
-               cout << "\nR2\n"
-                    << R2 << endl;
-               cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-               cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+               // cout << "\nR2\n"
+               //      << R2 << endl;
+               // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+               // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
                (*state).Qi[i] = R2;
             }
          }
@@ -542,18 +567,18 @@ public:
 
       if (norm(QiQj - R1) < norm(QiQj - R2))
       {
-         cout << "\nR1\n"
-              << R1 << endl;
-         cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-         cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+         // cout << "\nR1\n"
+         //      << R1 << endl;
+         // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+         // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
          return R1;
       }
       else
       {
-         cout << "\nR2\n"
-              << R2 << endl;
-         cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-         cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
+         // cout << "\nR2\n"
+         //      << R2 << endl;
+         // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
+         // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
          return R2;
       }
    }

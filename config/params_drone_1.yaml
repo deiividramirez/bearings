@@ -21,12 +21,14 @@ seguimiento:
 #   data: []
 
 # Gain on linear velocities
-gainv: 3
-gainv_max: .5
+gainv: 2.5
+gainv_max: 6
+gainv_prime: 1.5
 
 # Gain on angular velocities
 gainw: .01
 gainw_max: .001
+gainw_prime: .01
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
@@ -41,6 +43,6 @@ flann_ratio: 0.7
 
 ############################################################
 # Cambio de control 1 (1/dist) o 2 (dist).
-control: 2
+control: 1
 
 camara: 1

@@ -114,6 +114,7 @@ public:
 
     float Kv = 1.0, Kw = 1.0;
     float Kv_max = 1.0, Kw_max = 1.0;
+    float kv_prima = 1.0, kw_prima = 1.0;
     float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
 
     float dt = 0.025;
