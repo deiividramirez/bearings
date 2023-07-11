@@ -23,7 +23,8 @@ int main(int argc, char **argv)
 	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
 	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
 	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
-	gen.getParam("CHANGE_THRESHOLD", CHANGE_THRESHOLD);
+	gen.getParam("CHANGE_THRESHOLD_LEADER", CHANGE_THRESHOLD_LEADER);
+	gen.getParam("CHANGE_THRESHOLD_FOLLOWER", CHANGE_THRESHOLD_FOLLOWER);
 
 	for (int i = 0; i < DRONE_COUNT; i++)
 	{
@@ -59,15 +60,15 @@ int main(int argc, char **argv)
 		/****************** FOR CONTROL LAW ******************/
 		loadImages();
 
-		// // First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		// image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback1);
-		// guoLider1 = GUO(&states[0], INIT_MODE);
-		// rotDrone1 = RotationalControl(&states[0]);
+		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback1);
+		guoLider1 = GUO(&states[0], INIT_MODE);
+		rotDrone1 = RotationalControl(&states[0]);
 
-		// // Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
-		// image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
-		// guoLider2 = GUO(&states[1], INIT_MODE);
-		// rotDrone2 = RotationalControl(&states[1]);
+		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		guoLider2 = GUO(&states[1], INIT_MODE);
+		rotDrone2 = RotationalControl(&states[1]);
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
 		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
@@ -247,18 +248,18 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
-		// cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD: " << CHANGE_THRESHOLD << " >>>>> MODE: " << MODE << endl;
+		// cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD_LEADER: " << CHANGE_THRESHOLD_LEADER << " >>>>> MODE: " << MODE << endl;
 
-		if (states[0].error_pix < CHANGE_THRESHOLD && states[1].error_pix < CHANGE_THRESHOLD && change)
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && change)
 		{
-			cout << MAGENTA_C << "[INFO] In target" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
 			states[0].in_target = true;
 			states[1].in_target = true;
 		}
 
-		if (states[0].error_pix < CHANGE_THRESHOLD && states[1].error_pix < CHANGE_THRESHOLD && !change)
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && !change)
 		{
-			cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
+			cout << MAGENTA_C << "\n[INFO] << Leaders drones are in target >>" << RESET_C << endl;
 			MODE = 1;
 			change = true;
 			loadImages();
@@ -328,16 +329,16 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
 		}
 
-		if (states[0].error_pix < CHANGE_THRESHOLD && states[1].error_pix < CHANGE_THRESHOLD && change)
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && change)
 		{
-			cout << MAGENTA_C << "[INFO] In target" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
 			states[0].in_target = true;
 			states[1].in_target = true;
 		}
 
-		if (states[0].error_pix < CHANGE_THRESHOLD && states[1].error_pix < CHANGE_THRESHOLD && !change)
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && !change)
 		{
-			cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
 			MODE = 1;
 			change = true;
 			loadImages();
@@ -433,9 +434,9 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(2);
 
-		if (states[2].error < CHANGE_THRESHOLD && change)
+		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && change)
 		{
-			cout << MAGENTA_C << "[INFO] In target" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Follower drone 3 is in target" << RESET_C << endl;
 			states[2].in_target = true;
 		}
 	}
@@ -489,9 +490,9 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(3);
 
-		if (states[3].error < CHANGE_THRESHOLD && change)
+		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && change)
 		{
-			cout << MAGENTA_C << "[INFO] In target" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Follower drone 4 is in target" << RESET_C << endl;
 			states[3].in_target = true;
 		}
 	}
@@ -545,9 +546,9 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(4);
 
-		if (states[4].error < CHANGE_THRESHOLD && change)
+		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && change)
 		{
-			cout << MAGENTA_C << "[INFO] In target" << RESET_C << endl;
+			cout << MAGENTA_C << "[INFO] Follower drone 5 is in target" << RESET_C << endl;
 			states[4].in_target = true;
 		}
 	}

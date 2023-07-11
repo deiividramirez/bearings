@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.6.0 commit date:2023-06-27, commit time:08:08, hash:c7fc78b81ecb</authoring_tool>
     </contributor>
-    <created>2023-07-03T15:15:26</created>
-    <modified>2023-07-03T15:15:26</modified>
+    <created>2023-07-11T11:24:45</created>
+    <modified>2023-07-11T11:24:45</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -28,6 +28,9 @@
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
             <diffuse>
               <texture texture="_x4_1_png-sampler" texcoord="Cube-mesh-map-0"/>
             </diffuse>
@@ -293,7 +296,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="Cube" name="Cube" type="NODE">
-        <matrix sid="transform">-2.18557e-9 -2.18557e-9 -0.01 -0.067 -0.05 0 4.37114e-10 0 0 0.05 -4.37114e-10 0.025 0 0 0 1</matrix>
+        <matrix sid="transform">-2.18557e-9 -2.18557e-9 -0.01 -0.067 -0.05 0 4.37114e-10 0 0 0.05 -4.37114e-10 0.065 0 0 0 1</matrix>
         <instance_geometry url="#Cube_001-mesh" name="Cube">
           <bind_material>
             <technique_common>

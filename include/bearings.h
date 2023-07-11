@@ -104,7 +104,7 @@ int contIMG1 = 0, contIMG2 = 0, contIMG3 = 0, contIMG4 = 0, contIMG5 = 0, contGE
 string DRONE_NAME;
 int DRONE_COUNT, MODE, INIT_MODE;
 
-double CHANGE_THRESHOLD;
+double CHANGE_THRESHOLD_LEADER, CHANGE_THRESHOLD_FOLLOWER;
 
 // For controlling target detection
 bool target1, target2, target3, target4, target5;

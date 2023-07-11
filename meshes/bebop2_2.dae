@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.6.0 commit date:2023-06-27, commit time:08:08, hash:c7fc78b81ecb</authoring_tool>
     </contributor>
-    <created>2023-07-03T15:20:22</created>
-    <modified>2023-07-03T15:20:22</modified>
+    <created>2023-07-11T11:24:27</created>
+    <modified>2023-07-11T11:24:27</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -158,9 +158,18 @@
             <emission>
               <color sid="emission">0 0 0 1</color>
             </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
             <diffuse>
               <texture texture="_x4_2_png-sampler" texcoord="Cube-mesh-map-0"/>
             </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">50</float>
+            </shininess>
             <index_of_refraction>
               <float sid="ior">1.45</float>
             </index_of_refraction>
@@ -307,7 +316,7 @@
         </instance_geometry>
       </node>
       <node id="Cube_001" name="Cube.001" type="NODE">
-        <matrix sid="transform">-2.18557e-9 2.18557e-9 -0.01 -0.067 0.05 0 -4.37114e-10 0 0 -0.05 -4.37114e-10 0.025 0 0 0 1</matrix>
+        <matrix sid="transform">-2.18557e-9 2.18557e-9 -0.01 -0.067 0.05 0 -4.37114e-10 0 0 -0.05 -4.37114e-10 0.065 0 0 0 1</matrix>
         <instance_geometry url="#Cube_001-mesh" name="Cube.001">
           <bind_material>
             <technique_common>

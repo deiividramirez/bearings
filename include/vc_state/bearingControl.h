@@ -359,34 +359,48 @@ public:
       }
 
       // Error calculation
-      // (*this->state).error = norm(suma1) + norm(suma2);
-      (*this->state).error = norm((*this->state).actual.bearings - (*this->state).desired.bearings, NORM_L2);
+      Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
+      (*this->state).error = norm(Error, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);
 
+      double error_x = norm((*this->state).actual.bearings.row(0) - (*this->state).desired.bearings.row(0), NORM_L2);
+      double error_y = norm((*this->state).actual.bearings.row(1) - (*this->state).desired.bearings.row(1), NORM_L2);
+      double error_z = norm((*this->state).actual.bearings.row(2) - (*this->state).desired.bearings.row(2), NORM_L2);
+
+      cout << endl
+           << "[INFO] Error in x: " << error_x << " y: " << error_y << " z: " << error_z << endl;
+
       double smooth = 1;
-      if ((*this->state).t < tfL)
+      if ((*this->state).t <= tfL)
          smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
-      (*this->state).lambda_kp = smooth * lambda_Kp;
+      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      (*this->state).lambda_kp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-      double lambda_Kv = (l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
-      (*this->state).lambda_kv = smooth * lambda_Kv;
+      double kv1 = 2 * smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
+      double kv2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
+      double kv3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
+      (*this->state).lambda_kv = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl
-           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << endl
-           << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
+           << "[INFO] kp_x: " << kp1 << " kp_y: " << kp2 << " kp_z: " << kp3 << endl
+           << "[INFO] kv_x: " << kv1 << " kv_y: " << kv2 << " kv_z: " << kv3 << endl
+           << "Lambda kp: " << l0_Kp << " < " << (*this->state).lambda_kp << " < " << linf_Kp << endl
+           << "Lambda kv: " << l0_Kv << " < " << (*this->state).lambda_kv << " < " << linf_Kv << RESET_C << endl
+           << endl;
 
       Mat tempSign = signMat(suma3);
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      Mat U_trans = (*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error;
-      (*this->state).Vx = (float)U_trans.at<double>(0, 0);
-      (*this->state).Vy = (float)U_trans.at<double>(1, 0);
-      (*this->state).Vz = (float)U_trans.at<double>(2, 0);
+      // Mat U_trans = (*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error;
+      (*this->state).Vx = (float)(kp1 * tempError.at<double>(0, 0) - kv1 * (*this->state).integral_error.at<double>(0, 0));
+      (*this->state).Vy = (float)(kp2 * tempError.at<double>(1, 0) - kv2 * (*this->state).integral_error.at<double>(1, 0));
+      (*this->state).Vz = (float)(kp3 * tempError.at<double>(2, 0) - kv3 * (*this->state).integral_error.at<double>(2, 0));
 
       cout << "[INFO] Desired bearing: " << (*this->state).desired.bearings << endl;
       cout << "[INFO] Actual bearing: " << (*this->state).actual.bearings << endl;
