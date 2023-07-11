@@ -316,10 +316,10 @@ public:
                return -1;
             }
 
-            Mat temporal3 = Mat::zeros(4, 3, CV_32F);
-            Mat temporal4 = Mat::zeros(4, 3, CV_32F);
+            Mat temporal3 = Mat::zeros((*this->state).desired.points.rows, 3, CV_32F);
+            Mat temporal4 = Mat::zeros((*this->state).desired.points.rows, 3, CV_32F);
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < (*this->state).desired.points.rows; i++)
             {
                temporal3.at<float>(i, 0) = (*this->state).desired.points.at<double>(i, 0);
                temporal3.at<float>(i, 1) = (*this->state).desired.points.at<double>(i, 1);
@@ -382,10 +382,10 @@ public:
             // waitKey(1);
          }
 
-         Mat temporal = Mat::zeros(4, 3, CV_32F);
-         Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+         Mat temporal = Mat::zeros((*this->state).actual.points.rows, 3, CV_32F);
+         Mat temporal2 = Mat::zeros((*this->state).actual.points.rows, 3, CV_32F);
 
-         for (int i = 0; i < 4; i++)
+         for (int i = 0; i < (*this->state).actual.points.rows; i++)
          {
             temporal.at<float>(i, 0) = (*this->state).actual.points.at<double>(i, 0);
             temporal.at<float>(i, 1) = (*this->state).actual.points.at<double>(i, 1);
@@ -410,14 +410,8 @@ public:
       this->imgDesired = (*this->state).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
 
-      // this->oldControl = Mat::zeros(1, 4, CV_64F);
-      // this->oldControl.at<double>(0, 0) = (*this->state).Vx;
-      // this->oldControl.at<double>(0, 1) = (*this->state).Vy;
-      // this->oldControl.at<double>(0, 2) = (*this->state).Vz;
-      // this->oldControl.at<double>(0, 3) = (*this->state).Vyaw;
-
       t0L = (*this->state).t;
-      tfL = (*this->state).t + 2.5;
+      tfL = (*this->state).t + 2;
 
       this->keypoints1.clear();
       this->descriptors1.release();
@@ -659,8 +653,6 @@ public:
 
    int MinBy(Mat puntos, Mat desired, Mat *ordenFinal)
    {
-      // Make buuble sort with norm of the difference between points and key
-      *ordenFinal = Mat::zeros(1, 4, CV_32S) - 1;
       // Mat orden = Mat::zeros(1, puntos.rows, CV_32S);
       Mat p2;
       vector<Mat> keys;
@@ -669,6 +661,10 @@ public:
       keys.push_back((Mat_<double>(1, 2) << 1440, 270));
       keys.push_back((Mat_<double>(1, 2) << 1440, 810));
       keys.push_back((Mat_<double>(1, 2) << 480, 810));
+      keys.push_back((Mat_<double>(1, 2) << 960, 540));
+
+      // Make buuble sort with norm of the difference between points and key
+      *ordenFinal = Mat::zeros(1, keys.size(), CV_32S) - 1;
 
       int conteoExterno = 0;
       for (Mat key : keys)
@@ -803,18 +799,24 @@ public:
          }
       }
 
-      (*this->state).actual.points = Mat::zeros(4, 2, CV_64F);
-      (*this->state).desired.points = Mat::zeros(4, 2, CV_64F);
+      (*this->state).actual.points = Mat::zeros(orden.cols, 2, CV_64F);
+      (*this->state).desired.points = Mat::zeros(orden.cols, 2, CV_64F);
 
-      (*this->state).actual.points.at<Point2d>(0, 0) = puntosAct.at<Point2d>(orden.at<int>(0, 0), 0);
-      (*this->state).actual.points.at<Point2d>(0, 1) = puntosAct.at<Point2d>(orden.at<int>(0, 1), 0);
-      (*this->state).actual.points.at<Point2d>(0, 2) = puntosAct.at<Point2d>(orden.at<int>(0, 2), 0);
-      (*this->state).actual.points.at<Point2d>(0, 3) = puntosAct.at<Point2d>(orden.at<int>(0, 3), 0);
+      for (int i = 0; i < orden.cols; i++)
+      {
+         (*this->state).actual.points.at<Point2d>(i, 0) = puntosAct.at<Point2d>(orden.at<int>(0, i), 0);
+         (*this->state).desired.points.at<Point2d>(i, 0) = puntosDes.at<Point2d>(orden.at<int>(0, i), 0);
+      }
 
-      (*this->state).desired.points.at<Point2d>(0, 0) = puntosDes.at<Point2d>(orden.at<int>(0, 0), 0);
-      (*this->state).desired.points.at<Point2d>(0, 1) = puntosDes.at<Point2d>(orden.at<int>(0, 1), 0);
-      (*this->state).desired.points.at<Point2d>(0, 2) = puntosDes.at<Point2d>(orden.at<int>(0, 2), 0);
-      (*this->state).desired.points.at<Point2d>(0, 3) = puntosDes.at<Point2d>(orden.at<int>(0, 3), 0);
+      // (*this->state).actual.points.at<Point2d>(0, 0) = puntosAct.at<Point2d>(orden.at<int>(0, 0), 0);
+      // (*this->state).actual.points.at<Point2d>(0, 1) = puntosAct.at<Point2d>(orden.at<int>(0, 1), 0);
+      // (*this->state).actual.points.at<Point2d>(0, 2) = puntosAct.at<Point2d>(orden.at<int>(0, 2), 0);
+      // (*this->state).actual.points.at<Point2d>(0, 3) = puntosAct.at<Point2d>(orden.at<int>(0, 3), 0);
+
+      // (*this->state).desired.points.at<Point2d>(0, 0) = puntosDes.at<Point2d>(orden.at<int>(0, 0), 0);
+      // (*this->state).desired.points.at<Point2d>(0, 1) = puntosDes.at<Point2d>(orden.at<int>(0, 1), 0);
+      // (*this->state).desired.points.at<Point2d>(0, 2) = puntosDes.at<Point2d>(orden.at<int>(0, 2), 0);
+      // (*this->state).desired.points.at<Point2d>(0, 3) = puntosDes.at<Point2d>(orden.at<int>(0, 3), 0);
 
       // cout << "[INFO] Actual points: " << (*this->state).actual.points << endl;
       // cout << "[INFO] Desired points: " << (*this->state).desired.points << endl;

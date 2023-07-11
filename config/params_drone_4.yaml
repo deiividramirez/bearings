@@ -37,7 +37,7 @@ gainv_prime: -10
 
 # Gain on angular velocities
 gainw: .1
-gainw_max: .01
+gainw_max: .005
 gainw_prime: -0.6
 
 # Threshold on the feature position error, used to stop the visual control

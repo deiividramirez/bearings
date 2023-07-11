@@ -21,9 +21,9 @@ seguimiento:
 #   data: []
 
 # Gain on linear velocities
-gainv: 2.5
-gainv_max: 6
-gainv_prime: 1.5
+gainv: 1
+gainv_max: 4
+gainv_prime: 2
 
 # Gain on angular velocities
 gainw: .01
