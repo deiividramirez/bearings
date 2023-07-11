@@ -138,19 +138,17 @@ int main(int argc, char **argv)
 			rate.sleep();
 		}
 
-		if (contIMG1, contIMG2, contIMG3, contIMG4 > LIM_MAX || contGEN > 4 * LIM_MAX)
+		if (contIMG1, contIMG2, contIMG3, contIMG4 > LIM_MAX)
 		{
-			if (DRONE_COUNT == 5 && contIMG5 > LIM_MAX)
+			if (DRONE_COUNT == 5 && contIMG5 > LIM_MAX || contGEN > 5 * LIM_MAX)
 			{
 				cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
-				ros::shutdown();
-				exit(0);
+				break;
 			}
-			if (DRONE_COUNT == 4)
+			if (DRONE_COUNT == 4 || contGEN > 4 * LIM_MAX)
 			{
 				cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
-				ros::shutdown();
-				exit(0);
+				break;
 			}
 		}
 		else
@@ -165,8 +163,7 @@ int main(int argc, char **argv)
 		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
 		{
 			cout << "\n[INFO] Images have been saved." << endl;
-			ros::shutdown();
-			exit(0);
+			break;
 		}
 
 		if (states[0].in_target && states[1].in_target && states[2].in_target && states[3].in_target)
@@ -174,14 +171,12 @@ int main(int argc, char **argv)
 			if (DRONE_COUNT == 5 && states[4].in_target)
 			{
 				cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
-				ros::shutdown();
-				exit(0);
+				break;
 			}
 			if (DRONE_COUNT == 4)
 			{
 				cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
-				ros::shutdown();
-				exit(0);
+				break;
 			}
 		}
 	}
@@ -263,6 +258,7 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
+			CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -342,6 +338,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
+			CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -394,7 +391,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 	bearings keeping in mind the error given by the roll, pitch and yaw of the
 	drone. The control will be executed in the drone's body frame.
 	*/
-	if (states[2].initialized)
+	if (states[2].initialized && !states[2].in_target)
 	{
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
@@ -450,7 +447,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 	bearings keeping in mind the error given by the roll, pitch and yaw of the
 	drone. The control will be executed in the drone's body frame.
 	*/
-	if (states[3].initialized)
+	if (states[3].initialized && !states[3].in_target)
 	{
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
@@ -506,7 +503,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 	bearings keeping in mind the error given by the roll, pitch and yaw of the
 	drone. The control will be executed in the drone's body frame.
 	*/
-	if (states[4].initialized)
+	if (states[4].initialized && !states[4].in_target)
 	{
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;

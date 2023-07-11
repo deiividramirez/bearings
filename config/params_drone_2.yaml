@@ -21,7 +21,7 @@ seguimiento:
 #   data: []
 
 # Gain on linear velocities
-gainv: 2.5
+gainv: 3
 gainv_max: 6
 gainv_prime: 1.5
 

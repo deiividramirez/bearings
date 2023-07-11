@@ -31,7 +31,7 @@ fig, ax = plt.subplots(
     sharex=True,
     num=f"Velocidades y errores para todos los drones",
     # figsize is variable depending on the number of drones
-    figsize=(4, 4),
+    figsize=(8, 8),
     subplot_kw=dict(projection="3d"),
 )
 

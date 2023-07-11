@@ -48,15 +48,6 @@ for index, dron in enumerate(DRONE_COUNT):
     intz = np.loadtxt(f"{path}/out/out_integral_z_{dron}.txt")
 
     NUM = 0
-    try:
-        if len(vx) < 3:
-            exit()
-    except:
-        exit()
-    for i in range(2, len(vx)):
-        if np.linalg.norm(vx[i] - vx[i - 1]) > 1e-3:
-            NUM = i
-            break
 
     print(
         f"""
