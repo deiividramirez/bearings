@@ -464,33 +464,17 @@ public:
       (*this->state).error = norm(ERROR, NORM_L1);
 
       // Choosing the gain for the control law
-      double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double lambda_Kp = (l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp;
-
-      // double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-      // double lambda_Kv = (l0_Kv - linf_Kv) * exp(-(-0.005 * (*this->state).error) / (l0_Kv - linf_Kv)) + linf_Kv;
-      
-      // lambda_Kp = 3;
-      // lambda_Kv = 3;
-
       double smooth = 1;
       if ((*this->state).t < tfL)
          smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
 
-      (*this->state).lambda_kp = smooth * lambda_Kp;
-      // (*this->state).lambda_kv = smooth * lambda_Kv;
+      double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
+      (*this->state).lambda_kp = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp);
 
       cout << YELLOW_C << endl
-           << "[INFO] Lambda kp: " << linf_Kp << " < " << lambda_Kp << " < " << l0_Kp << RESET_C << endl;
-         //   << "[INFO] Lambda kv: " << l0_Kv << " < " << lambda_Kv << " < " << linf_Kv << RESET_C << endl;
-      
-      // Mat tempSign = signMat(ERROR);
-      // (*this->state).integral_error6 += (*this->state).dt * tempSign;
+           << "[INFO] Lambda kp: " << linf_Kp << " < " << (*this->state).lambda_kp << " < " << l0_Kp << RESET_C << endl;
 
-      // Mat tempError = robust(ERROR);
-      // U_temp = Lo * (-(*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error6);
-      // U_temp = Lo * (-(*this->state).lambda_kp * tempError);
-      U_temp = Lo * (-(*this->state).lambda_kp * ERROR );
+      U_temp = -(*this->state).lambda_kp * Lo * ERROR;
 
       (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
       (*this->state).Vy = (float)U_temp.at<double>(0, 0);
@@ -661,7 +645,7 @@ public:
       keys.push_back((Mat_<double>(1, 2) << 1440, 270));
       keys.push_back((Mat_<double>(1, 2) << 1440, 810));
       keys.push_back((Mat_<double>(1, 2) << 480, 810));
-      keys.push_back((Mat_<double>(1, 2) << 960, 540));
+      // keys.push_back((Mat_<double>(1, 2) << 960, 540));
 
       // Make buuble sort with norm of the difference between points and key
       *ordenFinal = Mat::zeros(1, keys.size(), CV_32S) - 1;

@@ -15,11 +15,6 @@ seguimiento:
   len: 1
   data: [99] #97 or 99
 
-# bearing: 
-#   rows: 0
-#   cols: 0
-#   data: []
-
 # Gain on linear velocities
 gainv: 1
 gainv_max: 4

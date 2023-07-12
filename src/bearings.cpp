@@ -70,20 +70,20 @@ int main(int argc, char **argv)
 		guoLider2 = GUO(&states[1], INIT_MODE);
 		rotDrone2 = RotationalControl(&states[1]);
 
-		// // First follower -> Translational motion and Rotational motion (BEARING ONLY)
-		// image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		// bearDrone3 = bearingControl(&states[2], states);
+		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
+		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		bearDrone3 = bearingControl(&states[2], states);
 
-		// // Second follower -> Translational motion and Rotational motion (BEARING ONLY)
-		// image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		// bearDrone4 = bearingControl(&states[3], states);
+		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
+		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		bearDrone4 = bearingControl(&states[3], states);
 
-		// // Third follower -> Translational motion and Rotational motion (BEARING ONLY)
-		// if (DRONE_COUNT == 5)
-		// {
-		// 	image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
-		// 	bearDrone5 = bearingControl(&states[4], states);
-		// }
+		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
+		if (DRONE_COUNT == 5)
+		{
+			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+			bearDrone5 = bearingControl(&states[4], states);
+		}
 	}
 
 	/****************** MOVING TO POSES ******************/
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 
 		if (contIMG1, contIMG2, contIMG3, contIMG4 > LIM_MAX)
 		{
-			if (DRONE_COUNT == 5 && contIMG5 > LIM_MAX || contGEN > 5 * LIM_MAX)
+			if ((DRONE_COUNT == 5 && contIMG5 > LIM_MAX) || contGEN > 5 * LIM_MAX)
 			{
 				cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
 				break;
@@ -264,7 +264,7 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			guoLider2.changeMode(MODE);
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
 			for (int i = 0; i < states[0].actual.points.rows; i++)
@@ -344,7 +344,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			guoLider2.changeMode(MODE);
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
 			for (int i = 0; i < states[1].actual.points.rows; i++)
@@ -423,7 +423,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG3++;
-		if (contIMG3 % 500 == 0)
+		if (contIMG3 % 250 == 0)
 		{
 			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
 			states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
@@ -479,7 +479,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG4++;
-		if (contIMG4 % 500 == 0)
+		if (contIMG4 % 250 == 0)
 		{
 			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
 			states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
@@ -535,7 +535,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG5++;
-		if (contIMG5 % 500 == 0)
+		if (contIMG5 % 250 == 0)
 		{
 			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
 			states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);

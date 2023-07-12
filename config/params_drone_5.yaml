@@ -33,7 +33,7 @@ bearing:
 # Gain on linear velocities
 gainv: 3
 gainv_max: .1
-gainv_prime: -10
+gainv_prime: -5
 
 # Gain on angular velocities
 gainw: .1

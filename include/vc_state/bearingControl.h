@@ -397,7 +397,6 @@ public:
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      // Mat U_trans = (*this->state).lambda_kp * tempError - (*this->state).lambda_kv * (*this->state).integral_error;
       (*this->state).Vx = (float)(kp1 * tempError.at<double>(0, 0) - kv1 * (*this->state).integral_error.at<double>(0, 0));
       (*this->state).Vy = (float)(kp2 * tempError.at<double>(1, 0) - kv2 * (*this->state).integral_error.at<double>(1, 0));
       (*this->state).Vz = (float)(kp3 * tempError.at<double>(2, 0) - kv3 * (*this->state).integral_error.at<double>(2, 0));
