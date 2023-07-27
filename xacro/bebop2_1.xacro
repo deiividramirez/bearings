@@ -67,7 +67,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://bearings/meshes/propeller_fr.dae">
+    mesh="package://bearings/meshes/propeller_fr_red.dae">
     <origin xyz="0.08456 -0.11435 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>
@@ -110,7 +110,7 @@
     rolling_moment_coefficient="${rolling_moment_coefficient}"
     color=""
     use_own_mesh="true"
-    mesh="package://bearings/meshes/propeller_fl.dae">
+    mesh="package://bearings/meshes/propeller_fl_red.dae">
     <origin xyz="0.08456 0.11463 -0.00501" rpy="0 0 0" />
     <xacro:insert_block name="rotor_inertia" />
   </xacro:vertical_rotor>

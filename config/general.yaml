@@ -1,37 +1,20 @@
-# DRONE: bebop2
-DRONE: iris
-DRONE_COUNT: 5  # 4 drones or 5 drones
+# DRONE TYPE: bebop2 or iris
+DRONE: bebop2
+# DRONE: iris
 
-SAVE_DESIRED_IMAGES: 0
-SAVE_IMAGES: 0
-SHOW_IMAGES: 0
+# How many drones are used and the maximum number of iterations
+DRONE_COUNT: 5 # 4 to 5 drones
+LIM_MAX: 3000 # Maximum number of iterations for each drone
 
-cam_drone_1: 1
-cam_drone_2: 1
-cam_drone_3: 1
-cam_drone_4: 1
-cam_drone_5: 1
+# Use or not use descriptor matching for obtaining the points and threshold to change the desired image from outside to inside
+INIT_MODE: 1 # 0: Aruco Markers, 1: Descriptor Matching
+CHANGE_THRESHOLD_LEADER: .07 # Threshold to change the desired image from outside to inside for the leaders drones
+CHANGE_THRESHOLD_FOLLOWER: .015 # Threshold to change the desired image from outside to inside for the follower drones
 
-seguimiento_1: [99] #97 or 99
-seguimiento_2: [98] #96 or 98
-seguimiento_3: [1, 2] #1, 2, 96, 97
-seguimiento_4: [1, 2] #1, 2. 97, 98, 99
-seguimiento_5: [3, 4] #1, 2, 3, 4, 96, 97, 98, 99
+# Save the desired images (when setting eveything up for the first time)
+SAVE_DESIRED_IMAGES: 0 # True to save desired images
+MODE: 0 # 0: First desired image (outside), 1: Second desired image (inside)
 
-bearing_1: []
-bearing_2: []
-bearing_3: [
-            .9,  .69,  
-            -.3, .69,  
-            -.3, -.23, 
-]
-bearing_4: [
-            .69,  .9,
-            -.69, .3,
-            .23,  .3,
-]
-bearing_5: [
-            .9,  .9,
-            -.3, .3,
-            .3,  -.3,
-]
+# Saving and showing images
+SAVE_IMAGES: 0 # True to save images
+SHOW_IMAGES: 0 # True to show images

@@ -202,20 +202,19 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(bearings src/bearings.cpp 
-src/vc_state/compute_descriptors.cpp
-src/vc_state/Compute_descriptors.cpp
-src/vc_state/Kanade_Lucas_Tomasi.cpp
-src/vc_state/aruco_detector.cpp
-src/vc_state/Moore_Penrose_PInv.cpp 
-src/vc_state/GUO.cpp
-src/vc_state/saveDesired.cpp
-src/vc_state/vc_state.cpp
-src/vc_state/getBearing.cpp
-src/vc_state/bearingControl.cpp
+add_executable(
+	bearings src/bearings.cpp 
+	src/vc_state/Moore_Penrose_PInv.cpp 
+	src/vc_state/saveDesired.cpp
+	src/vc_state/vc_state.cpp
 
+	#src/vc_state/aruco_detector.cpp
+	#src/vc_state/getBearing.cpp
+	#src/vc_state/Kanade_Lucas_Tomasi.cpp
+	#src/vc_state/Compute_descriptors.cpp
+	#src/vc_state/compute_descriptors.cpp
+	#src/vc_state/posesCallback.cpp
 
-#src/vc_state/posesCallback.cpp
 )
 target_link_libraries(bearings ${catkin_LIBRARIES})
 

@@ -1,25 +1,44 @@
 # The camera intrinsic parameters matrix
 # 3x3 matrix
 # Iris
-# camera_intrinsic_parameters: [700,   0,    960,
-#                               0,    700,   540,
-#                               0,     0,     1]
+camera_intrinsic_parameters: [700,   0,    960,
+                              0,    700,   540,
+                              0,     0,     1]
 
 # Bebop2
-camera_intrinsic_parameters: [1505,   0,    2043,
-                              0,    1505,   1446,
-                              0,     0,     1]
+# camera_intrinsic_parameters: [1505,   0,    2043,
+#                               0,    1505,   1446,
+#                               0,     0,     1]
+
+R: [0, 0, -1,
+    1, 0, 0,
+    0, 1, 0]
 
 # Sampling time
 dt: 0.01
 
+seguimiento: 
+  len: 2
+  data: [1, 2] #1, 2, 96, 97
+
+bearing: 
+  rows: 3
+  cols: 2
+  data: [
+        .9,  .69,  
+        -.3, .69,  
+        -.3, -.23, 
+  ]
+
 # Gain on linear velocities
-gainv: 2
-gainv_max: 3
+gainv: 3
+gainv_max: .1
+gainv_prime: -5
 
 # Gain on angular velocities
-gainw: 1
-gainw_max: 5
+gainw: .1
+gainw_max: .005
+gainw_prime: -0.6
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
@@ -37,7 +56,11 @@ flann_ratio: 0.7
 # control 1 (diferencia de bearings)
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
-control: 1
+# control 4 (proyeccion de bearing con rotaciones)
+# control 5 (proyeccion de bearing con rotaciones Ground Truth)
+# control 6 (diferencia de bearings con rotaciones)
+# control 7 (diferencia de bearings con rotaciones Ground Truth)
+control: 7
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

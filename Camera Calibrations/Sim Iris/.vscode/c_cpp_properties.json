@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/remoto/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/remoto/catkin_ws/src/bearings/include/**",
+        "/home/remoto/catkin_ws/src/mav_comm/mav_msgs/include/**",
+        "/home/remoto/catkin_ws/src/mav_comm/mav_planning_msgs/include/**",
+        "/home/remoto/catkin_ws/src/rotors_simulator/rotors_control/include/**",
+        "/home/remoto/catkin_ws/src/rotors_simulator/rotors_gazebo_plugins/include/**",
+        "/home/remoto/catkin_ws/src/rotors_simulator/rotors_hil_interface/include/**",
+        "/home/remoto/catkin_ws/src/rotors_simulator/rotors_joy_interface/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

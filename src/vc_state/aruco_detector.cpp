@@ -14,7 +14,7 @@ int aruco_detector(const Mat &actual,
    vector<int> markerIds_Detected;
    vector<vector<Point2f>> markerCorners_Detectec, rejectedCandidates;
    Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
-   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_250);
+   Ptr<aruco::Dictionary> dictionary = aruco::getPredefinedDictionary(aruco::DICT_4X4_1000);
 
    try
    {
@@ -97,7 +97,7 @@ int aruco_detector(const Mat &actual,
          //    waitKey(1);
          // }
 
-         aruco::detectMarkers(state.desired_configuration.img, dictionary, markerCorners_Detectec, markerIds_Detected, parameters, rejectedCandidates);
+         aruco::detectMarkers(state.desired.img, dictionary, markerCorners_Detectec, markerIds_Detected, parameters, rejectedCandidates);
 
          for (int i = 0; i < markerIds_Detected.size(); i++)
          {

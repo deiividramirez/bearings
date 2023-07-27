@@ -10,16 +10,35 @@ camera_intrinsic_parameters: [700,   0,    960,
 #                               0,    1505,   1446,
 #                               0,     0,     1]
 
+R: [0, 0, -1,
+    1, 0, 0,
+    0, 1, 0]
+    
 # Sampling time
 dt: 0.01
 
+seguimiento: 
+  len: 2
+  data: [3, 4] #1, 2, 3, 4, 96, 97, 98, 99
+
+bearing: 
+  rows: 3
+  cols: 2
+  data: [
+        .9,  .9,
+        -.3, .3,
+        .3,  -.3,
+  ]
+
 # Gain on linear velocities
-gainv: 2
-gainv_max: 3
+gainv: 3
+gainv_max: .1
+gainv_prime: -5
 
 # Gain on angular velocities
-gainw: 1
-gainw_max: 5
+gainw: .1
+gainw_max: .005
+gainw_prime: -0.6
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
@@ -37,7 +56,9 @@ flann_ratio: 0.7
 # control 1 (diferencia de bearings)
 # control 2 (proyeccion de bearing)
 # control 3 (ambos)
-control: 1
+# control 4 (con rotaciones)
+# control 5 (con rotaciones Ground Truth)
+control: 5
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

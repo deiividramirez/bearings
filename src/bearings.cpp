@@ -7,197 +7,126 @@ using namespace std;
 /****************** MAIN FUNCTION ******************/
 int main(int argc, char **argv)
 {
+	cout << RESET_C << endl;
 	/****************** ROS INITIALIZING ******************/
 	ros::init(argc, argv, "bearings");
 	ros::NodeHandle nh("ns1"), nh2("ns2"), nh3("ns3"), nh4("ns4"), nh5("ns5"), gen("general");
 	vector<ros::NodeHandle> nhs = {nh, nh2, nh3, nh4, nh5};
 
+	ros::Rate rate(30);
+
+	gen.getParam("MODE", MODE);
+	gen.getParam("LIM_MAX", LIM_MAX);
 	gen.getParam("DRONE", DRONE_NAME);
+	gen.getParam("INIT_MODE", INIT_MODE);
 	gen.getParam("DRONE_COUNT", DRONE_COUNT);
+	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
+	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
+	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
+	gen.getParam("CHANGE_THRESHOLD_LEADER", CHANGE_THRESHOLD_LEADER);
+	gen.getParam("CHANGE_THRESHOLD_FOLLOWER", CHANGE_THRESHOLD_FOLLOWER);
 
 	for (int i = 0; i < DRONE_COUNT; i++)
+	{
 		states[i].load(nhs[i]);
-	
-	cout << "BEARINGS: Node initialized." << endl;
+	}
 
-	image_transport::ImageTransport it1(nh);
-	image_transport::ImageTransport it2(nh2);
-	image_transport::ImageTransport it3(nh3);
-	image_transport::ImageTransport it4(nh4);
-	image_transport::ImageTransport it5(nh5);
-	image_transport::Subscriber image_sub_1f, image_sub_1b,
-		 image_sub_2f, image_sub_2b,
-		 image_sub_3f, image_sub_3b,
-		 image_sub_4f, image_sub_4b,
-		 image_sub_5f, image_sub_5b;
+	cout << GREEN_C << "\n[INFO] All Nodes have been initialized." << RESET_C << endl;
+
+	image_transport::ImageTransport it1(nh), it2(nh2), it3(nh3), it4(nh4), it5(nh5);
+	image_transport::Subscriber image_sub_1f, image_sub_1b, image_sub_2f, image_sub_2b, image_sub_3f, image_sub_3b, image_sub_4f, image_sub_4b, image_sub_5f, image_sub_5b;
 
 	/****************** CREATING PUBLISHER AND SUBSCRIBER ******************/
 
-	gen.getParam("SAVE_DESIRED_IMAGES", SAVE_DESIRED_IMAGES);
-	gen.getParam("SAVE_IMAGES", SAVE_IMAGES);
-	gen.getParam("SHOW_IMAGES", SHOW_IMAGES);
-	gen.getParam("seguimiento_1", seg1);
-	gen.getParam("seguimiento_2", seg2);
-	gen.getParam("seguimiento_3", seg3);
-	gen.getParam("seguimiento_4", seg4);
-	gen.getParam("seguimiento_5", seg5);
-
-	gen.getParam("seguimiento_1", segmentsXML[0]);
-	gen.getParam("seguimiento_2", segmentsXML[1]);
-	gen.getParam("seguimiento_3", segmentsXML[2]);
-	gen.getParam("seguimiento_4", segmentsXML[3]);
-	gen.getParam("seguimiento_5", segmentsXML[4]);
-
-	gen.getParam("bearing_1", bearingsXML[0]);
-	gen.getParam("bearing_2", bearingsXML[1]);
-	gen.getParam("bearing_3", bearingsXML[2]);
-	gen.getParam("bearing_4", bearingsXML[3]);
-	gen.getParam("bearing_5", bearingsXML[4]);
-
-	for (int i = 0; i < bearings.size(); i++)
-	{
-		bearings[i] = convertBearing(bearingsXML[i], segmentsXML[i]);
-	}
-
-	cout << "[INFO] DRONE: " << DRONE_NAME << endl;
+	cout << GREEN_C << "\n\n[INFO] DRONE: " << DRONE_NAME << endl;
 	cout << "[INFO] DRONE_COUNT: " << DRONE_COUNT << endl;
 	cout << "[INFO] SAVE_DESIRED_IMAGES: " << (SAVE_DESIRED_IMAGES ? "True" : "False") << endl;
 	cout << "[INFO] SAVE_IMAGES: " << (SAVE_IMAGES ? "True" : "False") << endl;
-	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True\n" : "False\n") << endl;
-	// cout << "[INFO] seguimiento_1: " << seg1 << endl;
-	// cout << "[INFO] seguimiento_2: " << seg2 << endl;
-	// cout << "[INFO] seguimiento_3: " << seg3 << endl;
-	// cout << "[INFO] seguimiento_4: " << seg4 << endl;
+	cout << "[INFO] SHOW_IMAGES: " << (SHOW_IMAGES ? "True" : "False") << endl;
+	cout << "[INFO] Max iterations: " << LIM_MAX << RESET_C << endl;
 
 	/****************** FOR SAVING DESIRED IMAGES FROM ACTUAL POSE ******************/
 	if (SAVE_DESIRED_IMAGES)
 	{
-		image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, saveDesired1f);
-		// image_sub_1b = it1.subscribe("/" +DRONE_NAME + "_1/camera_under_camera/image_raw", 1, saveDesired1b);
-
-		image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, saveDesired2f);
-		// image_sub_2b = it2.subscribe("/" +DRONE_NAME + "_2/camera_under_camera/image_raw", 1, saveDesired2b);
-
-		image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, saveDesired3f);
-		// image_sub_3b = it3.subscribe("/" +DRONE_NAME + "_3/camera_under_camera/image_raw", 1, saveDesired3b);
-
-		image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, saveDesired4f);
-		// image_sub_4b = it4.subscribe("/" +DRONE_NAME + "_4/camera_under_camera/image_raw", 1, saveDesired4b);
-
+		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, saveDesired1f);
+		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, saveDesired2f);
+		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, saveDesired3f);
+		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, saveDesired4f);
 		if (DRONE_COUNT == 5)
-		{
-			image_sub_5f = it5.subscribe("/" +DRONE_NAME + "_5/camera_base/image_raw", 1, saveDesired5f);
-			// image_sub_5b = it5.subscribe("/" +DRONE_NAME + "_5/camera_under_camera/image_raw", 1, saveDesired5b);
-		}
+			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, saveDesired5f);
 	}
 	else
 	{
 		/****************** FOR CONTROL LAW ******************/
-		// image_sub_1f = it1.subscribe("/" +DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback);
+		loadImages();
 
-		// image_sub_2f = it2.subscribe("/" +DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback1);
+		guoLider1 = GUO(&states[0], INIT_MODE);
+		rotDrone1 = RotationalControl(&states[0]);
 
-		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		// image_sub_3f = it3.subscribe("/" +DRONE_NAME + "_3/camera_base/image_raw", 1, imageCallback3);
+		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
+		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
+		guoLider2 = GUO(&states[1], INIT_MODE);
+		rotDrone2 = RotationalControl(&states[1]);
 
-		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		// image_sub_4f = it4.subscribe("/" +DRONE_NAME + "_4/camera_base/image_raw", 1, imageCallback4);
+		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
+		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
+		bearDrone3 = bearingControl(&states[2], states);
 
+		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
+		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
+		bearDrone4 = bearingControl(&states[3], states);
+
+		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
 		if (DRONE_COUNT == 5)
 		{
-			image_sub_5f = it5.subscribe("/" +DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
-		}
-	}
-	ros::Rate rate(30);
-
-	// if (DRONE_COUNT == 5)
-	// {
-		
-	// }
-	// if (DRONE_COUNT == 4)
-	// {
-	// 	// cut states size to 4
-	// 	states.resize(4);
-	// }
-
-	/****************** OPENING DESIRED IMAGES ******************/
-	if (!SAVE_DESIRED_IMAGES)
-	{
-		string image_dir = workspace;
-		image_dir += "/src/bearings/src/desired_";
-
-		for (int i = 0; i < DRONE_COUNT; i++)
-		{
-			states[i].desired_configuration.img = imread(image_dir + to_string(i + 1) + "f.jpg", IMREAD_COLOR);
-			if (states[i].desired_configuration.img.empty())
-			{
-				cout << "[ERROR] Could not open or find the reference image for drone " << i + 1 << endl;
-				cout << "[ERROR] No dir >> " << image_dir + to_string(i + 1) + "f.jpg" << endl;
-				ros::shutdown();
-			}
-			else
-			{
-				cout << "[INFO] Reference image for drone " << i + 1 << " has been loaded" << endl;
-			}
+			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
+			bearDrone5 = bearingControl(&states[4], states);
 		}
 	}
 
 	/****************** MOVING TO POSES ******************/
 	if (!SAVE_DESIRED_IMAGES)
 	{
-		// FOR TO COMPUTE POINTS IN IMAGE
-		// for (int i = 0; i < states.size(); i++)
-		// {
-
-		// 	Ptr<ORB> orb = ORB::create(states[i].params.nfeatures,
-		// 										states[i].params.scaleFactor,
-		// 										states[i].params.nlevels,
-		// 										states[i].params.edgeThreshold,
-		// 										states[i].params.firstLevel,
-		// 										states[i].params.WTA_K,
-		// 										states[i].params.scoreType,
-		// 										states[i].params.patchSize,
-		// 										states[i].params.fastThreshold);
-
-		// 	orb->detect(states[i].desired_configuration.img,
-		// 					states[i].desired_configuration.kp);
-		// 	orb->compute(states[i].desired_configuration.img,
-		// 					 states[i].desired_configuration.kp,
-		// 					 states[i].desired_configuration.descriptors);
-		// }
-
-		// FOR TO SUSCRIBE, PUBLISH AND ADVERTISE
 		for (int i = 0; i < DRONE_COUNT; i++)
 		{
-			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/command/trajectory", 1);
-			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
-			imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/"+DRONE_NAME +"_"+ to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
-			cout << "[INFO] Suscribed and advertised for /"+DRONE_NAME+"_" << i + 1 << " trajectory and pose." << endl;
-			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/command/trajectory" << endl;
-			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/ground_truth/pose" << endl;
-			cout << DRONE_NAME +"_"+ to_string(i + 1) + "/imu" << endl;
+			pos_pubs[i] = nhs[i].advertise<trajectory_msgs::MultiDOFJointTrajectory>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/command/trajectory", 1);
+			pos_subs[i] = nhs[i].subscribe<geometry_msgs::Pose>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/ground_truth/pose", 1, posesCallback[i]);
+			// imu_subs[i] = nhs[i].subscribe<sensor_msgs::Imu>("/" + DRONE_NAME + "_" + to_string(i + 1) + "/imu", 1, imuCallbacks[i]);
+			cout << "[INFO] Suscribed and advertised for /" + DRONE_NAME + "_" << i + 1 << " trajectory and pose." << endl;
+			cout << DRONE_NAME + "_" + to_string(i + 1) + "/command/trajectory" << endl;
+			cout << DRONE_NAME + "_" + to_string(i + 1) + "/ground_truth/pose" << endl;
+			cout << DRONE_NAME + "_" + to_string(i + 1) + "/imu" << endl;
 		}
-		
 	}
 
-	/****************** CREATE MESSAGE ******************/
-	string file_folder = "/src/bearings/src/data/out/";
-
-	bool first_time = true;
-
 	/****************** STARTING CYCLE ******************/
+	bool first_time = true;
 	while (ros::ok())
 	{
 		if (!states[0].initialized || !states[1].initialized || !states[2].initialized || !states[3].initialized)
 		{
-			contGEN++;
-			rate.sleep();
-			if (!SAVE_DESIRED_IMAGES)
+			if (DRONE_COUNT == 5 && !states[4].initialized)
 			{
-				cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+				contGEN++;
+				rate.sleep();
+				if (!SAVE_DESIRED_IMAGES)
+				{
+					cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+				}
 			}
-			// continue;
-		} // if we havent get the new pose for all the drones
+			if (DRONE_COUNT == 4)
+			{
+
+				contGEN++;
+				rate.sleep();
+				if (!SAVE_DESIRED_IMAGES)
+				{
+					cout << "\n[INFO] Waiting for the drones to be initialized..." << endl;
+				}
+			}
+		}
 		else
 		{
 			if (first_time)
@@ -209,52 +138,79 @@ int main(int argc, char **argv)
 			rate.sleep();
 		}
 
-		if (contIMG1 > 1000 || contIMG2 > 1000 || contIMG3 > 1000 || contIMG4 > 1000 || contGEN > 4000)
+		if (contIMG1, contIMG2, contIMG3, contIMG4 > LIM_MAX)
 		{
-			cout << "[ERROR] No convergence, quitting" << endl;
-			ros::shutdown();
+			if ((DRONE_COUNT == 5 && contIMG5 > LIM_MAX) || contGEN > 5 * LIM_MAX)
+			{
+				cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
+				break;
+			}
+			if (DRONE_COUNT == 4 || contGEN > 4 * LIM_MAX)
+			{
+				cout << RED_C << "[ERROR] No convergence, quitting" << RESET_C << endl;
+				break;
+			}
 		}
 		else
 		{
 			contGEN++;
 		}
 
-		// get a msg
+		// GET A MSG
 		ros::spinOnce();
 
+		// SAVING IMAGES
 		if (contGEN > 50 && SAVE_DESIRED_IMAGES)
 		{
 			cout << "\n[INFO] Images have been saved." << endl;
-			ros::shutdown();
+			break;
+		}
+
+		if (states[0].in_target && states[1].in_target && states[2].in_target && states[3].in_target)
+		{
+			if (DRONE_COUNT == 5 && states[4].in_target)
+			{
+				cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
+				break;
+			}
+			if (DRONE_COUNT == 4)
+			{
+				cout << MAGENTA_C << "\n[INFO] << In target >>" << RESET_C << endl;
+				break;
+			}
 		}
 	}
 
+	// SAVING DATA FOR PYTHON PLOTING
 	if (!SAVE_DESIRED_IMAGES)
 	{
-		// SAVING DATA FOR PYTHON PLOTING
+		string file_folder = "/src/bearings/src/data/out/";
 		for (int i = 0; i < DRONE_COUNT; i++)
 		{
+			writeFile(times[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
+
 			writeFile(errors[i], workspace + file_folder + "out_errors_" + to_string(i + 1) + ".txt");
 			writeFile(errors_pix[i], workspace + file_folder + "out_errors_pix_" + to_string(i + 1) + ".txt");
-			writeFile(times[i], workspace + file_folder + "out_time_" + to_string(i + 1) + ".txt");
+
 			writeFile(vel_x[i], workspace + file_folder + "out_Vx_" + to_string(i + 1) + ".txt");
 			writeFile(vel_y[i], workspace + file_folder + "out_Vy_" + to_string(i + 1) + ".txt");
 			writeFile(vel_z[i], workspace + file_folder + "out_Vz_" + to_string(i + 1) + ".txt");
 			writeFile(vel_yaw[i], workspace + file_folder + "out_Vyaw_" + to_string(i + 1) + ".txt");
+
 			writeFile(lambda_kp[i], workspace + file_folder + "out_lambda_kp_" + to_string(i + 1) + ".txt");
 			writeFile(lambda_kv[i], workspace + file_folder + "out_lambda_kv_" + to_string(i + 1) + ".txt");
 			writeFile(lambda_kd[i], workspace + file_folder + "out_lambda_kd_" + to_string(i + 1) + ".txt");
+
 			writeFile(X[i], workspace + file_folder + "out_X_" + to_string(i + 1) + ".txt");
 			writeFile(Y[i], workspace + file_folder + "out_Y_" + to_string(i + 1) + ".txt");
 			writeFile(Z[i], workspace + file_folder + "out_Z_" + to_string(i + 1) + ".txt");
-			// writeFile(YAW[i], workspace + file_folder + "out_YAW_" + to_string(i + 1) + ".txt");
-			// writeFile(roll[i], workspace + file_folder + "out_roll_" + to_string(i + 1) + ".txt");
-			// writeFile(pitch[i], workspace + file_folder + "out_pitch_" + to_string(i + 1) + ".txt");
+			writeFile(YAW[i], workspace + file_folder + "out_YAW_" + to_string(i + 1) + ".txt");
+
 			writeFile(integral_x[i], workspace + file_folder + "out_integral_x_" + to_string(i + 1) + ".txt");
 			writeFile(integral_y[i], workspace + file_folder + "out_integral_y_" + to_string(i + 1) + ".txt");
 			writeFile(integral_z[i], workspace + file_folder + "out_integral_z_" + to_string(i + 1) + ".txt");
 
-			cout << "[INFO] Data saved for drone " << i + 1 << endl;
+			cout << "\n[SAVED] Data saved for drone " << i + 1 << endl;
 		}
 	}
 
@@ -262,265 +218,8 @@ int main(int argc, char **argv)
 }
 
 /*************** CALLBACKS ***************/
-
 /*************** FOR IMAGES ***************/
-void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
-{
-	/*
-	This function is called for suscribed image topic for drone's camera
-
-	This function will executed a bearing only control with camera's obtained
-	bearings keeping in mind the error given by the roll, pitch and yaw of the
-	drone. The control will be executed in the drone's body frame.
-	*/
-	if (states[2].initialized)
-	{
-		cout << endl
-			  << "=============> BEGIN IMGCallback3 for Drone 3<=============" << endl;
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-
-		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, seg3, actual_bearing, bearing_ground_truth, states[2], 3, pos_dron) < 0)
-		{
-			cout << "[ERROR] No bearing found" << endl;
-			// states[2].Vx = 0;
-			// states[2].Vy = 0;
-			// states[2].Vz = 0;
-			// states[2].Vyaw = 0;
-		}
-		else
-		{
-			// cout << "Bearing with ground truth drone " << 2 + 1 << endl;
-			// cout << bearing_ground_truth << endl;
-
-			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 bearings[2],
-									 states,
-									 segmentsXML[2],
-									 3) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				// cout << "[INFO] Error: " << states[2].error << endl;
-				if (contIMG3 % 25 == 0)
-				{
-					states[2].integral_error = Mat::zeros(3, 1, CV_64F);
-					states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
-					states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
-				}
-			}
-		}
-
-		// Saving images
-		string saveIMG;
-		if (SAVE_IMAGES)
-		{
-			saveIMG = "/src/bearings/src/data/img/3_" + to_string(contIMG3++) + ".jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-		else
-		{
-			saveIMG = "/src/bearings/src/data/img/3_1.jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-
-		cout << "[VELS] Vx: " << states[2].Vx
-			  << ", Vy: " << states[2].Vy
-			  << ", Vz: " << states[2].Vz
-			  << "\nVroll: " << states[2].Vroll
-			  << ", Vpitch: " << states[2].Vpitch
-			  << ", Wyaw: " << states[2].Vyaw
-			  << "\n==> Error: " << states[2].error
-			  << "<==" << endl
-			  << endl;
-
-		cout << "Bearing real: " << bearing_ground_truth << endl;
-		//   << "===================================================================\n\n";
-		saveStuff(2);
-	}
-}
-void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
-{
-	/*
-	This function is called for suscribed image topic for drone's camera
-
-	This function will executed a bearing only control with camera's obtained
-	bearings keeping in mind the error given by the roll, pitch and yaw of the
-	drone. The control will be executed in the drone's body frame.
-	*/
-
-	if (states[3].initialized)
-	{
-		cout << endl
-			  << "=============> BEGIN IMGCallback4 for Drone 4<=============" << endl;
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-
-		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, seg4, actual_bearing, bearing_ground_truth, states[3], 4, pos_dron) < 0)
-		{
-			cout << "[ERROR] No bearing found" << endl;
-			// states[3].Vx = 0;
-			// states[3].Vy = 0;
-			// states[3].Vz = 0;
-			// states[3].Vyaw = 0;
-		}
-		else
-		{
-			// cout << "Bearing with ground truth drone " << 3 + 1 << endl;
-			// cout << bearing_ground_truth << endl;
-			// cout << "bearings[3] = " << bearings[3] << endl;
-
-			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 bearings[3],
-									 states,
-									 segmentsXML[3],
-									 4) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				// cout << "[INFO] Error: " << states[3].error << endl;
-
-				if (contIMG4 % 25 == 0)
-				{
-					states[3].integral_error = Mat::zeros(3, 1, CV_64F);
-					states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
-					states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
-				}
-			}
-		}
-
-		// Saving images
-		string saveIMG;
-		if (SAVE_IMAGES)
-		{
-			saveIMG = "/src/bearings/src/data/img/4_" + to_string(contIMG4++) + ".jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-		else
-		{
-			saveIMG = "/src/bearings/src/data/img/4_1.jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-
-		cout << "[VELS] Vx: " << states[3].Vx
-			  << ", Vy: " << states[3].Vy
-			  << ", Vz: " << states[3].Vz
-			  << "\nVroll: " << states[3].Vroll
-			  << ", Vpitch: " << states[3].Vpitch
-			  << ", Wyaw: " << states[3].Vyaw
-			  << "\n==> Error: " << states[3].error
-			  << "<==" << endl
-			  << endl;
-
-		cout << "Bearing real: " << bearing_ground_truth << endl;
-		//   << "===================================================================\n\n";
-		saveStuff(3);
-	}
-}
-void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
-{
-	/*
-	This function is called for suscribed image topic for drone's camera
-
-	This function will executed a bearing only control with camera's obtained
-	bearings keeping in mind the error given by the roll, pitch and yaw of the
-	drone. The control will be executed in the drone's body frame.
-	*/
-
-	if (states[4].initialized)
-	{
-		cout << endl
-			  << "=============> BEGIN IMGCallback4 for Drone 5<=============" << endl;
-		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-
-		// Getting the bearings from camera's drone
-		Mat actual_bearing, bearing_ground_truth;
-		if (getBearing(actual, seg5, actual_bearing, bearing_ground_truth, states[4], 5, pos_dron) < 0)
-		{
-			cout << "[ERROR] No bearing found" << endl;
-			// states[4].Vx = 0;
-			// states[4].Vy = 0;
-			// states[4].Vz = 0;
-			// states[4].Vyaw = 0;
-		}
-		else
-		{
-			// cout << "Bearing with ground truth drone " << 3 + 1 << endl;
-			// cout << bearing_ground_truth << endl;
-			// cout << "bearings[4] = " << bearings[4] << endl;
-
-			// Executing bearing only control
-			if (bearingControl(actual_bearing,
-									 bearing_ground_truth,
-									 bearings[4],
-									 states,
-									 segmentsXML[4],
-									 5) < 0)
-			{
-				cout << "[ERROR] Bearing control failed" << endl;
-			}
-			else
-			{
-				cout << "[INFO] Bearing control success" << endl;
-				// cout << "[INFO] Error: " << states[4].error << endl;
-
-				if (contIMG5 % 25 == 0)
-				{
-					states[4].integral_error = Mat::zeros(3, 1, CV_64F);
-					states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
-					states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
-				}
-			}
-		}
-
-		// Saving images
-		string saveIMG;
-		if (SAVE_IMAGES)
-		{
-			saveIMG = "/src/bearings/src/data/img/5_" + to_string(contIMG5++) + ".jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-		else
-		{
-			saveIMG = "/src/bearings/src/data/img/5_1.jpg";
-			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
-		}
-
-		cout << "[VELS] Vx: " << states[4].Vx
-			  << ", Vy: " << states[4].Vy
-			  << ", Vz: " << states[4].Vz
-			  << "\nVroll: " << states[4].Vroll
-			  << ", Vpitch: " << states[4].Vpitch
-			  << ", Wyaw: " << states[4].Vyaw
-			  << "\n==> Error: " << states[4].error
-			  << "<==" << endl
-			  << endl;
-
-		cout << "Bearing real: " << bearing_ground_truth << endl;
-		//   << "===================================================================\n\n";
-		saveStuff(4);
-	}
-}
-
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 {
 	/*
 	This function is called for suscribed image topic for drone's camera
@@ -530,124 +229,54 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	*/
 	if (states[0].initialized && !states[0].in_target)
 	{
-		cout << endl
-			  << "=============> BEGIN IMGCallback for Drone 1<=============" << endl;
-		// cout << "\n[INFO] ImageCallback for drone " << 0 + 1 << endl;
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback for Drone 1 iter: " << contIMG1 << " <=============" << RESET_C << endl;
 
-		// try
-		// {
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-		// cout << "[INFO] Image received" << endl;
-
-		// if (contIMG1++ < 3)
-		// {
-		// 	cout << "\n[INFO] Detecting keypoints" << endl;
-
-		// 	if (states[0].params.camara != 1)
-		// 	{
-		// 		cout << "[INFO] Detecting points with ORB" << endl;
-		// 		if (Compute_descriptors(actual, img_points1, states[0], matching_results[0]) < 0)
-		// 		{
-		// 			cout << "[ERROR] No keypoints with matches were found" << endl;
-		// 			return;
-		// 		}
-		// 	}
-		// 	else
-		// 	{
-		// 		cout << "[INFO] Detecting points with ArUco" << endl;
-		// 		if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) < 0)
-		// 		{
-		// 			cout << "[ERROR] No ArUco were found." << endl;
-		// 			// ros::shutdown();
-		// 		}
-		// 	}
-		// 	// cout << "[INFO] img_points1: " << img_points1 << endl;
-		// 	// cout << "[INFO] matching_result.p1: " << endl
-		// 	// 	  << matching_results[0].p1 << endl;
-		// 	// cout << "[INFO] matching_result.p2: " << endl
-		// 	// 	  << matching_results[0].p2 << endl
-		// 	// 	  << endl;
-
-		// 	img_old1 = actual;
-		// }
-		// else
-		// {
-		// Detecting keypoints from ArUco markers
-		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
+		if (guoLider1.getVels(actual) == 0)
 		{
-			if (aruco_detector(actual, img_points1, states[0], matching_results[0], seg1) == 0)
-			{
-				// Executing control law by GUO
-				// cout << "[INFO] Calling control law." << endl;
-				if (GUO(actual, states[0], matching_results[0]) < 0)
-				{
-					cout << "[ERROR] Controller failed" << endl;
-					return;
-				}
-
-				if (contIMG1 % 10 == 0)
-				{
-					states[0].integral_error = Mat::zeros(3, 1, CV_64F);
-					states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
-					states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
-				}
-				// else
-				// {
-				// 	// cout << "[INFO] Controller part has been executed" << endl;
-				// }
-			}
-			else
-			{
-				cout << "[ERROR] No ArUco were found." << endl;
-				// ros::shutdown();
-				// states[0].Vx = 0;
-				// states[0].Vy = 0;
-				// states[0].Vz = 0;
-				// states[0].Vyaw = 0;
-			}
+			cout << GREEN_C "\n[INFO] Controller part has been executed" << RESET_C;
+			rotDrone1.getVels(actual);
 		}
 		else
 		{
-			states[0].Vx = tanh(after_t1);
-			states[0].Vy = 0;
-			states[0].Vz = 0;
-			states[0].Vyaw = 0;
-			if (after_t1 < 2)
+			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
+		}
+
+		// cout << ">>>>> Error: " << states[0].error << " >>>>> CHANGE_THRESHOLD_LEADER: " << CHANGE_THRESHOLD_LEADER << " >>>>> MODE: " << MODE << endl;
+
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && change)
+		{
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
+			states[0].in_target = true;
+			states[1].in_target = true;
+		}
+
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && !change)
+		{
+			cout << MAGENTA_C << "\n[INFO] << Leaders drones are in target >>" << RESET_C << endl;
+			MODE = 1;
+			change = true;
+			loadImages();
+			CHANGE_THRESHOLD_LEADER -= 0.02;
+
+			guoLider1.changeMode(MODE);
+			guoLider2.changeMode(MODE);
+		}
+
+		if (SHOW_IMAGES)
+		{
+			Mat copy = actual.clone();
+			for (int i = 0; i < states[0].actual.points.rows; i++)
 			{
-				after_t1 += 0.005;
+				circle(copy, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(copy, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 			}
-		}
-		// cout << "POSICIÓN: " << pos_dron[0] << endl;
-		// Mat desired_temp, new_points;
-		// if (Kanade_Lucas_Tomasi(img_old1, actual, desired_temp, img_points1, states[0], matching_results[0]) < 0)
-		// {
-		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-		// 	return;
-		// }
-		// else
-		// {
-		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-		// }
-
-		// Mat desired_temp, new_points;
-		// states[0].desired_configuration.img.copyTo(desired_temp);
-
-		for (int i = 0; i < matching_results[0].p1.rows; i++)
-		{
-			// circle(desired_temp, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			// circle(desired_temp, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[0].p1.at<double>(i, 0), matching_results[0].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[0].p2.at<double>(i, 0), matching_results[0].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-		}
-
-		if (!SHOW_IMAGES)
-		{
 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
-			cv::resizeWindow("Frontal camera_1", 960, 540);
-			imshow("Frontal camera_1", actual);
+			cv::resizeWindow("Frontal camera_1", 550, 310);
+			imshow("Frontal camera_1", copy);
 			waitKey(1);
 		}
-		// }
 
 		// Saving images
 		string saveIMG;
@@ -655,31 +284,19 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		{
 			saveIMG = "/src/bearings/src/data/img/1_" + to_string(contIMG1) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 		else
 		{
 			saveIMG = "/src/bearings/src/data/img/1_1.jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
+
 		contIMG1++;
-
-		/************************************************************* Prepare message */
-		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[0].img_matches).toImageMsg();
-		// image_msg->header.frame_id = "matching_image";
-		// image_msg->width = matching_results[0].img_matches.cols;
-		// image_msg->height = matching_results[0].img_matches.rows;
-		// image_msg->is_bigendian = false;
-		// image_msg->step = sizeof(unsigned char) * matching_results[0].img_matches.cols * 3;
-		// image_msg->header.stamp = ros::Time::now();
-
-		/* cout << "[INFO] Matching published" << endl; */
-		// }
-		// catch (cv_bridge::Exception &e)
+		// if (contIMG1 % 100 == 0)
 		// {
-		// 	ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-		// 				 msg->encoding.c_str());
+		// 	states[0].integral_error = Mat::zeros(3, 1, CV_64F);
+		// 	states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
+		// 	states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		// }
 		saveStuff(0);
 	}
@@ -694,155 +311,243 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 	*/
 	if (states[1].initialized && !states[1].in_target)
 	{
-		cout << endl
-			  << "=============> BEGIN imageCallback2 for drone 2 <=============" << endl;
-		// cout << "\n[INFO] ImageCallback function called for drone " << 1 + 1 << endl;
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback for Drone 2 iter: " << contIMG2 << " <=============" << RESET_C << endl;
 
-		// try
-		// {
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
-		// cout << "[INFO] Image received" << endl;
-
-		// if (contIMG2++ < 3)
-		// {
-		// cout << "\n[INFO] Detecting keypoints" << endl;
-
-		// if (states[1].params.camara != 1)
-		// {
-		// 	cout << "[INFO] Detecting points with ORB" << endl;
-		// 	if (Compute_descriptors(actual, img_points2, states[1], matching_results[1]) < 0)
-		// 	{
-		// 		cout << "[ERROR] No keypoints with matches were found" << endl;
-		// 		return;
-		// 	}
-		// }
-		// else
-		// {
-		// 	cout << "[INFO] Detecting points with ArUco" << endl;
-		// 	if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) < 0)
-		// 	{
-		// 		cout << "[ERROR] No ArUco were found." << endl;
-		// 		// ros::shutdown();
-		// 	}
-		// }
-		// // cout << "[INFO] img_points2: " << img_points2 << endl;
-		// cout << "[INFO] matching_result.p1: " << matching_results[1].p1 << endl;
-		// cout << "[INFO] matching_result.p2: " << matching_results[1].p2 << endl;
-
-		// img_old2 = actual;
-		// }
-		// else
-		// {
-		// Detecting points with ArUco markers
-		// cout << "[INFO] Detecting points with ArUco" << endl;
-		if (matching_results[0].mean_feature_error > 0.05 || matching_results[1].mean_feature_error > 0.05)
+		if (guoLider2.getVels(actual) == 0)
 		{
-			if (aruco_detector(actual, img_points2, states[1], matching_results[1], seg2) == 0)
-			{
-				// Execute control law by GUO
-				// cout << "[INFO] Calling control law." << endl;
-				if (GUO(actual, states[1], matching_results[1]) < 0)
-				{
-					cout << "[ERROR] Controller failed" << endl;
-					return;
-				}
-
-				if (contIMG2 % 10 == 0)
-				{
-					states[1].integral_error = Mat::zeros(3, 1, CV_64F);
-					states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
-					states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
-				}
-				// else
-				// {
-				// 	// cout << "[INFO] Controller part has been executed" << endl;
-				// }
-			}
-			else
-			{
-				cout << "[ERROR] No ArUco were found." << endl;
-				// ros::shutdown();
-				// states[1].Vx = 0;
-				// states[1].Vy = 0;
-				// states[1].Vz = 0;
-				// states[1].Vroll = 0;
-			}
+			cout << GREEN_C << "\n[INFO] Controller part has been executed" << RESET_C;
+			rotDrone2.getVels(actual);
 		}
 		else
 		{
-			states[1].Vx = tanh(after_t2);
-			states[1].Vy = 0;
-			states[1].Vz = 0;
-			states[1].Vroll = 0;
-			if (after_t2 < 2)
+			cout << RED_C << "[ERROR] No ArUco were found." << RESET_C << endl;
+		}
+
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && change)
+		{
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
+			states[0].in_target = true;
+			states[1].in_target = true;
+		}
+
+		if (states[0].error_pix < CHANGE_THRESHOLD_LEADER && states[1].error_pix < CHANGE_THRESHOLD_LEADER && !change)
+		{
+			cout << MAGENTA_C << "[INFO] Leaders drones are in target >>" << RESET_C << endl;
+			MODE = 1;
+			change = true;
+			loadImages();
+			CHANGE_THRESHOLD_LEADER -= 0.02;
+
+			guoLider1.changeMode(MODE);
+			guoLider2.changeMode(MODE);
+		}
+
+		if (SHOW_IMAGES)
+		{
+			Mat copy = actual.clone();
+			for (int i = 0; i < states[1].actual.points.rows; i++)
 			{
-				after_t2 += 0.005;
+				circle(copy, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
+				circle(copy, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
 			}
-		}
-		// Mat desired_temp, new_points;
-		// if (Kanade_Lucas_Tomasi(img_old2, actual, desired_temp, img_points2, states[1], matching_results[1]) < 0)
-		// {
-		// 	cout << "[ERROR] Kanade_Lucas_Tomasi failed" << endl;
-		// 	return;
-		// }
-		// else
-		// {
-		// 	cout << "[INFO] Kanade_Lucas_Tomasi tracker part has been executed" << endl;
-		// }
-
-		// Mat desired_temp, new_points;
-		// states[1].desired_configuration.img.copyTo(desired_temp);
-
-		for (int i = 0; i < matching_results[1].p1.rows; i++)
-		{
-			// circle(desired_temp, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-			// circle(desired_temp, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[1].p1.at<double>(i, 0), matching_results[1].p1.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-			circle(actual, Point2f(matching_results[1].p2.at<double>(i, 0), matching_results[1].p2.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
-		}
-
-		if (!SHOW_IMAGES)
-		{
 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
-			cv::resizeWindow("Frontal camera_2", 960, 540);
-			imshow("Frontal camera_2", actual);
+			cv::resizeWindow("Frontal camera_2", 550, 310);
+			imshow("Frontal camera_2", copy);
 			waitKey(1);
 		}
 
+		// Saving images
 		string saveIMG;
 		if (SAVE_IMAGES)
 		{
 			saveIMG = "/src/bearings/src/data/img/2_" + to_string(contIMG2) + ".jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 		else
 		{
 			saveIMG = "/src/bearings/src/data/img/2_1.jpg";
 			imwrite(workspace + saveIMG, actual);
-			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
 		}
 
 		contIMG2++;
-
-		/************************************************************* Prepare message */
-		// image_msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, matching_results[1].img_matches).toImageMsg();
-		// image_msg->header.frame_id = "matching_image";
-		// image_msg->width = matching_results[1].img_matches.cols;
-		// image_msg->height = matching_results[1].img_matches.rows;
-		// image_msg->is_bigendian = false;
-		// image_msg->step = sizeof(unsigned char) * matching_results[1].img_matches.cols * 3;
-		// image_msg->header.stamp = ros::Time::now();
-
-		/* cout << "[INFO] Matching published" << endl; */
-		// 	}
-		// 	catch (cv_bridge::Exception &e)
-		// 	{
-		// 		ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
-		// 					 msg->encoding.c_str());
-		// 	}
+		// if (contIMG2 % 100 == 0)
+		// {
+		// 	states[1].integral_error = Mat::zeros(3, 1, CV_64F);
+		// 	states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
+		// 	states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		// }
 		saveStuff(1);
+	}
+}
+
+void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
+{
+	/*
+	This function is called for suscribed image topic for drone's camera
+
+	This function will executed a bearing only control with camera's obtained
+	bearings keeping in mind the error given by the roll, pitch and yaw of the
+	drone. The control will be executed in the drone's body frame.
+	*/
+	if (states[2].initialized && !states[2].in_target)
+	{
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// Getting the bearings from camera's drone
+		if (bearDrone3.getVels(actual) < 0)
+		{
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
+		}
+		else
+		{
+			cout << GREEN_C << "[INFO] Bearing control success" << RESET_C << endl;
+		}
+
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/3_" + to_string(contIMG3) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/3_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		contIMG3++;
+		if (contIMG3 % 250 == 0)
+		{
+			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+			states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
+		}
+		saveStuff(2);
+
+		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		{
+			cout << MAGENTA_C << "[INFO] Follower drone 3 is in target" << RESET_C << endl;
+			states[2].in_target = true;
+		}
+	}
+}
+void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
+{
+	/*
+	This function is called for suscribed image topic for drone's camera
+
+	This function will executed a bearing only control with camera's obtained
+	bearings keeping in mind the error given by the roll, pitch and yaw of the
+	drone. The control will be executed in the drone's body frame.
+	*/
+	if (states[3].initialized && !states[3].in_target)
+	{
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// Getting the bearings from camera's drone
+		if (bearDrone4.getVels(actual) < 0)
+		{
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
+		}
+		else
+		{
+			cout << GREEN_C << "[INFO] Bearing control success" << RESET_C << endl;
+		}
+
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/4_" + to_string(contIMG4) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/4_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		contIMG4++;
+		if (contIMG4 % 250 == 0)
+		{
+			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+			states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
+		}
+		saveStuff(3);
+
+		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		{
+			cout << MAGENTA_C << "[INFO] Follower drone 4 is in target" << RESET_C << endl;
+			states[3].in_target = true;
+		}
+	}
+}
+void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
+{
+	/*
+	This function is called for suscribed image topic for drone's camera
+
+	This function will executed a bearing only control with camera's obtained
+	bearings keeping in mind the error given by the roll, pitch and yaw of the
+	drone. The control will be executed in the drone's body frame.
+	*/
+	if (states[4].initialized && !states[4].in_target)
+	{
+		cout << CYAN_C << endl
+			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;
+		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// Getting the bearings from camera's drone
+		if (bearDrone5.getVels(actual) < 0)
+		{
+			cout << RED_C << "[ERROR] Bearing control failed" << RESET_C << endl;
+		}
+		else
+		{
+			cout << GREEN_C << "[INFO] Bearing control success" << RESET_C << endl;
+		}
+
+		// Saving images
+		string saveIMG;
+		if (SAVE_IMAGES)
+		{
+			saveIMG = "/src/bearings/src/data/img/5_" + to_string(contIMG5) + ".jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+		else
+		{
+			saveIMG = "/src/bearings/src/data/img/5_1.jpg";
+			imwrite(workspace + saveIMG, actual);
+			// cout << "[INFO] << Image saved >>" << saveIMG << endl;
+		}
+
+		contIMG5++;
+		if (contIMG5 % 250 == 0)
+		{
+			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+			states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
+		}
+		saveStuff(4);
+
+		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		{
+			cout << MAGENTA_C << "[INFO] Follower drone 5 is in target" << RESET_C << endl;
+			states[4].in_target = true;
+		}
 	}
 }
 
@@ -860,23 +565,30 @@ void poseCallback1(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[0].Roll = (float)roll;
-	states[0].Pitch = (float)pitch;
 
 	// setting the position if its the first time
 	if (!states[0].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[0].X = (float)msg->position.x;
+		states[0].Y = (float)msg->position.y;
+		states[0].Z = (float)msg->position.z;
+
+		states[0].Roll = (float)roll;
+		states[0].Pitch = (float)pitch;
+		states[0].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 1" << endl;
 		states[0].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[0].Q = composeR(states[0].Roll, states[0].Pitch, states[0].Yaw);
 	}
 
-	pos_dron[0].pose.position.x = (float)msg->position.x;
-	pos_dron[0].pose.position.y = (float)msg->position.y;
-	pos_dron[0].pose.position.z = (float)msg->position.z;
-
-	pos_dron[0].header.seq++;
-	pos_dron[0].header.stamp = ros::Time::now();
-	pos_dron[0].header.frame_id = "world";
+	states[0].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[0].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[0].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[0].groundTruth.at<double>(3, 0) = (float)roll;
+	states[0].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[0].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -891,29 +603,33 @@ void poseCallback2(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[1].Roll = (float)roll;
-	states[1].Pitch = (float)pitch;
 
 	// setting the position if its the first time
 	if (!states[1].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[1].X = (float)msg->position.x;
+		states[1].Y = (float)msg->position.y;
+		states[1].Z = (float)msg->position.z;
+
+		states[1].Roll = (float)roll;
+		states[1].Pitch = (float)pitch;
+		states[1].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 2" << endl;
 		states[1].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[1].Q = composeR(states[1].Roll, states[1].Pitch, states[1].Yaw);
 	}
 
-	pos_dron[1].pose.position.x = (float)msg->position.x;
-	pos_dron[1].pose.position.y = (float)msg->position.y;
-	pos_dron[1].pose.position.z = (float)msg->position.z;
-
-	pos_dron[1].header.seq++;
-	pos_dron[1].header.stamp = ros::Time::now();
-	pos_dron[1].header.frame_id = "world";
+	states[1].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[1].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[1].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[1].groundTruth.at<double>(3, 0) = (float)roll;
+	states[1].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[1].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 {
-	// cout << endl
-	// 	  << "[INFO] poseCallback function for drone 3" << endl;
-
 	// Creating quaternion
 	tf::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
 	// Creatring rotation matrix ffrom quaternion
@@ -922,23 +638,36 @@ void poseCallback3(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[2].Roll = (float)roll;
-	states[2].Pitch = (float)pitch;
 
 	// setting the position if its the first time
 	if (!states[2].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[2].X = (float)msg->position.x;
+		states[2].Y = (float)msg->position.y;
+		states[2].Z = (float)msg->position.z;
+
+		states[2].Roll = (float)roll;
+		states[2].Pitch = (float)pitch;
+		states[2].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 3" << endl;
 		states[2].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[2].Q = composeR(0, 0, states[2].Yaw);
+
+		for (int i = 0; i < states[2].params.seguimiento.rows; i++)
+		{
+			states[2].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[2].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[2].pose.position.x = (float)msg->position.x;
-	pos_dron[2].pose.position.y = (float)msg->position.y;
-	pos_dron[2].pose.position.z = (float)msg->position.z;
-
-	pos_dron[2].header.seq++;
-	pos_dron[2].header.stamp = ros::Time::now();
-	pos_dron[2].header.frame_id = "world";
+	states[2].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[2].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[2].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[2].groundTruth.at<double>(3, 0) = (float)roll;
+	states[2].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[2].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -953,23 +682,36 @@ void poseCallback4(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[3].Roll = (float)roll;
-	states[3].Pitch = (float)pitch;
 
 	// setting the position if its the first time
 	if (!states[3].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[3].X = (float)msg->position.x;
+		states[3].Y = (float)msg->position.y;
+		states[3].Z = (float)msg->position.z;
+
+		states[3].Roll = (float)roll;
+		states[3].Pitch = (float)pitch;
+		states[3].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 4" << endl;
 		states[3].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[3].Q = composeR(states[3].Roll, states[3].Pitch, states[3].Yaw);
+
+		for (int i = 0; i < states[3].params.seguimiento.rows; i++)
+		{
+			states[3].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[3].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[3].pose.position.x = (float)msg->position.x;
-	pos_dron[3].pose.position.y = (float)msg->position.y;
-	pos_dron[3].pose.position.z = (float)msg->position.z;
-
-	pos_dron[3].header.seq++;
-	pos_dron[3].header.stamp = ros::Time::now();
-	pos_dron[3].header.frame_id = "world";
+	states[3].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[3].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[3].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[3].groundTruth.at<double>(3, 0) = (float)roll;
+	states[3].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[3].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 {
@@ -984,190 +726,111 @@ void poseCallback5(const geometry_msgs::Pose::ConstPtr &msg)
 	double roll, pitch, yaw;
 	mat.getEulerYPR(yaw, pitch, roll);
 	// saving the data obtained
-	states[4].Roll = (float)roll;
-	states[4].Pitch = (float)pitch;
 
 	// setting the position if its the first time
 	if (!states[4].initialized)
 	{
-		cout << "[INFO] Setting initial position" << endl;
+		states[4].X = (float)msg->position.x;
+		states[4].Y = (float)msg->position.y;
+		states[4].Z = (float)msg->position.z;
+
+		states[4].Roll = (float)roll;
+		states[4].Pitch = (float)pitch;
+		states[4].Yaw = (float)yaw;
+
+		cout << "\n[INFO] Setting initial position for drone 5" << endl;
 		states[4].initialize((float)msg->position.x, (float)msg->position.y, (float)msg->position.z, yaw);
+
+		states[4].Q = composeR(states[4].Roll, states[4].Pitch, states[4].Yaw);
+
+		for (int i = 0; i < states[4].params.seguimiento.rows; i++)
+		{
+			states[4].Qi.push_back(Mat::zeros(3, 3, CV_64F));
+			states[4].Hi.push_back(Mat::zeros(3, 3, CV_64F));
+		}
 	}
 
-	pos_dron[4].pose.position.x = (float)msg->position.x;
-	pos_dron[4].pose.position.y = (float)msg->position.y;
-	pos_dron[4].pose.position.z = (float)msg->position.z;
-
-	pos_dron[4].header.seq++;
-	pos_dron[4].header.stamp = ros::Time::now();
-	pos_dron[4].header.frame_id = "world";
+	states[4].groundTruth.at<double>(0, 0) = (float)msg->position.x;
+	states[4].groundTruth.at<double>(1, 0) = (float)msg->position.y;
+	states[4].groundTruth.at<double>(2, 0) = (float)msg->position.z;
+	states[4].groundTruth.at<double>(3, 0) = (float)roll;
+	states[4].groundTruth.at<double>(4, 0) = (float)pitch;
+	states[4].groundTruth.at<double>(5, 0) = (float)yaw;
 }
 
-/*************** FOR IMU ***************/
-void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[0].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[0].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[0].pose.orientation.w = (float)msg->orientation.w;
-
-	/* pos_dron[0].header.stamp.sec++; */
-}
-void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	pos_dron[1].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[1].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[1].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[1].pose.orientation.w = (float)msg->orientation.w;
-
-	/* pos_dron[1].header.stamp.sec++; */
-}
-void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 3" << endl; */
-	pos_dron[2].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[2].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[2].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[2].pose.orientation.w = (float)msg->orientation.w;
-
-	/* pos_dron[2].header.stamp.sec++; */
-}
-void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 4" << endl; */
-	pos_dron[3].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[3].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[3].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
-
-	/* pos_dron[3].header.stamp.sec++; */
-}
-void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg)
-{
-	/* cout << "IMU 4" << endl; */
-	pos_dron[4].pose.orientation.x = (float)msg->orientation.x;
-	pos_dron[4].pose.orientation.y = (float)msg->orientation.y;
-	pos_dron[4].pose.orientation.z = (float)msg->orientation.z;
-	pos_dron[4].pose.orientation.w = (float)msg->orientation.w;
-
-	/* pos_dron[4].header.stamp.sec++; */
-}
-
+// FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
 void saveStuff(int i)
 {
-	// FOR TO SAVE DATA IN ARRAY AND CHECK IF THE DRONE IS IN THE TARGET
-	if (!states[i].in_target)
+	cout << CYAN_C << "\n[INFO] Saving data for drone " + to_string(i + 1) << RESET_C << endl;
+
+	times[i].push_back(states[i].t);
+
+	errors[i].push_back((float)states[i].error);
+	errors_pix[i].push_back((float)states[i].error_pix);
+
+	cout << "[INFO] Control error: " << states[i].error << endl;
+	cout << "[INFO] Control error in pixels: " << states[i].error_pix << endl;
+
+	vel_x[i].push_back(states[i].Vx);
+	vel_y[i].push_back(states[i].Vy);
+	vel_z[i].push_back(states[i].Vz);
+	vel_yaw[i].push_back(states[i].Vyaw);
+	lambda_kp[i].push_back(states[i].lambda_kp);
+	lambda_kv[i].push_back(states[i].lambda_kv);
+	lambda_kd[i].push_back(states[i].lambda_kd);
+
+	if (i == 0 || i == 1)
 	{
-		cout << "[VELS] Vx: " << states[i].Vx
-			  << ", Vy: " << states[i].Vy
-			  << ", Vz: " << states[i].Vz
-			  << "\nVroll: " << states[i].Vroll
-			  << ", Vpitch: " << states[i].Vpitch
-			  << ", Wyaw: " << states[i].Vyaw
-			  //   << "\n==> Error: " << matching_results[i].mean_feature_error
-			  //   << "\n==> Error: " << states[i].error
-			  << "\n==> Error: " << ((states[i].error == 0) ? matching_results[i].mean_feature_error : states[i].error)
-			  << "<==" << endl
-			  << endl;
-
-		times[i].push_back(states[i].t);
-		if (i == 0 || i == 1 )
-		{
-			errors[i].push_back((float)matching_results[i].mean_feature_error);
-			errors_pix[i].push_back((float)matching_results[i].mean_feature_error_pix);
-			// cout << "[INFO] Error: " << matching_results[i].mean_feature_error << endl;
-			cout << "[INFO] Error pix: " << matching_results[i].mean_feature_error_pix << endl;
-		}
-		else
-		{
-			errors[i].push_back((float)states[i].error);
-			errors_pix[i].push_back((float)states[i].error);
-			cout << "[INFO] Error: " << states[i].error << endl;
-		}
-
-		states[i].Vyaw = -states[i].Yaw;
-
-		vel_x[i].push_back(states[i].Vx);
-		vel_y[i].push_back(states[i].Vy);
-		vel_z[i].push_back(states[i].Vz);
-		vel_yaw[i].push_back(states[i].Vyaw);
-		lambda_kp[i].push_back(states[i].lambda_kp);
-		lambda_kv[i].push_back(states[i].lambda_kv);
-		lambda_kd[i].push_back(states[i].lambda_kd);
-
-		if (i == 0 || i == 1)
-		{
-			integral_x[i].push_back(states[i].integral_error6.at<double>(0, 0));
-			integral_y[i].push_back(states[i].integral_error6.at<double>(1, 0));
-			integral_z[i].push_back(states[i].integral_error6.at<double>(2, 0));
-		}
-		else
-		{
-			integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
-			integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
-			integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
-		}
-
-		X[i].push_back(pos_dron[i].pose.position.x);
-		Y[i].push_back(pos_dron[i].pose.position.y);
-		Z[i].push_back(pos_dron[i].pose.position.z);
-
-		// if (matching_results[i].mean_feature_error < states[i].params.feature_threshold)
-		// {
-		// 	cout << "\n[INFO] Target reached within the feature threshold for drone " + to_string(i + 1) << endl;
-		// 	states[i].in_target = true;
-		// 	// break;
-		// }
-
-		// Publish image of the matching
-		// cout << "\n[INFO] Publishing image" << endl;
-		// image_pub.publish(image_msg);
-
-		// UPDATE STATE WITH THE CURRENT CONTROL
-		auto new_pose = states[i].update();
-
-		// PREPARE MESSAGE
-		trajectory_msgs::MultiDOFJointTrajectory msg;
-		msg.header.stamp = ros::Time::now();
-		mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
-
-		// PUBLISH MESSAGE FOR TRAYECTORY
-		pos_pubs[i].publish(msg);
+		integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
+		integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
+		integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
+		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error6.t() << RESET_C << endl;
 	}
 	else
 	{
-		// cout << "\n[INFO] Target reached for drone" + to_string(i + 1) << endl;
-		// break;
+		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
+		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
+		integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
+		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error.t() << RESET_C << endl;
 	}
+
+	X[i].push_back(states[i].X);
+	Y[i].push_back(states[i].Y);
+	Z[i].push_back(states[i].Z);
+	YAW[i].push_back(states[i].Yaw);
+
+	// UPDATE STATE WITH THE CURRENT CONTROL
+	auto new_pose = states[i].update();
+
+	// PREPARE MESSAGE
+	trajectory_msgs::MultiDOFJointTrajectory msg;
+	msg.header.stamp = ros::Time::now();
+	mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(new_pose.first, new_pose.second, &msg);
+
+	// PUBLISH MESSAGE FOR TRAYECTORY
+	pos_pubs[i].publish(msg);
 }
 
-/*************** CONVERT YALM TO OPENCV MAT ***************/
-Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs)
+void loadImages()
 {
-	Mat bearingMat = Mat::zeros(3, 3, CV_32F);
-	if (bearing.size() > 0 && segs.size() > 0)
+	cout << GREEN_C << "\n[INFO] Loading reference images with mode " << MODE << RESET_C << endl;
+
+	string image_dir = workspace;
+	image_dir += "/src/bearings/src/desired";
+
+	for (int i = 0; i < DRONE_COUNT; i++)
 	{
-		Mat bearingMat = Mat::zeros(3, segs.size(), CV_64F);
-		if (bearing.getType() == XmlRpc::XmlRpcValue::TypeArray)
+		states[i].desired.img = imread(image_dir + to_string(i + 1) + "_" + to_string(MODE) + ".jpg", IMREAD_COLOR);
+		if (states[i].desired.img.empty())
 		{
-			// cout << "bearing is array" << endl;
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < segs.size(); j++)
-				{
-					std::ostringstream ostr;
-					ostr << bearing[segs.size() * i + j];
-					std::istringstream istr(ostr.str());
-					istr >> bearingMat.at<double>(i, j);
-				}
-			}
+			cout << RED_C << "[ERROR] Could not open or find the reference image for drone " << i + 1 << RESET_C << endl;
+			cout << RED_C << "[ERROR] No dir >> " << image_dir + to_string(i + 1) + "_" + to_string(MODE) + ".jpg" << RESET_C << endl;
+			ros::shutdown();
+			exit(0);
 		}
-		return bearingMat;
 	}
-	else
-	{
-		return Mat();
-	}
+
+	cout << GREEN_C << "[INFO] Reference images loaded" << RESET_C << endl;
 }
 
 /*************** SAVE MATRIX TO FILE ***************/
@@ -1192,4 +855,145 @@ void writeMatrix(Mat &mat, const string &name)
 		myfile << endl;
 	}
 	myfile.close();
+}
+
+/*************** CONVERT YALM TO OPENCV MAT ***************/
+// Mat convertBearing(XmlRpc::XmlRpcValue bearing, XmlRpc::XmlRpcValue segs)
+// {
+// 	Mat bearingMat = Mat::zeros(3, 3, CV_32F);
+// 	if (bearing.size() > 0 && segs.size() > 0)
+// 	{
+// 		Mat bearingMat = Mat::zeros(3, segs.size(), CV_64F);
+// 		if (bearing.getType() == XmlRpc::XmlRpcValue::TypeArray)
+// 		{
+// 			// cout << "bearing is array" << endl;
+// 			for (int i = 0; i < 3; i++)
+// 			{
+// 				for (int j = 0; j < segs.size(); j++)
+// 				{
+// 					std::ostringstream ostr;
+// 					ostr << bearing[segs.size() * i + j];
+// 					std::istringstream istr(ostr.str());
+// 					istr >> bearingMat.at<double>(i, j);
+// 				}
+// 			}
+// 		}
+// 		return bearingMat;
+// 	}
+// 	else
+// 	{
+// 		return Mat();
+// 	}
+// }
+
+/*************** FOR IMU ***************/
+// void imuCallback1(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	pos_dron[0].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[0].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[0].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[0].pose.orientation.w = (float)msg->orientation.w;
+
+// 	/* pos_dron[0].header.stamp.sec++; */
+// }
+// void imuCallback2(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	pos_dron[1].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[1].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[1].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[1].pose.orientation.w = (float)msg->orientation.w;
+
+// 	/* pos_dron[1].header.stamp.sec++; */
+// }
+// void imuCallback3(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 3" << endl; */
+// 	pos_dron[2].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[2].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[2].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[2].pose.orientation.w = (float)msg->orientation.w;
+
+// 	/* pos_dron[2].header.stamp.sec++; */
+// }
+// void imuCallback4(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 4" << endl; */
+// 	pos_dron[3].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[3].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[3].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[3].pose.orientation.w = (float)msg->orientation.w;
+
+// 	/* pos_dron[3].header.stamp.sec++; */
+// }
+// void imuCallback5(const sensor_msgs::Imu::ConstPtr &msg)
+// {
+// 	/* cout << "IMU 4" << endl; */
+// 	pos_dron[4].pose.orientation.x = (float)msg->orientation.x;
+// 	pos_dron[4].pose.orientation.y = (float)msg->orientation.y;
+// 	pos_dron[4].pose.orientation.z = (float)msg->orientation.z;
+// 	pos_dron[4].pose.orientation.w = (float)msg->orientation.w;
+
+// 	/* pos_dron[4].header.stamp.sec++; */
+// }
+
+int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0, c8 = 0, c9 = 0, c10 = 0;
+
+void saveDesired1f(const sensor_msgs::Image::ConstPtr &msg)
+{
+	// cout << "[INFO] Saving Desired 1f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired1_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c1++ == 1)
+		cout << "[INFO] << Image 1 saved >> " << tempString << endl;
+}
+
+void saveDesired2f(const sensor_msgs::Image::ConstPtr &msg)
+{
+	// cout << "[INFO] Saving Desired 2f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired2_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c3++ == 1)
+		cout << "[INFO] << Image 2 saved >> " << tempString << endl;
+}
+
+void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg)
+{
+	// cout << "[INFO] Saving Desired 3f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired3_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c5++ == 1)
+		cout << "[INFO] << Image 3 saved >> " << tempString << endl;
+}
+
+void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg)
+{
+	// cout << "[INFO] Saving Desired 4f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired4_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c7++ == 1)
+		cout << "[INFO] << Image 4 saved >> " << tempString << endl;
+}
+
+void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg)
+{
+	// cout << "[INFO] Saving Desired 4f" << endl;
+	Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+	string tempString = workspace;
+	tempString += "/src/bearings/src/desired5_" + to_string(MODE) + ".jpg";
+	imwrite(tempString, actual);
+	if (c9++ == 1)
+		cout << "[INFO] << Image 5 saved >> " << tempString << endl;
 }

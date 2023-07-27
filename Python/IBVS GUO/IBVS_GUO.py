@@ -65,8 +65,8 @@ target_camera.set_position(target_x,
 p_target = target_camera.projection(w_points, n_points)
 
 # =========================== ACTUAL CAMERA AND INITIAL POSITION ===========================
-init_x = 6.0                     # Initial camera position 'x'
-init_y = -8.0                    # Initial camera position 'y'
+init_x = 0.0                     # Initial camera position 'x'
+init_y = 0.0                    # Initial camera position 'y'
 init_z = 10.0                    # Initial camera position 'z'
 init_pitch = np.deg2rad(0.0)     # Degrees to radians 'x'
 init_roll = np.deg2rad(0.0)      # Degrees to radians 'y'
@@ -159,8 +159,8 @@ while(countIndex < steps and err_pix > 1e-5):
     pitch += dt * U[4, 0]
     yaw   += dt * U[5, 0]
 
-    NN = lambda t: np.sin(t/2)
-    # NN = lambda t: 1
+    # NN = lambda t: np.sin(t/2)
+    NN = lambda t: 0
     fx = lambda t: np.zeros(t.shape)+NN(t) if type(t) == np.ndarray else NN(t)
     w_points += dt*fx(countIndex*dt)
 
