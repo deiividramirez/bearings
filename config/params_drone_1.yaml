@@ -21,9 +21,9 @@ gainv_max: 4
 gainv_prime: 2
 
 # Gain on angular velocities
-gainw: .01
-gainw_max: .001
-gainw_prime: .01
+gainw: 0.5
+gainw_max: 0.5001
+gainw_prime: 1
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01
@@ -41,3 +41,10 @@ flann_ratio: 0.7
 control: 1
 
 camara: 1
+
+
+
+# THIS CONTROL DOES NOT USE THE FOLLOWING PARAMETERS BUT THEY ARE REQUIRED
+gainv_ki: 0
+gainv_ki_max: 0.01
+gainv_ki_prime: 1

@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 	{
 		states[i].load(nhs[i]);
 	}
-
 	cout << GREEN_C << "\n[INFO] All Nodes have been initialized." << RESET_C << endl;
 
 	image_transport::ImageTransport it1(nh), it2(nh2), it3(nh3), it4(nh4), it5(nh5);
@@ -775,9 +774,9 @@ void saveStuff(int i)
 	vel_y[i].push_back(states[i].Vy);
 	vel_z[i].push_back(states[i].Vz);
 	vel_yaw[i].push_back(states[i].Vyaw);
-	lambda_kp[i].push_back(states[i].lambda_kp);
-	lambda_kv[i].push_back(states[i].lambda_kv);
-	lambda_kd[i].push_back(states[i].lambda_kd);
+	lambda_kp[i].push_back(states[i].lambda_kvp);
+	lambda_kv[i].push_back(states[i].lambda_kvi);
+	lambda_kd[i].push_back(states[i].lambda_kw);
 
 	if (i == 0 || i == 1)
 	{

@@ -55,14 +55,9 @@ void vc_state::load(const ros::NodeHandle &nh)
         this->params.scaleFactor = nh.param(std::string("scaleFactor"), 1.0);
         this->params.patchSize = nh.param(std::string("patchSize"), 30);
         this->params.flann_ratio = nh.param(std::string("flann_ratio"), 0.7);
-        
+
         this->params.control = nh.param(std::string("control"), 1);
         this->params.camara = nh.param(std::string("camara"), 1);
-
-        this->Kv = nh.param(std::string("gainv"), 0.0);
-        this->Kw = nh.param(std::string("gainw"), 0.0);
-        this->Kv_max = nh.param(std::string("gainv_max"), 0.0);
-        this->Kw_max = nh.param(std::string("gainw_max"), 0.0);
 
         XmlRpc::XmlRpcValue bearingConfig;
         if (nh.hasParam("bearing"))
@@ -98,8 +93,26 @@ void vc_state::load(const ros::NodeHandle &nh)
         // Load sampling time parameter
         this->dt = nh.param(std::string("dt"), 0.01);
 
+        // Load gains
+
+        // linear proportional velocity gains (Kv, Kv_max, kv_prima)
+        this->Kv = nh.param(std::string("gainv"), 0.0);
+        this->Kv_max = nh.param(std::string("gainv_max"), 0.0);
         this->kv_prima = nh.param(std::string("gainv_prime"), 1.0);
+
+        // linear integrañ velocity gains (Kv_i, Kv_i_max, kv_i_prima)
+        this->Kv_i = nh.param(std::string("gainv_ki"), 0.0);
+        this->Kv_i_max = nh.param(std::string("gainv_ki_ax"), 0.0);
+        this->kv_i_prima = nh.param(std::string("gainv_ki_prime"), 1.0);
+        
+        // angular derivative velocity gains (Kw, Kw_max, kw_prima)
+        this->Kw = nh.param(std::string("gainw"), 0.0);
+        this->Kw_max = nh.param(std::string("gainw_max"), 0.0);
         this->kw_prima = nh.param(std::string("gainw_prime"), 1.0);
+
+        cout << "[INFO] Kv: " << this->Kv << " Kv_max: " << this->Kv_max << " kv_prima: " << this->kv_prima << endl;
+        cout << "[INFO] Kv_i: " << this->Kv_i << " Kv_i_max: " << this->Kv_i_max << " kv_i_prima: " << this->kv_i_prima << endl;
+        cout << "[INFO] Kw: " << this->Kw << " Kw_max: " << this->Kw_max << " kw_prima: " << this->kw_prima << endl;
 }
 
 std::pair<Eigen::VectorXd, float> vc_state::update()
@@ -352,4 +365,46 @@ void Tipito(Mat &Matrix)
         string ty = type2str(Matrix.type());
         cout << "Matrix: " << ty.c_str() << " " << Matrix.cols << "x" << Matrix.rows << endl;
         cout << Matrix << endl;
+}
+
+void clip(Mat &Matrix, int max, int min)
+{
+        for (int i = 0; i < Matrix.rows; i++)
+        {
+                for (int j = 0; j < Matrix.cols; j++)
+                {
+                        // control if nan or inf
+                        if (isnan(Matrix.at<double>(i, j)) || isinf(Matrix.at<double>(i, j)))
+                        {
+                                Matrix.at<double>(i, j) = 0;
+                        }
+
+                        if (Matrix.at<double>(i, j) > max)
+                        {
+                                Matrix.at<double>(i, j) = max;
+                        }
+                        else if (Matrix.at<double>(i, j) < min)
+                        {
+                                Matrix.at<double>(i, j) = min;
+                        }
+                }
+        }
+}
+
+void clip(double value, int max, int min)
+{
+        if (isnan(value) || isinf(value))
+        {
+
+                value = 0;
+        }
+
+        if (value > max)
+        {
+                value = max;
+        }
+        else if (value < min)
+        {
+                value = min;
+        }
 }

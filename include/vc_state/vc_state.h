@@ -112,10 +112,10 @@ public:
     float Vx = 0.0, Vy = 0.0, Vz = 0.0;
     float Vyaw = 0.0, Vroll = 0.0, Vpitch = 0.0;
 
-    float Kv = 1.0, Kw = 1.0;
-    float Kv_max = 1.0, Kw_max = 1.0;
-    float kv_prima = 1.0, kw_prima = 1.0;
-    float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
+    float Kv = 1.0, Kw = 1.0, Kv_i = 1.0;
+    float Kv_max = 1.0, Kw_max = 1.0, Kv_i_max = 1.0;
+    float kv_prima = 1.0, kw_prima = 1.0, kv_i_prima = 1.0;
+    float lambda_kvp = 0, lambda_kvi = 0, lambda_kw = 0;
 
     float dt = 0.025;
     float t = 0;
@@ -241,5 +241,8 @@ Mat puntoMedio(Mat p1, Mat p2);
 string type2str(int type);
 
 void Tipito(Mat &Matrix);
+
+void clip(Mat &Matrix, int max = 5, int min = -5);
+void clip(double value, int max = 5, int min = -5);
 
 #endif

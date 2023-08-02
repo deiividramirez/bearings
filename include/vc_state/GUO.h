@@ -461,6 +461,8 @@ public:
       Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
       for (int i = 0; i < distancias.size(); i++)
          ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
+      
+      cout << "[INFO] Error: " << ERROR << endl;
       (*this->state).error = norm(ERROR, NORM_L1);
 
       // Choosing the gain for the control law
@@ -469,12 +471,13 @@ public:
          smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      (*this->state).lambda_kp = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp);
+      (*this->state).lambda_kvp = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * (*this->state).error) / (l0_Kp - linf_Kp)) + linf_Kp);
 
       cout << YELLOW_C << endl
-           << "[INFO] Lambda kp: " << linf_Kp << " < " << (*this->state).lambda_kp << " < " << l0_Kp << RESET_C << endl;
+           << "[INFO] Lambda kp: " << linf_Kp << " < " << (*this->state).lambda_kvp << " < " << l0_Kp << RESET_C << endl;
 
-      U_temp = -(*this->state).lambda_kp * Lo * ERROR;
+      U_temp = -(*this->state).lambda_kvp * Lo * ERROR;
+      clip(U_temp);
 
       (*this->state).Vx = -(float)U_temp.at<double>(2, 0);
       (*this->state).Vy = (float)U_temp.at<double>(0, 0);

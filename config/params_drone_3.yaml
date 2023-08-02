@@ -30,15 +30,20 @@ bearing:
         -.3, -.23, 
   ]
 
-# Gain on linear velocities
-gainv: 3
-gainv_max: .1
-gainv_prime: -5
+# Gain on linear velocities (proportional)
+gainv: 1
+gainv_max: 3
+gainv_prime: 1
+
+# Gain on linear velocities (integral)
+gainv_ki: .1
+gainv_ki_max: .005
+gainv_ki_prime: -0.6
 
 # Gain on angular velocities
-gainw: .1
-gainw_max: .005
-gainw_prime: -0.6
+gainw: 0.5
+gainw_max: 0.5001
+gainw_prime: 1
 
 # Threshold on the feature position error, used to stop the visual control
 feature_error_threshold: .01

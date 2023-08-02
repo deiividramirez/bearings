@@ -100,11 +100,11 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     ax[1][index].legend(loc="center left", bbox_to_anchor=(1, 0.5))
     ax[1][index].set_ylabel("Velocidades")
 
-    for i in ["kp", "kv", "kd"]:
+    for index_i, i in zip(["kvp", "kvi", "kw"], ["kp", "kv", "kd"]):
         try:
             lamb = np.loadtxt(f"{path}/out/out_lambda_{i}_{dron}.txt")
             if np.any(lamb != 0):
-                ax[2][index].plot(time[NUM:], lamb[NUM:], label="$\lambda_{" + i + "}$")
+                ax[2][index].plot(time[NUM:], lamb[NUM:], label="$\lambda_{" + index_i + "}$")
                 ax[2][index].plot(
                     [time[NUM], time[-1]],
                     [lamb[-1], lamb[-1]],

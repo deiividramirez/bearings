@@ -354,19 +354,14 @@ public:
       // Update the velocity
       Mat suma3 = suma1 + suma2;
 
-      if (opc == 4 || opc == 5)
-      {
-         (*this->state).Vyaw = .3 * suma1_w.at<double>(1, 0);
-      }
-
       // Error calculation
       Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
       (*this->state).error = norm(Error, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);
 
-      double error_x = norm((*this->state).actual.bearings.row(0) - (*this->state).desired.bearings.row(0), NORM_L2);
-      double error_y = norm((*this->state).actual.bearings.row(1) - (*this->state).desired.bearings.row(1), NORM_L2);
-      double error_z = norm((*this->state).actual.bearings.row(2) - (*this->state).desired.bearings.row(2), NORM_L2);
+      double error_x = norm((*this->state).actual.bearings.row(0) - (*this->state).desired.bearings.row(0), NORM_L1);
+      double error_y = norm((*this->state).actual.bearings.row(1) - (*this->state).desired.bearings.row(1), NORM_L1);
+      double error_z = norm((*this->state).actual.bearings.row(2) - (*this->state).desired.bearings.row(2), NORM_L1);
 
       cout << endl
            << "[INFO] Error in x: " << error_x << " y: " << error_y << " z: " << error_z << endl;
@@ -375,32 +370,52 @@ public:
       if ((*this->state).t <= tfL)
          smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
 
+      if (opc == 4 || opc == 5 || opc == 6 || opc == 7)
+      {
+         double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
+         double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
+         
+         (*this->state).lambda_kw = (kw1 + kw2 + kw3) / 3.0;
+         (*this->state).Vyaw = (*this->state).lambda_kw * suma1_w.at<double>(1, 0);
+      }
+
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
       double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
       double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
-      (*this->state).lambda_kp = (kp1 + kp2 + kp3) / 3.0;
+      (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
-      double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-      double kv1 = 2 * smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
-      double kv2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
-      double kv3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
-      (*this->state).lambda_kv = (kv1 + kv2 + kv3) / 3.0;
+      double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
+      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      (*this->state).lambda_kvi = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl
-           << "[INFO] kp_x: " << kp1 << " kp_y: " << kp2 << " kp_z: " << kp3 << endl
-           << "[INFO] kv_x: " << kv1 << " kv_y: " << kv2 << " kv_z: " << kv3 << endl
-           << "Lambda kp: " << l0_Kp << " < " << (*this->state).lambda_kp << " < " << linf_Kp << endl
-           << "Lambda kv: " << l0_Kv << " < " << (*this->state).lambda_kv << " < " << linf_Kv << RESET_C << endl
+           << "[INFO]\nkvp_x: " << kp1 << " kvp_y: " << kp2 << " kvp_z: " << kp3 << endl
+           << "kv_i_x: " << kv1 << " kv_i_y: " << kv2 << " kv_i_z: " << kv3 << endl
+           << "Lambda kp: " << l0_Kp << " < " << (*this->state).lambda_kvp << " < " << linf_Kp << endl
+           << "Lambda kv_i: " << linf_Kv_i << " < " << (*this->state).lambda_kvi << " < " << l0_Kv_i << endl
+           << RESET_C
            << endl;
 
       Mat tempSign = signMat(suma3);
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      (*this->state).Vx = (float)(kp1 * tempError.at<double>(0, 0) - kv1 * (*this->state).integral_error.at<double>(0, 0));
-      (*this->state).Vy = (float)(kp2 * tempError.at<double>(1, 0) - kv2 * (*this->state).integral_error.at<double>(1, 0));
-      (*this->state).Vz = (float)(kp3 * tempError.at<double>(2, 0) - kv3 * (*this->state).integral_error.at<double>(2, 0));
+      double Vx = kp1 * tempError.at<double>(0, 0) - kv1 * (*this->state).integral_error.at<double>(0, 0);
+      double Vy = kp2 * tempError.at<double>(1, 0) - kv2 * (*this->state).integral_error.at<double>(1, 0);
+      double Vz = kp3 * tempError.at<double>(2, 0) - kv3 * (*this->state).integral_error.at<double>(2, 0);
+
+      clip(Vx);
+      clip(Vy);
+      clip(Vz);
+
+      (*this->state).Vx = (float)Vx;
+      (*this->state).Vy = (float)Vy;
+      (*this->state).Vz = (float)Vz;
 
       cout << "[INFO] Desired bearing: " << (*this->state).desired.bearings << endl;
       cout << "[INFO] Actual bearing: " << (*this->state).actual.bearings << endl;
