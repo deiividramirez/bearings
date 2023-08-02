@@ -188,20 +188,20 @@ void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg);
 
-/****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
-int compute_descriptors(const cv::Mat &img,
-                        const vc_parameters &params,
-                        const vc_desired_configuration &desired_configuration,
-                        vc_homograpy_matching_result &result);
+// /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
+// int compute_descriptors(const cv::Mat &img,
+//                         const vc_parameters &params,
+//                         const vc_desired_configuration &desired_configuration,
+//                         vc_homograpy_matching_result &result);
 
 /****************** GET MOORE-PENROSE PSEUDO-INVERSE OF A MATRIX ******************/
 cv::Mat Moore_Penrose_PInv(cv::Mat L, double &det);
 
 /****************** TRAJECTORY TRACKER KLT - ALGORITHM ******************/
-int Compute_descriptors(const Mat &actual,
-                        Mat &img_points,
-                        vc_state &state,
-                        vc_homograpy_matching_result &matching_result);
+// int Compute_descriptors(const Mat &actual,
+//                         Mat &img_points,
+//                         vc_state &state,
+//                         vc_homograpy_matching_result &matching_result);
 
 /****************** ARUCO DETECTOR FROM OPENCV 4+ ******************/
 int aruco_detector(const Mat &actual,

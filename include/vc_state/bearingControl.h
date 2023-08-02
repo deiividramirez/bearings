@@ -9,6 +9,7 @@ public:
    vc_state *state;
 
    // double LastYaw;
+   int droneID;
 
    vector<vc_state> drones;
 
@@ -18,15 +19,15 @@ public:
    {
    }
 
-   bearingControl(vc_state *stated)
+   bearingControl(vc_state *stated, int droneID)
    {
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
-      // this->LastYaw = (*this->state).Yaw;
+      this->droneID = droneID;
 
-      cout << GREEN_C << "\n[INFO] Getting desired data for bearing control" << RESET_C << endl;
+      cout << GREEN_C << "\n[INFO] Getting desired data for bearing control for drone " << droneID << RESET_C << endl;
 
       if (this->getDesiredData() < 0)
       {
@@ -37,13 +38,13 @@ public:
       cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
    }
 
-   bearingControl(vc_state *stated, vector<vc_state> drones)
+   bearingControl(vc_state *stated, vector<vc_state> drones, int droneID)
    {
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->imgActual = imgActual;
       this->state = stated;
-      // this->LastYaw = (*this->state).Yaw;
+      this->droneID = droneID;
 
       this->drones = drones;
 

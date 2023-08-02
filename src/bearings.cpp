@@ -72,17 +72,17 @@ int main(int argc, char **argv)
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
 		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		bearDrone3 = bearingControl(&states[2], states);
+		bearDrone3 = bearingControl(&states[2], states, 3);
 
 		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
 		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		bearDrone4 = bearingControl(&states[3], states);
+		bearDrone4 = bearingControl(&states[3], states, 4);
 
 		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
 		if (DRONE_COUNT == 5)
 		{
 			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
-			bearDrone5 = bearingControl(&states[4], states);
+			bearDrone5 = bearingControl(&states[4], states, 5);
 		}
 	}
 
