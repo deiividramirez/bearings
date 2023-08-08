@@ -135,8 +135,9 @@ public:
     Mat U_rot = Mat::zeros(3, 1, CV_64F);
 
     Mat integral_error = Mat::zeros(3, 1, CV_64F);
-    Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
-    Mat integral_error12 = Mat::zeros(12, 1, CV_64F);
+    Mat integral_error_save = Mat::zeros(3, 1, CV_64F);
+    // Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
+    // Mat integral_error12 = Mat::zeros(12, 1, CV_64F);
 
     bool in_target = false;
 

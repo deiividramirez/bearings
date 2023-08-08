@@ -27,7 +27,7 @@ public:
    double argMIN1, argMAX1, argMIN2, argMAX2;
    Mat maskMat;
 
-   double t0L = 0.0, tfL = 2.0;
+   double t0L = 0.0, tfL = 1.0, lastLKT = 0.0;
 
    GUO()
    {
@@ -104,9 +104,8 @@ public:
          cout << RESET_C << endl;
 
          int indice;
-
-         (*this->state).desired.points = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
-         (*this->state).desired.normPoints = Mat::zeros(4 * (*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).desired.points = Mat::zeros((*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).desired.normPoints = Mat::zeros((*this->state).params.seguimiento.rows, 2, CV_64F);
 
          for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
          {
@@ -133,16 +132,32 @@ public:
             Mat Kinv;
             (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
 
-            for (int i = 0; i < 4; i++)
+            int indexMark;
+            if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 96)
             {
-               temporal.at<float>(i, 0) = markerCorners[indice][i].x;
-               temporal.at<float>(i, 1) = markerCorners[indice][i].y;
-               temporal.at<float>(i, 2) = 1;
-
-               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+               indexMark = 0;
             }
-            temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
-            temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 97)
+            {
+               indexMark = 1;
+            }
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
+            {
+               indexMark = 3;
+            }
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
+            {
+               indexMark = 2;
+            }
+
+            temporal.at<float>(marker_index, 0) = markerCorners[indice][indexMark].x;
+            temporal.at<float>(marker_index, 1) = markerCorners[indice][indexMark].y;
+            temporal.at<float>(marker_index, 2) = 1;
+
+            temporal2.row(marker_index) = (Kinv * temporal.row(marker_index).t()).t();
+
+            temporal2.colRange(0, 2).row(marker_index).convertTo((*this->state).desired.normPoints.row(marker_index), CV_64F);
+            temporal.colRange(0, 2).row(marker_index).convertTo((*this->state).desired.points.row(marker_index), CV_64F);
          }
 
          (*this->state).desired.markerIds = markerIds;
@@ -196,43 +211,61 @@ public:
          }
          cout << RESET_C << endl;
 
-         int marker_index = -1;
-         for (int indexesXLM = 0; indexesXLM < (*this->state).params.seguimiento.cols; indexesXLM++)
-         {
+         int indice;
+         (*this->state).actual.points = Mat::zeros((*this->state).params.seguimiento.rows, 2, CV_64F);
+         (*this->state).actual.normPoints = Mat::zeros((*this->state).params.seguimiento.rows, 2, CV_64F);
 
+         for (int32_t marker_index = 0; marker_index < (*this->state).params.seguimiento.rows; marker_index++)
+         {
+            indice = -1;
             for (int i = 0; i < markerIds.size(); i++)
             {
-               if (markerIds[i] == (int)((*this->state).params.seguimiento.at<double>(indexesXLM)))
+               if (markerIds[i] == (int)(*this->state).params.seguimiento.at<double>(marker_index, 0))
                {
-                  cout << "[INFO] Marker " << (int)(*this->state).params.seguimiento.at<double>(indexesXLM) << " have been detected." << endl;
-                  marker_index = i;
+                  // cout << "[INFO] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " detected" << endl;
+                  indice = i;
                   break;
                }
             }
-            if (marker_index == -1)
+
+            if (indice == -1)
             {
-               cout << RED_C << "[ERROR] All markers in " << (*this->state).params.seguimiento << " not found" << RESET_C << endl;
+               cout << RED_C << "[ERROR] Marker " << (*this->state).params.seguimiento.at<double>(marker_index, 0) << " not detected" << RESET_C << endl;
                return -1;
             }
 
             Mat temporal = Mat::zeros(4, 3, CV_32F);
-            Mat temporal2 = Mat::zeros(4, 3, CV_32F);
+            Mat temporal2 = Mat::zeros(4, 3, CV_32F), temporal3;
 
             Mat Kinv;
             (*this->state).params.Kinv.convertTo(Kinv, CV_32F);
 
-            for (int i = 0; i < 4; i++)
+            int indexMark;
+            if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 96)
             {
-               temporal.at<float>(i, 0) = markerCorners[marker_index][i].x;
-               temporal.at<float>(i, 1) = markerCorners[marker_index][i].y;
-               temporal.at<float>(i, 2) = 1;
-
-               temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
+               indexMark = 0;
             }
-            temporal2.colRange(0, 2).convertTo((*this->state).actual.normPoints, CV_64F);
-            temporal.colRange(0, 2).convertTo((*this->state).actual.points, CV_64F);
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 97)
+            {
+               indexMark = 1;
+            }
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
+            {
+               indexMark = 3;
+            }
+            else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
+            {
+               indexMark = 2;
+            }
 
-            break;
+            temporal.at<float>(marker_index, 0) = markerCorners[indice][indexMark].x;
+            temporal.at<float>(marker_index, 1) = markerCorners[indice][indexMark].y;
+            temporal.at<float>(marker_index, 2) = 1;
+
+            temporal2.row(marker_index) = (Kinv * temporal.row(marker_index).t()).t();
+            temporal2.colRange(0, 2).row(marker_index).convertTo((*this->state).actual.normPoints.row(marker_index), CV_64F);
+
+            temporal.colRange(0, 2).row(marker_index).convertTo((*this->state).actual.points.row(marker_index), CV_64F);
          }
 
          (*this->state).actual.markerIds = markerIds;
@@ -411,7 +444,7 @@ public:
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
 
       t0L = (*this->state).t;
-      tfL = (*this->state).t + 2;
+      tfL = (*this->state).t + 1.0;
 
       this->keypoints1.clear();
       this->descriptors1.release();
@@ -437,6 +470,13 @@ public:
 
       Mat U_temp, L, Lo;
       vector<vecDist> distancias;
+
+      if ((*this->state).t - this->lastLKT > 3)
+      {
+         this->firstTime = false;
+         this->lastLKT = (*this->state).t;
+      }
+
       if (this->getActualData(img) < 0)
       {
          cout << RED_C << "[ERROR] Actual points in picture not found" << RESET_C << endl;
@@ -461,8 +501,8 @@ public:
       Mat ERROR = Mat::zeros(distancias.size(), 1, CV_64F);
       for (int i = 0; i < distancias.size(); i++)
          ERROR.at<double>(i, 0) = (double)distancias[i].dist2 - (double)distancias[i].dist;
-      
-      cout << "[INFO] Error: " << ERROR << endl;
+
+      cout << "[INFO] Error: " << ERROR.t() << endl;
       (*this->state).error = norm(ERROR, NORM_L1);
 
       // Choosing the gain for the control law
@@ -644,11 +684,14 @@ public:
       Mat p2;
       vector<Mat> keys;
 
-      keys.push_back((Mat_<double>(1, 2) << 480, 270));
-      keys.push_back((Mat_<double>(1, 2) << 1440, 270));
-      keys.push_back((Mat_<double>(1, 2) << 1440, 810));
-      keys.push_back((Mat_<double>(1, 2) << 480, 810));
-      // keys.push_back((Mat_<double>(1, 2) << 960, 540));
+      // keys.push_back((Mat_<double>(1, 2) << 480, 270));
+      // keys.push_back((Mat_<double>(1, 2) << 1440, 270));
+      // keys.push_back((Mat_<double>(1, 2) << 1440, 810));
+      // keys.push_back((Mat_<double>(1, 2) << 480, 810));
+      keys.push_back((Mat_<double>(1, 2) << 0, 0));
+      keys.push_back((Mat_<double>(1, 2) << 1920, 0));
+      keys.push_back((Mat_<double>(1, 2) << 0, 1080));
+      keys.push_back((Mat_<double>(1, 2) << 1920, 1080));
 
       // Make buuble sort with norm of the difference between points and key
       *ordenFinal = Mat::zeros(1, keys.size(), CV_32S) - 1;

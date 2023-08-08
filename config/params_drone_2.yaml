@@ -1,23 +1,19 @@
 # The camera intrinsic parameters matrix
 # 3x3 matrix
-camera_intrinsic_parameters: [700,   0,    960,
-                              0,    700,   540,
-                              0,     0,     1]
+camera_intrinsic_parameters: [700, 0, 960, 0, 700, 540, 0, 0, 1]
 
-R: [0, 0, -1,
-    1, 0, 0,
-    0, 1, 0]
-    
+R: [0, 0, -1, 1, 0, 0, 0, 1, 0]
+
 # Sampling time
 dt: 0.01
 
-seguimiento: 
-  len: 1
-  data: [98] #96 or 98
+seguimiento:
+  len: 4
+  data: [96, 97, 98, 99]
 
 # Gain on linear velocities
-gainv: 1
-gainv_max: 4
+gainv: 3
+gainv_max: 5
 gainv_prime: 2
 
 # Gain on angular velocities
@@ -41,8 +37,6 @@ flann_ratio: 0.7
 control: 1
 
 camara: 1
-
-
 
 # THIS CONTROL DOES NOT USE THE FOLLOWING PARAMETERS BUT THEY ARE REQUIRED
 gainv_ki: 0

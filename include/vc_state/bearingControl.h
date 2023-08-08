@@ -13,7 +13,7 @@ public:
 
    vector<vc_state> drones;
 
-   double t0L = 0.0, tfL = 2.0;
+   double t0L = 0.0, tfL = 1.0;
 
    bearingControl()
    {
@@ -124,11 +124,7 @@ public:
             temporal.at<float>(i, 2) = 1;
 
             temporal2.row(i) = (Kinv * temporal.row(i).t()).t();
-
-            // temporal3.at<float>(i, 0) = temporal2.at<float>(0, 0) / temporal2.at<float>(2, 0);
-            // temporal3.at<float>(i, 1) = temporal2.at<float>(1, 0) / temporal2.at<float>(2, 0);
          }
-         // temporal3.convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal2.colRange(0, 2).convertTo((*this->state).desired.normPoints.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.colRange(0, 2).convertTo((*this->state).desired.points.rowRange(marker_index * 4, marker_index * 4 + 4), CV_64F);
          temporal.convertTo(temporal, CV_64F);
@@ -144,13 +140,8 @@ public:
          Mat temp2 = (*this->state).params.Kinv * pMedio;
          temporal = temp2 / norm(temp2);
 
-         double b1 = temporal.at<double>(2, 0);
-         double b2 = -temporal.at<double>(0, 0);
-
-         // (*this->state).desired.bearings.at<double>(0, marker_index) = cos((*state).Yaw) * b1 - sin((*state).Yaw) * b2;
-         // (*this->state).desired.bearings.at<double>(1, marker_index) = sin((*state).Yaw) * b1 + cos((*state).Yaw) * b2;
-         (*this->state).desired.bearings.at<double>(0, marker_index) = b1;
-         (*this->state).desired.bearings.at<double>(1, marker_index) = b2;
+         (*this->state).desired.bearings.at<double>(0, marker_index) = temporal.at<double>(2, 0);
+         (*this->state).desired.bearings.at<double>(1, marker_index) = -temporal.at<double>(0, 0);
          (*this->state).desired.bearings.at<double>(2, marker_index) = -temporal.at<double>(1, 0);
       }
 
@@ -313,7 +304,7 @@ public:
          }
          else if (opc == 5)
          {
-            cout << GREEN_C << "[INFO] Control with with bearing ortogonal projection and homography - GROUND TRUTH" << RESET_C << endl;
+            cout << GREEN_C << "[INFO] Control with with bearing ortogonal projection - GROUND TRUTH" << RESET_C << endl;
             Mat QiQj = composeR(
                            (*this->state).groundTruth.at<double>(3, 0),
                            (*this->state).groundTruth.at<double>(4, 0),
@@ -335,7 +326,7 @@ public:
          }
          else if (opc == 7)
          {
-            cout << GREEN_C << "[INFO] Control with with difference of bearings and homography - GROUND TRUTH" << RESET_C << endl;
+            cout << GREEN_C << "[INFO] Control with with difference of bearings - GROUND TRUTH" << RESET_C << endl;
             Mat QiQj = composeR(
                            (*this->state).groundTruth.at<double>(3, 0),
                            (*this->state).groundTruth.at<double>(4, 0),
@@ -376,21 +367,21 @@ public:
          double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
          double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
          double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
-         
+
          (*this->state).lambda_kw = (kw1 + kw2 + kw3) / 3.0;
          (*this->state).Vyaw = (*this->state).lambda_kw * suma1_w.at<double>(1, 0);
       }
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 5 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
       (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
-      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 5 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
       (*this->state).lambda_kvi = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl
@@ -405,9 +396,13 @@ public:
       (*this->state).integral_error += (*this->state).dt * tempSign;
       Mat tempError = robust(suma3);
 
-      double Vx = kp1 * tempError.at<double>(0, 0) - kv1 * (*this->state).integral_error.at<double>(0, 0);
-      double Vy = kp2 * tempError.at<double>(1, 0) - kv2 * (*this->state).integral_error.at<double>(1, 0);
-      double Vz = kp3 * tempError.at<double>(2, 0) - kv3 * (*this->state).integral_error.at<double>(2, 0);
+      (*this->state).integral_error_save.at<double>(0, 0) = -kv1 * (*this->state).integral_error.at<double>(0, 0);
+      (*this->state).integral_error_save.at<double>(1, 0) = -kv2 * (*this->state).integral_error.at<double>(1, 0);
+      (*this->state).integral_error_save.at<double>(2, 0) = -kv3 * (*this->state).integral_error.at<double>(2, 0);
+
+      double Vx = kp1 * tempError.at<double>(0, 0) + (*this->state).integral_error_save.at<double>(0, 0);
+      double Vy = kp2 * tempError.at<double>(1, 0) + (*this->state).integral_error_save.at<double>(1, 0);
+      double Vz = kp3 * tempError.at<double>(2, 0) + (*this->state).integral_error_save.at<double>(2, 0);
 
       clip(Vx);
       clip(Vy);

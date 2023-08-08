@@ -8,7 +8,7 @@ public:
    Mat imgActual;
    vc_state *state;
 
-   double t0L = 0.0, tfL = 2.0;
+   double t0L = 0.0, tfL = 1.0;
 
    RotationalControl()
    {

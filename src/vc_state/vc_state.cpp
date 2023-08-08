@@ -104,7 +104,7 @@ void vc_state::load(const ros::NodeHandle &nh)
         this->Kv_i = nh.param(std::string("gainv_ki"), 0.0);
         this->Kv_i_max = nh.param(std::string("gainv_ki_ax"), 0.0);
         this->kv_i_prima = nh.param(std::string("gainv_ki_prime"), 1.0);
-        
+
         // angular derivative velocity gains (Kw, Kw_max, kw_prima)
         this->Kw = nh.param(std::string("gainw"), 0.0);
         this->Kw_max = nh.param(std::string("gainw_max"), 0.0);

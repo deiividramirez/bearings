@@ -104,7 +104,9 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
         try:
             lamb = np.loadtxt(f"{path}/out/out_lambda_{i}_{dron}.txt")
             if np.any(lamb != 0):
-                ax[2][index].plot(time[NUM:], lamb[NUM:], label="$\lambda_{" + index_i + "}$")
+                ax[2][index].plot(
+                    time[NUM:], lamb[NUM:], label="$\lambda_{" + index_i + "}$"
+                )
                 ax[2][index].plot(
                     [time[NUM], time[-1]],
                     [lamb[-1], lamb[-1]],

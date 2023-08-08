@@ -52,6 +52,41 @@
            y="0.60000002" />
       </g>
     </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath15-3">
+      <g
+         id="g23-6">
+        <rect
+           style="fill:#000000;stroke:#000000;stroke-width:1.2;stroke-dasharray:none;stroke-opacity:1"
+           id="rect17-7"
+           width="10.449558"
+           height="10.449558"
+           x="0.60000002"
+           y="0.60000002" />
+        <rect
+           style="fill:#000000;stroke:#000000;stroke-width:1.2;stroke-dasharray:none;stroke-opacity:1"
+           id="rect19-5"
+           width="10.449558"
+           height="10.449558"
+           x="18.950441"
+           y="18.950441" />
+        <rect
+           style="fill:#000000;stroke:#000000;stroke-width:1.2;stroke-dasharray:none;stroke-opacity:1"
+           id="rect21-3"
+           width="10.449558"
+           height="10.449558"
+           x="0.60000002"
+           y="18.950441" />
+        <rect
+           style="fill:#000000;stroke:#000000;stroke-width:1.2;stroke-dasharray:none;stroke-opacity:1"
+           id="rect23-5"
+           width="10.449558"
+           height="10.449558"
+           x="18.950441"
+           y="0.60000002" />
+      </g>
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="namedview34"
@@ -66,7 +101,7 @@
      showgrid="false"
      inkscape:zoom="0.26426275"
      inkscape:cx="743.57812"
-     inkscape:cy="1203.3478"
+     inkscape:cy="1199.5637"
      inkscape:window-width="1858"
      inkscape:window-height="1016"
      inkscape:window-x="62"
@@ -190,16 +225,16 @@
        id="rect30" />
   </g>
   <g
-     id="g1"
+     id="g1-6"
      transform="translate(0.01062006,0.04247846)">
     <rect
-       style="fill:none;stroke:#000000;stroke-width:1.15609;stroke-dasharray:none;stroke-opacity:1"
-       id="rect1"
+       style="fill:none;stroke:#000000;stroke-width:1.72861;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1-2"
        width="28.863829"
        height="28.982008"
        x="0.62382787"
        y="0.54873687"
-       clip-path="url(#clipPath15)"
+       clip-path="url(#clipPath15-3)"
        transform="matrix(1.0412979,0,0,1.0412979,-0.63008849,-0.66194689)" />
   </g>
 </svg>
