@@ -1,44 +1,28 @@
 # The camera intrinsic parameters matrix
 # 3x3 matrix
-# Iris
-camera_intrinsic_parameters: [700,   0,    960,
-                              0,    700,   540,
-                              0,     0,     1]
+camera_intrinsic_parameters: [700, 0, 960, 0, 700, 540, 0, 0, 1]
 
-# Bebop2
-# camera_intrinsic_parameters: [1505,   0,    2043,
-#                               0,    1505,   1446,
-#                               0,     0,     1]
-
-R: [0, 0, -1,
-    1, 0, 0,
-    0, 1, 0]
-    
 # Sampling time
 dt: 0.01
 
-seguimiento: 
+seguimiento:
   len: 2
   data: [3, 4] #1, 2, 3, 4, 96, 97, 98, 99
 
-bearing: 
+bearing:
   rows: 3
   cols: 2
-  data: [
-        .9,  .9,
-        -.3, .3,
-        .3,  -.3,
-  ]
+  data: [.9, .9, -.3, .3, .3, -.3]
 
 # Gain on linear velocities (proportional)
-gainv: 1
-gainv_max: 3
-gainv_prime: 1
+gainv: 4
+gainv_max: 1
+gainv_prime: -5
 
 # Gain on linear velocities (integral)
-gainv_ki: .1
+gainv_ki: 0.1
 gainv_ki_max: .005
-gainv_ki_prime: -0.6
+gainv_ki_prime: -0.3
 
 # Gain on angular velocities
 gainw: 0.5

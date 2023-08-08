@@ -257,13 +257,13 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			CHANGE_THRESHOLD_LEADER -= 0.02;
+			// CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
 			Scalar color;
@@ -347,13 +347,13 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			CHANGE_THRESHOLD_LEADER -= 0.02;
+			// CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
 		}
 
-		if (!SHOW_IMAGES)
+		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
 			Scalar color;
@@ -450,7 +450,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(2);
 
-		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 3 is in target" << RESET_C << endl;
 			states[2].in_target = true;
@@ -506,7 +506,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(3);
 
-		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 4 is in target" << RESET_C << endl;
 			states[3].in_target = true;
@@ -562,7 +562,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		}
 		saveStuff(4);
 
-		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 5 is in target" << RESET_C << endl;
 			states[4].in_target = true;

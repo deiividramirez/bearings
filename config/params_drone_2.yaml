@@ -13,7 +13,7 @@ seguimiento:
 
 # Gain on linear velocities
 gainv: 3
-gainv_max: 5
+gainv_max: 6
 gainv_prime: 2
 
 # Gain on angular velocities
@@ -37,8 +37,3 @@ flann_ratio: 0.7
 control: 1
 
 camara: 1
-
-# THIS CONTROL DOES NOT USE THE FOLLOWING PARAMETERS BUT THEY ARE REQUIRED
-gainv_ki: 0
-gainv_ki_max: 0.01
-gainv_ki_prime: 1

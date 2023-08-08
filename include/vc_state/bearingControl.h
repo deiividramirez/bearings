@@ -373,15 +373,15 @@ public:
       }
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
       (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
-      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
       (*this->state).lambda_kvi = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl

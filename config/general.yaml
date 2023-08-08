@@ -9,7 +9,7 @@ LIM_MAX: 3000 # Maximum number of iterations for each drone
 # Use or not use descriptor matching for obtaining the points and threshold to change the desired image from outside to inside
 INIT_MODE: 0 # 0: Aruco Markers, 1: Descriptor Matching
 # CHANGE_THRESHOLD_LEADER: .07 # Threshold to change the desired image from outside to inside for the leaders drones
-CHANGE_THRESHOLD_LEADER: .005 # Threshold to change the desired image from outside to inside for the leaders drones
+CHANGE_THRESHOLD_LEADER: .015 # Threshold to change the desired image from outside to inside for the leaders drones
 CHANGE_THRESHOLD_FOLLOWER: .015 # Threshold to change the desired image from outside to inside for the follower drones
 
 # Save the desired images (when setting eveything up for the first time)

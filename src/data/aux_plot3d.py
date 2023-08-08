@@ -26,6 +26,13 @@ else:
 
 print(f"Plots para {DRONE_COUNT} drones")
 
+WINDOW = np.array([
+    [0, 1.2, 0.7], 
+    [0, -1.2, 0.7], 
+    [0, 1.2, 2.2], 
+    [0, -1.2, 2.2],
+])
+
 fig, ax = plt.subplots(
     1,
     1,
@@ -36,20 +43,27 @@ fig, ax = plt.subplots(
     subplot_kw=dict(projection="3d"),
 )
 
-deseada_drone1 = [2.5, -0.5, 1.4]
-deseada_drone2 = [2.5, 0.5, 1.4]
-deseada_drone3 = [1.5, 0.5, 1.5]
-deseada_drone4 = [1.5, -0.5, 1.3]
-deseada_drone5 = [0.5, 0, 1.4]
+
+deseada_drone1 = [2, -0.5, 1.4]
+deseada_drone2 = [2, 0.5, 1.4]
+deseada_drone3 = [1, 0.25, 1.6]
+deseada_drone4 = [1, -0.2, 1.4]
+deseada_drone5 = [-4, 0, 1.4]
 
 deseadas = np.array(
     [deseada_drone1, deseada_drone2, deseada_drone3, deseada_drone4, deseada_drone5]
 )
 
+# echo "bebop2" && echo "DRON 1" && 
+# rosrun placing_iris placing_iris bebop2_1 -2 -.5 1.4 0 && echo "DRON 2" && 
+# rosrun placing_iris placing_iris bebop2_2 -2 .5 1.4 0 && echo "DRON 3" && 
+# rosrun placing_iris placing_iris bebop2_3 -3 0.25 1.6 0 && echo "DRON 4" && 
+# rosrun placing_iris placing_iris bebop2_4 -3 -.2 1.4 0 && echo "DRON 5" && 
+# rosrun placing_iris placing_iris bebop2_5 -4 0 1.4 0
 deseada_drone1_1 = [-2, -0.5, 1.4]
 deseada_drone2_1 = [-2, 0.5, 1.4]
-deseada_drone3_1 = [-3, 0.5, 1.5]
-deseada_drone4_1 = [-3, -0.5, 1.3]
+deseada_drone3_1 = [-3, 0.25, 1.6]
+deseada_drone4_1 = [-3, -0.2, 1.4]
 deseada_drone5_1 = [-4, 0, 1.4]
 deseadas_1 = np.array(
     [
@@ -116,6 +130,16 @@ Norm error final -> {np.linalg.norm([x[-1] - deseadas[index][0], y[-1] - deseada
     )
     ax.plot3D(x[0], y[0], z[0], "o", linewidth=0.5, color="red")
     ax.plot3D(x[-1], y[-1], z[-1], "o", linewidth=0.5, color="green")
+
+    # draw window
+    ax.plot3D(
+        [WINDOW[0][0], WINDOW[1][0], WINDOW[3][0], WINDOW[2][0], WINDOW[0][0]],
+        [WINDOW[0][1], WINDOW[1][1], WINDOW[3][1], WINDOW[2][1], WINDOW[0][1]],
+        [WINDOW[0][2], WINDOW[1][2], WINDOW[3][2], WINDOW[2][2], WINDOW[0][2]],
+        "-",
+        linewidth=0.5,
+        color="black",
+    )
 
 
 # set azimutal angle
