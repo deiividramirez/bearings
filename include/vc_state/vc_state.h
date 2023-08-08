@@ -112,10 +112,10 @@ public:
     float Vx = 0.0, Vy = 0.0, Vz = 0.0;
     float Vyaw = 0.0, Vroll = 0.0, Vpitch = 0.0;
 
-    float Kv = 1.0, Kw = 1.0;
-    float Kv_max = 1.0, Kw_max = 1.0;
-    float kv_prima = 1.0, kw_prima = 1.0;
-    float lambda_kp = 0, lambda_kv = 0, lambda_kd = 0;
+    float Kv = 1.0, Kw = 1.0, Kv_i = 1.0;
+    float Kv_max = 1.0, Kw_max = 1.0, Kv_i_max = 1.0;
+    float kv_prima = 1.0, kw_prima = 1.0, kv_i_prima = 1.0;
+    float lambda_kvp = 0, lambda_kvi = 0, lambda_kw = 0;
 
     float dt = 0.025;
     float t = 0;
@@ -135,8 +135,9 @@ public:
     Mat U_rot = Mat::zeros(3, 1, CV_64F);
 
     Mat integral_error = Mat::zeros(3, 1, CV_64F);
-    Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
-    Mat integral_error12 = Mat::zeros(12, 1, CV_64F);
+    Mat integral_error_save = Mat::zeros(3, 1, CV_64F);
+    // Mat integral_error6 = Mat::zeros(6, 1, CV_64F);
+    // Mat integral_error12 = Mat::zeros(12, 1, CV_64F);
 
     bool in_target = false;
 
@@ -188,20 +189,20 @@ void saveDesired3f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired4f(const sensor_msgs::Image::ConstPtr &msg);
 void saveDesired5f(const sensor_msgs::Image::ConstPtr &msg);
 
-/****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
-int compute_descriptors(const cv::Mat &img,
-                        const vc_parameters &params,
-                        const vc_desired_configuration &desired_configuration,
-                        vc_homograpy_matching_result &result);
+// /****************** COMPUTE DESCRIPTORS FOR IMAGES ******************/
+// int compute_descriptors(const cv::Mat &img,
+//                         const vc_parameters &params,
+//                         const vc_desired_configuration &desired_configuration,
+//                         vc_homograpy_matching_result &result);
 
 /****************** GET MOORE-PENROSE PSEUDO-INVERSE OF A MATRIX ******************/
 cv::Mat Moore_Penrose_PInv(cv::Mat L, double &det);
 
 /****************** TRAJECTORY TRACKER KLT - ALGORITHM ******************/
-int Compute_descriptors(const Mat &actual,
-                        Mat &img_points,
-                        vc_state &state,
-                        vc_homograpy_matching_result &matching_result);
+// int Compute_descriptors(const Mat &actual,
+//                         Mat &img_points,
+//                         vc_state &state,
+//                         vc_homograpy_matching_result &matching_result);
 
 /****************** ARUCO DETECTOR FROM OPENCV 4+ ******************/
 int aruco_detector(const Mat &actual,
@@ -241,5 +242,8 @@ Mat puntoMedio(Mat p1, Mat p2);
 string type2str(int type);
 
 void Tipito(Mat &Matrix);
+
+void clip(Mat &Matrix, int max = 5, int min = -5);
+void clip(double value, int max = 5, int min = -5);
 
 #endif

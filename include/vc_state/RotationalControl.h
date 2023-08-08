@@ -8,6 +8,8 @@ public:
    Mat imgActual;
    vc_state *state;
 
+   double t0L = 0.0, tfL = 1.0;
+
    RotationalControl()
    {
    }
@@ -138,13 +140,17 @@ public:
       (*this->state).error_pix = norm(ERROR, NORM_L2);
       // cout << "[INFO] Error actual en pix " << (*this->state).error_pix << endl;
 
+      double smooth = 1;
+      if ((*this->state).t <= tfL)
+         smooth = (1 - cos(M_PI * ((*this->state).t - t0L) / (tfL - t0L))) * .5;
+
       // Choosing the gain for the control law
-      double l0_Kp = 1 * (*this->state).Kv_max, linf_Kp = 10 * (*this->state).Kv;
-      // double lambda_Kp = (l0_Kp - linf_Kp) * exp(-(-50 * (*this->state).error_pix) / (l0_Kp - linf_Kp)) + linf_Kp;
-      double lambda_Kp = 1;
+      double l0_Kw = (*this->state).Kw_max, linf_Kw = (*this->state).Kw;
+      double lambda_Kw = (l0_Kw - linf_Kw) * exp(-((*this->state).kw_prima * (*this->state).error_pix) / (l0_Kw - linf_Kw)) + linf_Kw;
+      (*this->state).lambda_kw = smooth * lambda_Kw;
 
       cout << YELLOW_C << endl
-           << "[INFO] Lambda kp: " << l0_Kp << " < " << lambda_Kp << " < " << linf_Kp << RESET_C << endl
+           << "[INFO] Lambda kw: " << l0_Kw << " < " << lambda_Kw << " < " << linf_Kw << RESET_C << endl
            << endl;
 
       Mat ERROR_I = Mat::zeros(2 * (*this->state).actual.normPoints.rows, 1, CV_64F);
@@ -154,7 +160,7 @@ public:
          ERROR_I.at<double>(2 * i + 1, 0) = ERROR.at<double>(i, 1);
       }
 
-      U_temp = -lambda_Kp * Lo * ERROR_I;
+      U_temp = -(*this->state).lambda_kw * Lo * ERROR_I;
       // (*this->state).Vyaw = U_temp.at<double>(1, 0);
 
       // free memory

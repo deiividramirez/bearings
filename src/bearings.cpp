@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 	{
 		states[i].load(nhs[i]);
 	}
-
 	cout << GREEN_C << "\n[INFO] All Nodes have been initialized." << RESET_C << endl;
 
 	image_transport::ImageTransport it1(nh), it2(nh2), it3(nh3), it4(nh4), it5(nh5);
@@ -72,17 +71,17 @@ int main(int argc, char **argv)
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
 		image_sub_3f = it3.subscribe("/" + DRONE_NAME + "_3/camera_base/image_raw", 1, IMGCallback3);
-		bearDrone3 = bearingControl(&states[2], states);
+		bearDrone3 = bearingControl(&states[2], states, 3);
 
 		// Second follower -> Translational motion and Rotational motion (BEARING ONLY)
 		image_sub_4f = it4.subscribe("/" + DRONE_NAME + "_4/camera_base/image_raw", 1, IMGCallback4);
-		bearDrone4 = bearingControl(&states[3], states);
+		bearDrone4 = bearingControl(&states[3], states, 4);
 
 		// Third follower -> Translational motion and Rotational motion (BEARING ONLY)
 		if (DRONE_COUNT == 5)
 		{
 			image_sub_5f = it5.subscribe("/" + DRONE_NAME + "_5/camera_base/image_raw", 1, IMGCallback5);
-			bearDrone5 = bearingControl(&states[4], states);
+			bearDrone5 = bearingControl(&states[4], states, 5);
 		}
 	}
 
@@ -258,7 +257,7 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			CHANGE_THRESHOLD_LEADER -= 0.02;
+			// CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -267,10 +266,20 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
+			Scalar color;
 			for (int i = 0; i < states[0].actual.points.rows; i++)
 			{
-				circle(copy, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-				circle(copy, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+				// circle with different colors for each iteration
+				if (i % 4 == 0)
+					color = Scalar(0, 255, 0);
+				else if (i % 4 == 1)
+					color = Scalar(255, 0, 0);
+				else if (i % 4 == 2)
+					color = Scalar(255, 255, 0);
+				else if (i % 4 == 3)
+					color = Scalar(255, 0, 255);
+				circle(copy, Point2f(states[0].actual.points.at<double>(i, 0), states[0].actual.points.at<double>(i, 1)), 10, color, -1);
+				circle(copy, Point2f(states[0].desired.points.at<double>(i, 0), states[0].desired.points.at<double>(i, 1)), 10, color, -1);
 			}
 			namedWindow("Frontal camera_1", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_1", 550, 310);
@@ -338,7 +347,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			CHANGE_THRESHOLD_LEADER -= 0.02;
+			// CHANGE_THRESHOLD_LEADER -= 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -347,10 +356,20 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		if (SHOW_IMAGES)
 		{
 			Mat copy = actual.clone();
+			Scalar color;
 			for (int i = 0; i < states[1].actual.points.rows; i++)
 			{
-				circle(copy, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, Scalar(0, 0, 255), -1);
-				circle(copy, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, Scalar(0, 255, 0), -1);
+				// circle with different colors for each iteration
+				if (i % 4 == 0)
+					color = Scalar(0, 255, 0);
+				else if (i % 4 == 1)
+					color = Scalar(255, 0, 0);
+				else if (i % 4 == 2)
+					color = Scalar(255, 255, 0);
+				else if (i % 4 == 3)
+					color = Scalar(255, 0, 255);
+				circle(copy, Point2f(states[1].actual.points.at<double>(i, 0), states[1].actual.points.at<double>(i, 1)), 10, color, -1);
+				circle(copy, Point2f(states[1].desired.points.at<double>(i, 0), states[1].desired.points.at<double>(i, 1)), 10, color, -1);
 			}
 			namedWindow("Frontal camera_2", WINDOW_NORMAL);
 			cv::resizeWindow("Frontal camera_2", 550, 310);
@@ -426,12 +445,12 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		if (contIMG3 % 250 == 0)
 		{
 			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
-			states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
+			// states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			// states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
 		saveStuff(2);
 
-		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 3 is in target" << RESET_C << endl;
 			states[2].in_target = true;
@@ -482,12 +501,12 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		if (contIMG4 % 250 == 0)
 		{
 			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
-			states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
+			// states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			// states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
 		saveStuff(3);
 
-		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 4 is in target" << RESET_C << endl;
 			states[3].in_target = true;
@@ -538,12 +557,12 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		if (contIMG5 % 250 == 0)
 		{
 			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
-			states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
+			// states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
+			// states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
 		}
 		saveStuff(4);
 
-		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && change)
+		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
 		{
 			cout << MAGENTA_C << "[INFO] Follower drone 5 is in target" << RESET_C << endl;
 			states[4].in_target = true;
@@ -775,24 +794,22 @@ void saveStuff(int i)
 	vel_y[i].push_back(states[i].Vy);
 	vel_z[i].push_back(states[i].Vz);
 	vel_yaw[i].push_back(states[i].Vyaw);
-	lambda_kp[i].push_back(states[i].lambda_kp);
-	lambda_kv[i].push_back(states[i].lambda_kv);
-	lambda_kd[i].push_back(states[i].lambda_kd);
+	lambda_kp[i].push_back(states[i].lambda_kvp);
+	lambda_kv[i].push_back(states[i].lambda_kvi);
+	lambda_kd[i].push_back(states[i].lambda_kw);
 
-	if (i == 0 || i == 1)
-	{
-		integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
-		integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
-		integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
-		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error6.t() << RESET_C << endl;
-	}
-	else
-	{
-		integral_x[i].push_back(states[i].integral_error.at<double>(0, 0));
-		integral_y[i].push_back(states[i].integral_error.at<double>(1, 0));
-		integral_z[i].push_back(states[i].integral_error.at<double>(2, 0));
-		cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error.t() << RESET_C << endl;
-	}
+	// if (i == 0 || i == 1)
+	// {
+	// 	integral_x[i].push_back((states[i].integral_error6.at<double>(0, 0) + states[i].integral_error6.at<double>(1, 0)) / 2.);
+	// 	integral_y[i].push_back((states[i].integral_error6.at<double>(2, 0) + states[i].integral_error6.at<double>(3, 0)) / 2.);
+	// 	integral_z[i].push_back((states[i].integral_error6.at<double>(4, 0) + states[i].integral_error6.at<double>(5, 0)) / 2.);
+	// 	cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error6.t() << RESET_C << endl;
+	// }
+	// else
+	integral_x[i].push_back(states[i].integral_error_save.at<double>(0, 0));
+	integral_y[i].push_back(states[i].integral_error_save.at<double>(1, 0));
+	integral_z[i].push_back(states[i].integral_error_save.at<double>(2, 0));
+	cout << GREEN_C << "[INFO] Integral error: " << states[i].integral_error_save.t() << RESET_C << endl;
 
 	X[i].push_back(states[i].X);
 	Y[i].push_back(states[i].Y);
