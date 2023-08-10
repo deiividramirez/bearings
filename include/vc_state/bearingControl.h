@@ -346,13 +346,15 @@ public:
       Mat suma3 = suma1 + suma2;
 
       // Error calculation
-      Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
+      // Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
+      Mat Error = abs(suma3);
+
       (*this->state).error = norm(Error, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);
 
-      double error_x = norm((*this->state).actual.bearings.row(0) - (*this->state).desired.bearings.row(0), NORM_L1);
-      double error_y = norm((*this->state).actual.bearings.row(1) - (*this->state).desired.bearings.row(1), NORM_L1);
-      double error_z = norm((*this->state).actual.bearings.row(2) - (*this->state).desired.bearings.row(2), NORM_L1);
+      double error_x = Error.at<double>(0, 0);
+      double error_y = Error.at<double>(1, 0);
+      double error_z = Error.at<double>(2, 0);
 
       cout << endl
            << "[INFO] Error in x: " << error_x << " y: " << error_y << " z: " << error_z << endl;
@@ -364,24 +366,24 @@ public:
       if (opc == 4 || opc == 5 || opc == 6 || opc == 7)
       {
          double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-         double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
-         double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
-         double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
 
          (*this->state).lambda_kw = (kw1 + kw2 + kw3) / 3.0;
          (*this->state).Vyaw = (*this->state).lambda_kw * suma1_w.at<double>(1, 0);
       }
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = .5 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
       (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
-      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
       (*this->state).lambda_kvi = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl

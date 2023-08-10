@@ -416,6 +416,11 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
+		if (states[2].error < 0.1)
+		{
+			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+		}
+
 		// Getting the bearings from camera's drone
 		if (bearDrone3.getVels(actual) < 0)
 		{
@@ -442,12 +447,6 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG3++;
-		if (contIMG3 % 250 == 0)
-		{
-			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(2);
 
 		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
@@ -471,6 +470,11 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		if (states[3].error < 0.1)
+		{
+			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+		}
 
 		// Getting the bearings from camera's drone
 		if (bearDrone4.getVels(actual) < 0)
@@ -498,12 +502,6 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG4++;
-		if (contIMG4 % 250 == 0)
-		{
-			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(3);
 
 		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
@@ -527,6 +525,11 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		if (states[4].error < 0.1)
+		{
+			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+		}
 
 		// Getting the bearings from camera's drone
 		if (bearDrone5.getVels(actual) < 0)
@@ -554,12 +557,6 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG5++;
-		if (contIMG5 % 250 == 0)
-		{
-			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(4);
 
 		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
