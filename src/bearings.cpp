@@ -416,7 +416,7 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[2].error < 0.1)
+		if (states[2].error < 0.075)
 		{
 			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
 		}
@@ -471,7 +471,7 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[3].error < 0.1)
+		if (states[3].error < 0.075)
 		{
 			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
 		}
@@ -526,7 +526,7 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[4].error < 0.1)
+		if (states[4].error < 0.075)
 		{
 			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
 		}

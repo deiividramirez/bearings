@@ -375,9 +375,9 @@ public:
       }
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 1.75 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
       double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp3 = .5 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
       (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
@@ -402,9 +402,9 @@ public:
       (*this->state).integral_error_save.at<double>(1, 0) = -kv2 * (*this->state).integral_error.at<double>(1, 0);
       (*this->state).integral_error_save.at<double>(2, 0) = -kv3 * (*this->state).integral_error.at<double>(2, 0);
 
-      double Vx = kp1 * tempError.at<double>(0, 0) + (*this->state).integral_error_save.at<double>(0, 0);
-      double Vy = kp2 * tempError.at<double>(1, 0) + (*this->state).integral_error_save.at<double>(1, 0);
-      double Vz = kp3 * tempError.at<double>(2, 0) + (*this->state).integral_error_save.at<double>(2, 0);
+      double Vx = 3 * (kp1 * tempError.at<double>(0, 0) + (*this->state).integral_error_save.at<double>(0, 0));
+      double Vy = (kp2 * tempError.at<double>(1, 0) + (*this->state).integral_error_save.at<double>(1, 0));
+      double Vz = (kp3 * tempError.at<double>(2, 0) + (*this->state).integral_error_save.at<double>(2, 0));
 
       clip(Vx);
       clip(Vy);
