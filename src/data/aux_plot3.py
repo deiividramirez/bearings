@@ -44,31 +44,19 @@ forcount = (
 for title, txt, label in forcount:
     print(f"Plotting {title} for all drones with {txt}*")
     labArray = []
-    # fig, ax = plt.subplots(
-    #     1,
-    #     5,
-    #     sharex=True,
-    #     num=f"{title}",
-    #     # figsize is variable depending on the number of drones
-    #     figsize=(3 * len(DRONE_COUNT), 5),
-    # )
     fig = plt.figure(num=f"{title}", figsize=(3 * len(DRONE_COUNT), 3))
-    # the first four cols are bigger than the last one
-    # gs = fig.add_gridspec(5, 1) does not work because it is 5 rows and 1 col
     gs = fig.add_gridspec(
         ncols=5, nrows=1, width_ratios=[2, 2, 2, 2, 0.1]
-    )  # , height_ratios=[2,])
+    )
     ax = []
     for i in range(4):
         ax.append(fig.add_subplot(gs[0, i]))
     ax.append(fig.add_subplot(gs[0, 4]))
-
     ax = np.array(ax).flatten()
 
     ax[-1].axis("off")
     ax[-1].axis("tight")
 
-    # set fig title
     fig.suptitle(title)
 
     for drone in range(1, 5):
