@@ -246,4 +246,6 @@ void Tipito(Mat &Matrix);
 void clip(Mat &Matrix, int max = 5, int min = -5);
 void clip(double value, int max = 5, int min = -5);
 
+void rot2euler(const Mat &R, int index);
+
 #endif

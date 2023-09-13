@@ -8,6 +8,9 @@ public:
    Mat imgActual;
    vc_state *state;
 
+   Mat L;
+   bool firstTimeL = true;
+
    double t0L = 0.0, tfL = 1.0;
 
    RotationalControl()
@@ -125,10 +128,14 @@ public:
       vector<vecDist> distancias;
       // this->getActualData(img);
 
-      L = Lvl();
+      if (this->firstTimeL)
+      {
+         this->L = Lvl();
+      }
+      // L = Lvl();
 
       double det = 0.0;
-      Lo = Moore_Penrose_PInv(L, det);
+      Lo = Moore_Penrose_PInv(this->L, det);
       if (det < 1e-8)
       {
          cout << RED_C << "[ERROR] DET = ZERO --> det = " << det << RESET_C << endl;
@@ -161,7 +168,7 @@ public:
       }
 
       U_temp = -(*this->state).lambda_kw * Lo * ERROR_I;
-      // (*this->state).Vyaw = U_temp.at<double>(1, 0);
+      (*this->state).Vyaw = U_temp.at<double>(1, 0);
 
       // free memory
       U_temp.release();
@@ -174,12 +181,12 @@ public:
    Mat Lvl()
    {
       // This is classic image-based visual servoing
-      Mat L = Mat::zeros(2 * (*this->state).actual.normPoints.rows, 3, CV_64F);
+      Mat L = Mat::zeros(2 * (*this->state).desired.normPoints.rows, 3, CV_64F);
 
-      for (int i = 0; i < (*this->state).actual.normPoints.rows; i++)
+      for (int i = 0; i < (*this->state).desired.normPoints.rows; i++)
       {
-         double u = (*this->state).actual.normPoints.at<double>(i, 0);
-         double v = (*this->state).actual.normPoints.at<double>(i, 1);
+         double u = (*this->state).desired.normPoints.at<double>(i, 0);
+         double v = (*this->state).desired.normPoints.at<double>(i, 1);
 
          // cout << "U: " << u << " V: " << v << endl;
 

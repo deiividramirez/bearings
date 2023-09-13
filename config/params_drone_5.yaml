@@ -15,13 +15,13 @@ bearing:
   data: [.9, .9, -.3, .3, .3, -.3]
 
 # Gain on linear velocities (proportional)
-gainv: 4
-gainv_max: 1
-gainv_prime: -5
+gainv: 3
+gainv_max: .5
+gainv_prime: -10
 
 # Gain on linear velocities (integral)
 gainv_ki: 0.1
-gainv_ki_max: .005
+gainv_ki_max: .05
 gainv_ki_prime: -0.3
 
 # Gain on angular velocities

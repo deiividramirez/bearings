@@ -1,5 +1,6 @@
 #include "vc_state/vc_state.h"
 using namespace std;
+#include <fstream>
 
 vc_state::vc_state() : X(0), Y(0), Z(0), Yaw(0), Pitch(0), Roll(0),
                        initialized(false), t(0), dt(0.025), Kv(1.0), Kw(1.0) {}
@@ -407,4 +408,44 @@ void clip(double value, int max, int min)
         {
                 value = min;
         }
+}
+
+void rot2euler(const Mat &R, int index)
+{
+        double roll = 0, pitch = 0, yaw = 0;
+        if (R.at<double>(2, 0) < 0.995)
+        {
+                if (R.at<double>(2, 0) > -0.995)
+                {
+                        roll = atan2(R.at<double>(2, 1), R.at<double>(2, 2));
+                        pitch = asin(-R.at<double>(2, 0));
+                        yaw = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+                }
+                else
+                {
+                        // Not a unique solution:  roll - yaw = atan2(-m12,m11)
+                        roll = 0;
+                        pitch = M_PI / 2.0;
+                        yaw = -atan2(-R.at<double>(1, 2), R.at<double>(1, 1));
+                }
+        }
+        else
+        {
+                // Not a unique solution:  roll + yaw = atan2(-m12,m11)
+                roll = 0;
+                pitch = -M_PI / 2.0;
+                yaw = atan2(-R.at<double>(1, 2), R.at<double>(1, 1));
+        }
+        cout << "roll: " << roll * 180 / M_PI << endl;
+        cout << "pitch: " << pitch * 180 / M_PI << endl;
+        cout << "yaw: " << yaw * 180 / M_PI << endl;
+
+        // write in file roll pitch yaw in each iteration
+        ofstream myfile;
+        string name = "./" + to_string(index) + "_rpy.txt";
+        myfile.open(name, ios::app);
+        myfile << roll  << " " << pitch  << " " << yaw  << endl;
+        myfile.close();
+
+        cout << "FILE WRITTEN WITH RPY " << name << endl;
 }

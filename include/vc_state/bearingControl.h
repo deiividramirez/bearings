@@ -1,4 +1,6 @@
 #include "vc_state/vc_state.h"
+#include <opencv2/core/eigen.hpp>
+#include <Eigen/Dense>
 
 class bearingControl
 {
@@ -7,11 +9,13 @@ public:
    Mat imgDesiredGray;
    Mat imgActual;
    vc_state *state;
-
-   // double LastYaw;
    int droneID;
 
+   ofstream timeExcec;
+   double extraX = 2.5;
+
    vector<vc_state> drones;
+   vector<Mat> Ris;
 
    double t0L = 0.0, tfL = 1.0;
 
@@ -36,6 +40,13 @@ public:
          exit(-1);
       }
       cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
+
+      for (int i = 0; i < (*this->state).params.seguimiento.rows; i++)
+      {
+         this->Ris.push_back(Mat::zeros(3, 3, CV_64F));
+      }
+
+      timeExcec = ofstream(workspace + "/src/bearings/src/data/out/execution_data_" + to_string(droneID) + ".txt");
    }
 
    bearingControl(vc_state *stated, vector<vc_state> drones, int droneID)
@@ -57,6 +68,13 @@ public:
          exit(-1);
       }
       cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
+
+      for (int i = 0; i < (*this->state).params.seguimiento.rows; i++)
+      {
+         this->Ris.push_back(Mat::zeros(3, 3, CV_64F));
+      }
+
+      timeExcec = ofstream(workspace + "/src/bearings/src/data/out/execution_data_" + to_string(droneID) + ".txt");
    }
 
    int getDesiredData()
@@ -248,6 +266,7 @@ public:
 
    int getVels(Mat imgActual)
    {
+      double ActualTime = ros::Time::now().toSec();
       if (this->getActualData(imgActual) < 0)
       {
          cout << RED_C << "[ERROR] Actual ArUco not found" << RESET_C << endl;
@@ -263,7 +282,7 @@ public:
 
       int opc = (*this->state).params.control;
 
-      if (opc == 4)
+      if (opc == 4 || opc == 6)
       {
          if (getHomography() < 0)
          {
@@ -346,13 +365,15 @@ public:
       Mat suma3 = suma1 + suma2;
 
       // Error calculation
-      Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
+      // Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
+      Mat Error = abs(suma3);
+
       (*this->state).error = norm(Error, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);
 
-      double error_x = norm((*this->state).actual.bearings.row(0) - (*this->state).desired.bearings.row(0), NORM_L1);
-      double error_y = norm((*this->state).actual.bearings.row(1) - (*this->state).desired.bearings.row(1), NORM_L1);
-      double error_z = norm((*this->state).actual.bearings.row(2) - (*this->state).desired.bearings.row(2), NORM_L1);
+      double error_x = Error.at<double>(0, 0);
+      double error_y = Error.at<double>(1, 0);
+      double error_z = Error.at<double>(2, 0);
 
       cout << endl
            << "[INFO] Error in x: " << error_x << " y: " << error_y << " z: " << error_z << endl;
@@ -364,24 +385,24 @@ public:
       if (opc == 4 || opc == 5 || opc == 6 || opc == 7)
       {
          double l0_Kv = (*this->state).Kw_max, linf_Kv = (*this->state).Kw;
-         double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
-         double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
-         double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 5 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw1 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_x) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw2 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_y) / (l0_Kv - linf_Kv)) + linf_Kv);
+         double kw3 = smooth * ((l0_Kv - linf_Kv) * exp(-((*this->state).kw_prima * 2 * error_z) / (l0_Kv - linf_Kv)) + linf_Kv);
 
          (*this->state).lambda_kw = (kw1 + kw2 + kw3) / 3.0;
          (*this->state).Vyaw = (*this->state).lambda_kw * suma1_w.at<double>(1, 0);
       }
 
       double l0_Kp = (*this->state).Kv_max, linf_Kp = (*this->state).Kv;
-      double kp1 = 2 * smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
-      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp1 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 1.75 * error_x) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp2 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_y) / (l0_Kp - linf_Kp)) + linf_Kp);
+      double kp3 = smooth * ((l0_Kp - linf_Kp) * exp(-((*this->state).kv_prima * 2 * error_z) / (l0_Kp - linf_Kp)) + linf_Kp);
       (*this->state).lambda_kvp = (kp1 + kp2 + kp3) / 3.0;
 
       double l0_Kv_i = (*this->state).Kv_i_max, linf_Kv_i = (*this->state).Kv_i;
-      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
-      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv1 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_x) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv2 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_y) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
+      double kv3 = smooth * ((l0_Kv_i - linf_Kv_i) * exp(-((*this->state).kv_i_prima * 2 * error_z) / (l0_Kv_i - linf_Kv_i)) + linf_Kv_i);
       (*this->state).lambda_kvi = (kv1 + kv2 + kv3) / 3.0;
 
       cout << YELLOW_C << endl
@@ -400,9 +421,9 @@ public:
       (*this->state).integral_error_save.at<double>(1, 0) = -kv2 * (*this->state).integral_error.at<double>(1, 0);
       (*this->state).integral_error_save.at<double>(2, 0) = -kv3 * (*this->state).integral_error.at<double>(2, 0);
 
-      double Vx = kp1 * tempError.at<double>(0, 0) + (*this->state).integral_error_save.at<double>(0, 0);
-      double Vy = kp2 * tempError.at<double>(1, 0) + (*this->state).integral_error_save.at<double>(1, 0);
-      double Vz = kp3 * tempError.at<double>(2, 0) + (*this->state).integral_error_save.at<double>(2, 0);
+      double Vx = this->extraX * (kp1 * tempError.at<double>(0, 0) + (*this->state).integral_error_save.at<double>(0, 0));
+      double Vy = (kp2 * tempError.at<double>(1, 0) + (*this->state).integral_error_save.at<double>(1, 0));
+      double Vz = (kp3 * tempError.at<double>(2, 0) + (*this->state).integral_error_save.at<double>(2, 0));
 
       clip(Vx);
       clip(Vy);
@@ -412,148 +433,246 @@ public:
       (*this->state).Vy = (float)Vy;
       (*this->state).Vz = (float)Vz;
 
-      cout << "[INFO] Desired bearing: " << (*this->state).desired.bearings << endl;
-      cout << "[INFO] Actual bearing: " << (*this->state).actual.bearings << endl;
+      // cout << "[INFO] Desired bearing: " << (*this->state).desired.bearings << endl;
+      // cout << "[INFO] Actual bearing: " << (*this->state).actual.bearings << endl;
 
+      // (*this->state).Vx = (float)(sin(((*this->state).t) * 3)) / 2;
+      // cout << "[INFO] Vx: " << (*this->state).Vx << endl;
+
+      // (*this->state).Vy = (float)(cos(((*this->state).t) * 3)) / 2;
+      // cout << "[INFO] Vy: " << (*this->state).Vy << endl;
+
+      // (*this->state).Vz = (float)(cos(((*this->state).t) * 3)) / 2;
+      // cout << "[INFO] Vz: " << (*this->state).Vz << endl;
+
+      // (*this->state).Vyaw = (float)(cos(((*this->state).t) * 3)) / 2;
+      // cout << "[INFO] Vyaw: " << (*this->state).Vyaw << endl;
+
+
+      double FinalTime = ros::Time::now().toSec() - ActualTime;
+      this->timeExcec << FinalTime << endl;
+      cout << GREEN_C << "[INFO] Velocities obtained in " << FinalTime << " seconds" << RESET_C << endl;
       return 0;
+   }
+
+   Mat mean(Mat points)
+   {
+      cout << GREEN_C << "[INFO] Calculating mean" << RESET_C << endl;
+      Mat mean = Mat::zeros(1, 2, CV_64F);
+      for (int i = 0; i < points.rows; i++)
+      {
+         mean.at<double>(0, 0) += points.at<double>(i, 0);
+         mean.at<double>(0, 1) += points.at<double>(i, 1);
+         // cout << "Point " << i << ": " << points.at<float>(i, 0) << " " << points.at<float>(i, 1) << endl;
+         // cout << "Mean: " << mean << endl;
+      }
+      mean /= points.rows;
+      // cout << "Final mean " << mean << endl << endl;
+      return mean;
+   }
+
+   double std(Mat points)
+   {
+      // get the max of all standant deviation
+      double maxstd = 0;
+      Mat meanPoints = mean(points);
+      double mean1 = meanPoints.at<double>(0, 0);
+      double mean2 = meanPoints.at<double>(0, 1);
+
+      double std1 = 0, std2 = 0;
+      for (int i = 0; i < points.rows; i++)
+      {
+         std1 += pow(points.at<double>(i, 0) - mean1, 2);
+         std2 += pow(points.at<double>(i, 1) - mean2, 2);
+      }
+      std1 /= points.rows;
+      std2 /= points.rows;
+      std1 = sqrt(std1);
+      std2 = sqrt(std2);
+      if (std1 > std2)
+         return std1 + 1e-9;
+      else
+         return std2 + 1e-9;
    }
 
    int getHomography()
    {
-      vector<Mat> Rs_decomp, ts_decomp, normals_decomp;
-      Mat actual32 = Mat::zeros(8, 2, CV_32F);
-      Mat desired32 = Mat::zeros(8, 2, CV_32F);
-      double Hnorm;
-
-      vector<int> indexID;
+      Mat actual32 = Mat::zeros(4, 2, CV_64F);
+      Mat desired32 = Mat::zeros(4, 2, CV_64F);      
 
       for (int32_t i = 0; i < (*this->state).params.seguimiento.rows; i++)
       {
-         // vector<Mat> descomps;
+         (*this->state).actual.points.rowRange(i * 4, i * 4 + 4).convertTo(actual32.rowRange(0, 4), CV_64F);
+         (*this->state).desired.points.rowRange(i * 4, i * 4 + 4).convertTo(desired32.rowRange(0, 4), CV_64F);
 
-         (*this->state).actual.points.rowRange(i * 4, i * 4 + 4).convertTo(actual32.rowRange(0, 4), CV_32F);
-         (*this->state).desired.points.rowRange(i * 4, i * 4 + 4).convertTo(desired32.rowRange(0, 4), CV_32F);
-         // (*this->state).actual.points.rowRange(i * 4, i * 4 + 4).convertTo(actual32, CV_32F);
-         // (*this->state).desired.points.rowRange(i * 4, i * 4 + 4).convertTo(desired32, CV_32F);
-
-         puntoMedio(actual32.row(0), actual32.row(1)).copyTo(actual32.row(4));
-         puntoMedio(actual32.row(1), actual32.row(2)).copyTo(actual32.row(5));
-         puntoMedio(actual32.row(2), actual32.row(3)).copyTo(actual32.row(6));
-         puntoMedio(actual32.row(3), actual32.row(0)).copyTo(actual32.row(7));
-
-         puntoMedio(desired32.row(0), desired32.row(1)).copyTo(desired32.row(4));
-         puntoMedio(desired32.row(1), desired32.row(2)).copyTo(desired32.row(5));
-         puntoMedio(desired32.row(2), desired32.row(3)).copyTo(desired32.row(6));
-         puntoMedio(desired32.row(3), desired32.row(0)).copyTo(desired32.row(7));
+         // cout << "Desired " << i << ": " << desired32 << endl;
+         // cout << "Actual " << i << ": " << actual32 << endl;
 
          Mat mascara;
-         // findHomography(actual32, desired32, 0).convertTo((*this->state).Hi[i], CV_64F);
-         // findHomography(actual32, desired32, mascara, RANSAC, 3).convertTo((*this->state).Hi[i], CV_64F);
-         findHomography(actual32, desired32, LMEDS).convertTo((*this->state).Hi[i], CV_64F);
-         // findHomography(actual32, desired32, RHO, 3).convertTo((*this->state).Hi[i], CV_64F);
+         findtheHomography(desired32, actual32).convertTo((*this->state).Hi[i], CV_64F);
 
-         if ((*this->state).Hi[i].empty())
+         Mat img_matches, imgActual, imgDesired;
+         imgActual = (*this->state).actual.img.clone();
+         imgDesired = (*this->state).desired.img.clone();
+
+         for (int j = 0; j < actual32.rows; j++)
          {
-            cout << RED_C << "[ERROR] Homography " << i << " not found" << RESET_C << endl;
-            return -1;
+            circle(imgActual, Point(actual32.at<float>(j, 0), actual32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
+            circle(imgDesired, Point(desired32.at<float>(j, 0), desired32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
          }
 
-         Hnorm = sqrt((*this->state).Hi[i].at<double>(0, 0) * (*this->state).Hi[i].at<double>(0, 0) +
-                      (*this->state).Hi[i].at<double>(1, 0) * (*this->state).Hi[i].at<double>(1, 0) +
-                      (*this->state).Hi[i].at<double>(2, 0) * (*this->state).Hi[i].at<double>(2, 0));
-         (*this->state).Hi[i] /= Hnorm;
+         warpPerspective(imgDesired, img_matches, (*this->state).Hi[i], imgDesired.size());
+         hconcat(imgActual, img_matches, img_matches);
 
-         Mat QiQj = composeR(
-                        (*this->state).groundTruth.at<double>(3, 0),
-                        (*this->state).groundTruth.at<double>(4, 0),
-                        (*this->state).groundTruth.at<double>(5, 0))
-                        .t() *
-                    composeR(
-                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(3, 0),
-                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(4, 0),
-                        (this->drones[(*this->state).params.seguimiento.at<double>(i, 0) - 1]).groundTruth.at<double>(5, 0));
+         string name = "Homography " + to_string(i);
+         namedWindow(name, WINDOW_NORMAL);
+         resizeWindow(name, 850, 240);
+         imshow(name, img_matches);
+         waitKey(1);
 
-         vector<Mat> Rs, ts, normals;
-         int sols = decomposeHomographyMat((*this->state).Hi[i], (*this->state).params.K, Rs, ts, normals);
+         (*this->state).Hi[i] = (*this->state).params.Kinv * (*this->state).Hi[i] * (*this->state).params.K;
+         (*state).Qi[i] = HtoR((*this->state).Hi[i], i);
 
-         if (sols < 1)
-         {
-            cout << RED_C << "[ERROR] Decomposition of homography " << i << " not found" << RESET_C << endl;
-            return -1;
-         }
-         else if (sols == 1)
-         {
-            (*state).Qi[i] = Rs[0];
-         }
-         else
-         {
-
-            cout << GREEN_C << "[INFO] Found " << sols << " solutions for rotation in the homography " << i << endl;
-
-            Mat R1 = Rs[0];
-            Mat R2 = Rs[2];
-
-            if (norm(QiQj - R1) < norm(QiQj - R2))
-            {
-               // cout << "\nR1\n"
-               //      << R1 << endl;
-               // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-               // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-               (*state).Qi[i] = R1;
-            }
-            else
-            {
-               // cout << "\nR2\n"
-               //      << R2 << endl;
-               // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-               // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-               (*state).Qi[i] = R2;
-            }
-         }
-
-         // (*state).Qi[i] = HtoR((*this->state).Hi[i], QiQj);
-
-         // Mat img_matches, imgActual, imgDesired;
-         // imgActual = (*this->state).actual.img.clone();
-         // imgDesired = (*this->state).desired.img.clone();
-
-         // for (int j = 0; j < actual32.rows; j++)
-         // {
-         //    circle(imgActual, Point(actual32.at<float>(j, 0), actual32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
-         //    circle(imgDesired, Point(desired32.at<float>(j, 0), desired32.at<float>(j, 1)), 5, Scalar(0, 0, 255), 2);
-         // }
-
-         // warpPerspective(imgActual, img_matches, (*this->state).Hi[i], imgDesired.size());
-         // hconcat(imgDesired, img_matches, img_matches);
-
-         // string name = "Homography " + to_string(i);
-         // namedWindow(name, WINDOW_NORMAL);
-         // resizeWindow(name, 850, 240);
-         // imshow(name, img_matches);
-         // waitKey(1);
+         // cout << "Homography " << i << ": " << (*this->state).Hi[i] << endl;
+         // cout << "Qi " << i << ": " << (*this->state).Qi[i] << endl;
       }
 
       return 0;
    }
 
-   Mat HtoR(Mat Homography, Mat QiQj)
+   Mat findtheHomography(Mat desired, Mat actual)
    {
-      Mat U, S, Vt;
-      SVD::compute(Homography, S, U, Vt);
+      cout << GREEN_C << "[INFO] Finding homography" << RESET_C << endl;
+
+      Mat mean1 = mean(desired);
+      // cout << "[INFO] Mean1: " << mean1 << endl;
+      double maxstd = std(desired);
+      // cout << "[INFO] Maxstd: " << maxstd << endl;
+
+      Mat C1 = Mat::zeros(3, 3, CV_64F);
+      C1.at<double>(0, 0) = 1 / maxstd;
+      C1.at<double>(0, 2) = -mean1.at<double>(0, 0) / maxstd;
+      C1.at<double>(1, 1) = 1 / maxstd;
+      C1.at<double>(1, 2) = -mean1.at<double>(0, 1) / maxstd;
+      C1.at<double>(2, 2) = 1;
+      // cout << "[INFO] C1: " << C1 << endl;
+
+      Mat desiredTemp = Mat::ones(desired.rows, 3, CV_64F);
+      desired.copyTo(desiredTemp.colRange(0, 2));
+      desiredTemp = ((C1 * desiredTemp.t()).t());
+      // cout << "[INFO] DesiredTemp: " << desiredTemp << endl;
+
+      Mat mean2 = mean(actual);
+      double maxstd2 = std(actual);
+      // cout << "[INFO] Mean2: " << mean2 << endl;
+      // cout << "[INFO] Maxstd2: " << maxstd2 << endl;
+
+      Mat C2 = Mat::zeros(3, 3, CV_64F);
+      C2.at<double>(0, 0) = 1 / maxstd2;
+      C2.at<double>(0, 2) = -mean2.at<double>(0, 0) / maxstd2;
+      C2.at<double>(1, 1) = 1 / maxstd2;
+      C2.at<double>(1, 2) = -mean2.at<double>(0, 1) / maxstd2;
+      C2.at<double>(2, 2) = 1;
+      // cout << "[INFO] C2: " << C2 << endl;
+
+      Mat actualTemp = Mat::ones(actual.rows, 3, CV_64F);
+      actual.copyTo(actualTemp.colRange(0, 2));
+      actualTemp = ((C2 * actualTemp.t()).t());
+      // cout << "[INFO] ActualTemp: " << actualTemp << endl;
+
+      Mat A = Mat::zeros(2 * actual.rows, 9, CV_64F);
+      for (int i = 0; i < actual.rows; i++)
+      {
+         A.at<double>(2 * i, 0) = desiredTemp.at<double>(i, 0);
+         A.at<double>(2 * i, 1) = desiredTemp.at<double>(i, 1);
+         A.at<double>(2 * i, 2) = 1;
+         // A.at<double>(2*i, 3) = 0;
+         // A.at<double>(2*i, 4) = 0;
+         // A.at<double>(2*i, 5) = 0;
+         A.at<double>(2 * i, 6) = -actualTemp.at<double>(i, 0) * desiredTemp.at<double>(i, 0);
+         A.at<double>(2 * i, 7) = -actualTemp.at<double>(i, 0) * desiredTemp.at<double>(i, 1);
+         A.at<double>(2 * i, 8) = -actualTemp.at<double>(i, 0);
+
+         // A.at<double>(2*i + 1, 0) = 0;
+         // A.at<double>(2*i + 1, 1) = 0;
+         // A.at<double>(2*i + 1, 2) = 0;
+         A.at<double>(2 * i + 1, 3) = desiredTemp.at<double>(i, 0);
+         A.at<double>(2 * i + 1, 4) = desiredTemp.at<double>(i, 1);
+         A.at<double>(2 * i + 1, 5) = 1;
+         A.at<double>(2 * i + 1, 6) = -actualTemp.at<double>(i, 1) * desiredTemp.at<double>(i, 0);
+         A.at<double>(2 * i + 1, 7) = -actualTemp.at<double>(i, 1) * desiredTemp.at<double>(i, 1);
+         A.at<double>(2 * i + 1, 8) = -actualTemp.at<double>(i, 1);
+      }
+      // cout << "[INFO] A: " << A << " - shape: " << A.rows << "x" << A.cols << endl;
+
+      // // convert A to Eigen::MatrixXd
+      // Eigen::MatrixXd A_eigen;
+      // cv2eigen(A, A_eigen);
+
+      // // compute SVD
+      // Eigen::BDCSVD<Eigen::MatrixXd> svd(A_eigen, Eigen::ComputeFullU | Eigen::ComputeFullV);
+      // Eigen::MatrixXd U_eigen = svd.matrixU();
+      // Eigen::MatrixXd S_eigen = svd.singularValues();
+      // Eigen::MatrixXd V_eigen = svd.matrixV();
+
+      // // convert back to cv::Mat
+      // Mat U, S, V;
+      // eigen2cv(U_eigen, U);
+      // eigen2cv(S_eigen, S);
+      // eigen2cv(V_eigen, V);
+      
+      Mat U, S, V;
+      SVD::compute(A, S, U, V, SVD::FULL_UV);
+
+      U = -U;
+      V = -V;
+      // cout << "[INFO] U: " << U << " - shape: " << U.rows << "x" << U.cols << endl;
+      // cout << "[INFO] S: " << S << " - shape: " << S.rows << "x" << S.cols << endl;
+      // cout << "[INFO] V: " << V << " - shape: " << V.rows << "x" << V.cols << endl;
+
+      Mat H = V.row(8).reshape(0, 3);
+      H = C2.inv() * H * C1;
+      H /= H.at<double>(2, 2);
+      // cout << "[INFO] H: " << H << endl;
+      // exit(0);
+      return H;
+   }
+
+   Mat HtoR(Mat Homography, int index)
+   {
+      Mat U, S, V;
+      SVD::compute(Homography, S, U, V, SVD::FULL_UV);
+
+      U = -U;
+      U.col(2) = -U.col(2);
+      V = -V;
+      V.row(2) = -V.row(2);
+
+      // cout << "H: " << Homography << endl;
+      // cout << "U: " << U << endl;
+      // cout << "S: " << S << endl;
+      // cout << "V: " << V << endl;
 
       double s1 = S.at<double>(0) / S.at<double>(1);
       double s3 = S.at<double>(2) / S.at<double>(1);
 
       double zeta = s1 - s3;
 
+      // cout << "s1: " << s1 << endl;
+      // cout << "s3: " << s3 << endl;
+      // cout << "zeta: " << zeta << endl;
+
+      double a1 = sqrt(1 - s3 * s3);
+      double b1 = sqrt(s1 * s1 - 1);
+
       Mat ab = Mat::zeros(2, 1, CV_64F);
-      ab.at<double>(0) = sqrt(1 - s3 * s3);
-      ab.at<double>(1) = sqrt(s1 * s1 - 1);
+      ab.at<double>(0) = a1;
+      ab.at<double>(1) = b1;
       normalize(ab, ab);
 
       Mat cd = Mat::zeros(2, 1, CV_64F);
       cd.at<double>(0) = 1 + s1 * s3;
-      cd.at<double>(1) = sqrt(1 - s3 * s3) * sqrt(s1 * s1 - 1);
+      cd.at<double>(1) = a1 * b1;
       normalize(cd, cd);
 
       Mat ef = Mat::zeros(2, 1, CV_64F);
@@ -561,16 +680,27 @@ public:
       ef.at<double>(1) = -ab.at<double>(0) / s3;
       normalize(ef, ef);
 
+      // cout << "a1: " << a1 << " -- b1: " << b1 << endl;
+      // cout << "ab: " << ab << endl;
+      // cout << "cd: " << cd << endl;
+      // cout << "ef: " << ef << endl;
+
       Mat v1, v3;
-      Vt.row(0).copyTo(v1);
-      Vt.row(2).copyTo(v3);
+      V.row(0).convertTo(v1, CV_64F);
+      V.row(2).convertTo(v3, CV_64F);
+
+      // cout << "v1: " << v1 << endl;
+      // cout << "v3: " << v3 << endl;
 
       Mat n1 = ab.at<double>(1) * v1 - ab.at<double>(0) * v3;
       Mat n2 = ab.at<double>(1) * v1 + ab.at<double>(0) * v3;
 
+      Mat t1 = zeta * (ef.at<double>(0) * v1 + ef.at<double>(1) * v3);
+      Mat t2 = zeta * (ef.at<double>(0) * v1 - ef.at<double>(1) * v3);
+
       Mat temp1 = Mat::zeros(3, 3, CV_64F);
-      temp1.at<double>(0, 2) = cd.at<double>(1);
       temp1.at<double>(0, 0) = cd.at<double>(0);
+      temp1.at<double>(0, 2) = cd.at<double>(1);
       temp1.at<double>(1, 1) = 1;
       temp1.at<double>(2, 0) = -cd.at<double>(1);
       temp1.at<double>(2, 2) = cd.at<double>(0);
@@ -582,72 +712,67 @@ public:
       temp2.at<double>(2, 0) = cd.at<double>(1);
       temp2.at<double>(2, 2) = cd.at<double>(0);
 
-      Mat R1 = (U * temp1 * Vt).t();
-      Mat R2 = (U * temp2 * Vt).t();
+      // cout << "n1: " << n1 << endl;
+      // cout << "n2: " << n2 << endl;
 
-      // cout << "R1: " << R1 << endl;
-      // cout << "QiQj: " << QiQj << endl;
-      // cout << "R2: " << R2 << endl;
+      // cout << "n1(2)" << n1.at<double>(0, 2) << endl;
+      // cout << "n2(2)" << n2.at<double>(0, 2) << endl;
 
-      if (norm(QiQj - R1) < norm(QiQj - R2))
+      if (n1.at<double>(0, 2) < 0)
       {
-         // cout << "\nR1\n"
-         //      << R1 << endl;
-         // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-         // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-         return R1;
+         n1 = -n1;
+         t1 = -t1;
+      }
+      if (n2.at<double>(0, 2) < 0)
+      {
+         n2 = -n2;
+         t2 = -t2;
+      }
+
+      Mat R1 = (U * temp1 * V).t();
+      Mat R2 = (U * temp2 * V).t();
+
+      rot2euler(R1, 0);
+      cout << "\nR1: " << R1 << endl;
+      cout << "----> n1 " << n1 << endl;
+      rot2euler(R2, 1);
+      cout << "\nR2: " << R2 << endl;
+      cout << "----> n2 " << n2 << endl;
+      // exit(0);
+
+      if (norm(this->Ris[index]) == 0)
+      {
+         if (n1.at<double>(0, 2) > n2.at<double>(0, 2))
+         {
+            cout << "-> R: " << R1 << endl;
+            cout << "-> n: " << n1 << endl;
+            rot2euler(R1, 2);
+            R1.copyTo(this->Ris[index]);
+            return R1;
+         }
+         else
+         {
+            cout << "-> R: " << R2 << endl;
+            cout << "-> n: " << n2 << endl;
+            rot2euler(R2, 2);
+            R2.copyTo(this->Ris[index]);
+            return R2;
+         }
       }
       else
       {
-         // cout << "\nR2\n"
-         //      << R2 << endl;
-         // cout << "|R2 - QiQj|: " << norm(QiQj - R2) << endl;
-         // cout << "|R1 - QiQj|: " << norm(QiQj - R1) << endl;
-         return R2;
+         if (norm(this->Ris[index] - R1) < norm(this->Ris[index] - R2))
+         {
+            rot2euler(R1, 2);
+            R1.copyTo(this->Ris[index]);
+            return R1;
+         }
+         else
+         {
+            rot2euler(R2, 2);
+            R2.copyTo(this->Ris[index]);
+            return R2;
+         }
       }
-   }
-
-   Mat cameraPoseFromHomography(Mat H, Mat toPose)
-   {
-      Mat pose = Mat::eye(3, 3, CV_64F); // 3x4 matrix, the camera pose
-      double norm1 = (double)norm(H.col(0));
-      double norm2 = (double)norm(H.col(1));
-      double tnorm = (norm1 + norm2) / 2.0; // Normalization value
-
-      // cout << "H:\n " << H << endl;
-
-      Mat p1 = H.col(0);    // Pointer to first column of H
-      Mat p2 = pose.col(0); // Pointer to first column of pose (empty)
-
-      cv::normalize(p1, p2); // Normalize the rotation, and copies the column to pose
-      // cout << "p1:\n " << p1 << endl;
-      // cout << "p2:\n " << p2 << endl;
-
-      p1 = H.col(1);    // Pointer to second column of H
-      p2 = pose.col(1); // Pointer to second column of pose (empty)
-
-      cv::normalize(p1, p2); // Normalize the rotation and copies the column to pose
-      // cout << "p1:\n " << p1 << endl;
-      // cout << "p2:\n " << p2 << endl;
-
-      p1 = pose.col(0);
-      p2 = pose.col(1);
-
-      Mat p3 = p1.cross(p2); // Computes the cross-product of p1 and p2
-      Mat c2 = pose.col(2);  // Pointer to third column of pose
-      p3.copyTo(c2);         // Third column is the crossproduct of columns one and two
-      // cout << "p3:\n " << p3 << endl;
-      // cout << "c2:\n " << c2 << endl;
-
-      // pose.col(3) = H.col(2) / tnorm; // vector t [R|t] is the last column of pose
-      // cout << "H.col(2):\n " << H.col(2) << endl;
-      // cout << "tnorm:\n " << tnorm << endl;
-
-      pose.copyTo(toPose);
-
-      // cout << "Pose antes:\n" << pose << endl;
-      Mat descom = decomposeR(pose);
-      // cout << "Pose despues:\n" << descom << endl;
-      return descom;
    }
 };
