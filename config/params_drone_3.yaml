@@ -15,14 +15,14 @@ bearing:
   data: [.9, .69, -.3, .69, -.3, -.23]
 
 # Gain on linear velocities (proportional)
-gainv: 4
-gainv_max: 1
-gainv_prime: -5
+gainv: 2.5
+gainv_max: .5
+gainv_prime: -10
 
 # Gain on linear velocities (integral)
-gainv_ki: 0.1
-gainv_ki_max: .005
-gainv_ki_prime: -0.3
+gainv_ki: 0.2
+gainv_ki_max: .05
+gainv_ki_prime: -0.4
 
 # Gain on angular velocities
 gainw: 0.5
@@ -49,7 +49,7 @@ flann_ratio: 0.7
 # control 5 (proyeccion de bearing con rotaciones Ground Truth)
 # control 6 (diferencia de bearings con rotaciones)
 # control 7 (diferencia de bearings con rotaciones Ground Truth)
-control: 7
+control: 5
 
 ############################################################
 # Cambio de cámara 0, 1 o 2.

@@ -8,6 +8,9 @@ public:
    Mat imgDesiredGray;
    vc_state *state;
    int mode;
+   int droneID;
+
+   ofstream timeExcec;
 
    // ORB detector;
    vector<KeyPoint> keypoints1, keypoints2;
@@ -33,12 +36,13 @@ public:
    {
    }
 
-   GUO(vc_state *stated, int mode)
+   GUO(vc_state *stated, int mode, int droneID)
    {
       this->mode = mode;
       this->imgDesired = (*stated).desired.img;
       cvtColor(imgDesired, this->imgDesiredGray, COLOR_BGR2GRAY);
       this->state = stated;
+      this->droneID = droneID;
 
       // Setting the ORB detector
       this->detector = ORB::create((*stated).params.nfeatures,
@@ -71,6 +75,8 @@ public:
          exit(-1);
       }
       cout << GREEN_C << "[INFO] Desired data obtained" << RESET_C << endl;
+
+      timeExcec = ofstream(workspace + "/src/bearings/src/data/out/execution_data_" + to_string(droneID) + ".txt");
    }
 
    int getDesiredData()
@@ -143,7 +149,7 @@ public:
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
             {
-               indexMark = 3;
+               indexMark = 1;
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
             {
@@ -251,7 +257,7 @@ public:
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
             {
-               indexMark = 3;
+               indexMark = 1;
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
             {
@@ -363,12 +369,14 @@ public:
             temporal4.colRange(0, 2).convertTo((*this->state).desired.normPoints, CV_64F);
             this->toSphere((*this->state).desired.points, &(*this->state).desired.inSphere);
 
-            Mat img_matches;
-            drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
-                        Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+            // Mat img_matches;
+            // drawMatches(this->imgDesired, this->keypoints1, actualImg, this->keypoints2, this->good_matches, img_matches, Scalar::all(-1),
+            //             Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
             // namedWindow("Good Matches", WINDOW_NORMAL);
             // resizeWindow("Good Matches", 960, 270);
+            // /// save image
+            // imwrite("matches.jpg", img_matches);
             // imshow("Good Matches", img_matches);
             // waitKey(0);
             // destroyWindow("Good Matches");
@@ -412,7 +420,8 @@ public:
             // namedWindow("Good Matches", WINDOW_NORMAL);
             // resizeWindow("Good Matches", 960, 540);
             // imshow("Good Matches", (*this->state).actual.img);
-            // waitKey(1);
+            // waitKey(0);
+            // exit(0);
          }
 
          Mat temporal = Mat::zeros((*this->state).actual.points.rows, 3, CV_32F);
@@ -466,16 +475,11 @@ public:
    int getVels(Mat img // Image to be processed
    )
    {
+      double ActualTime = ros::Time::now().toSec();
       cout << GREEN_C << "\n[INFO] Getting velocities from GUO control..." << RESET_C << endl;
 
       Mat U_temp, L, Lo;
       vector<vecDist> distancias;
-
-      if ((*this->state).t - this->lastLKT > 3)
-      {
-         this->firstTime = false;
-         this->lastLKT = (*this->state).t;
-      }
 
       if (this->getActualData(img) < 0)
       {
@@ -530,6 +534,24 @@ public:
       ERROR.release();
       distancias.clear();
 
+      if ((*this->state).t - this->lastLKT > 3 && (*this->state).error < .1)
+      {
+         this->firstTime = false;
+         this->lastLKT = (*this->state).t;
+         this->detector = ORB::create(500,
+                                      (*this->state).params.scaleFactor,
+                                      (*this->state).params.nlevels,
+                                      (*this->state).params.edgeThreshold,
+                                      (*this->state).params.firstLevel,
+                                      (*this->state).params.WTA_K,
+                                      (*this->state).params.scoreType,
+                                      (*this->state).params.patchSize,
+                                      (*this->state).params.fastThreshold);
+      }
+
+      double FinalTime = ros::Time::now().toSec() - ActualTime;
+      this->timeExcec << FinalTime << endl;
+      cout << GREEN_C << "[INFO] Velocities obtained in " << FinalTime << " seconds" << RESET_C << endl;
       return 0;
    }
 
@@ -684,11 +706,11 @@ public:
       Mat p2;
       vector<Mat> keys;
 
-      // keys.push_back((Mat_<double>(1, 2) << 480, 270));
+      keys.push_back((Mat_<double>(1, 2) << 480, 270));
       // keys.push_back((Mat_<double>(1, 2) << 1440, 270));
       // keys.push_back((Mat_<double>(1, 2) << 1440, 810));
       // keys.push_back((Mat_<double>(1, 2) << 480, 810));
-      keys.push_back((Mat_<double>(1, 2) << 0, 0));
+      // keys.push_back((Mat_<double>(1, 2) << 0, 0));
       keys.push_back((Mat_<double>(1, 2) << 1920, 0));
       keys.push_back((Mat_<double>(1, 2) << 0, 1080));
       keys.push_back((Mat_<double>(1, 2) << 1920, 1080));

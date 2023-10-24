@@ -61,12 +61,12 @@ int main(int argc, char **argv)
 
 		// First leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
 		image_sub_1f = it1.subscribe("/" + DRONE_NAME + "_1/camera_base/image_raw", 1, imageCallback1);
-		guoLider1 = GUO(&states[0], INIT_MODE);
+		guoLider1 = GUO(&states[0], INIT_MODE, 1);
 		rotDrone1 = RotationalControl(&states[0]);
 
 		// Second leader -> Translational motion (IBVS GUO) and Rotational motion (IBVS CLASSIC)
 		image_sub_2f = it2.subscribe("/" + DRONE_NAME + "_2/camera_base/image_raw", 1, imageCallback2);
-		guoLider2 = GUO(&states[1], INIT_MODE);
+		guoLider2 = GUO(&states[1], INIT_MODE, 2);
 		rotDrone2 = RotationalControl(&states[1]);
 
 		// First follower -> Translational motion and Rotational motion (BEARING ONLY)
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 			bearDrone5 = bearingControl(&states[4], states, 5);
 		}
 	}
-
+	// exit(0);
 	/****************** MOVING TO POSES ******************/
 	if (!SAVE_DESIRED_IMAGES)
 	{
@@ -257,7 +257,7 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			// CHANGE_THRESHOLD_LEADER -= 0.02;
+			CHANGE_THRESHOLD_LEADER = 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -301,12 +301,6 @@ void imageCallback1(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG1++;
-		// if (contIMG1 % 100 == 0)
-		// {
-		// 	states[0].integral_error = Mat::zeros(3, 1, CV_64F);
-		// 	states[0].integral_error6 = Mat::zeros(6, 1, CV_64F);
-		// 	states[0].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		// }
 		saveStuff(0);
 	}
 }
@@ -347,7 +341,7 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 			MODE = 1;
 			change = true;
 			loadImages();
-			// CHANGE_THRESHOLD_LEADER -= 0.02;
+			CHANGE_THRESHOLD_LEADER = 0.02;
 
 			guoLider1.changeMode(MODE);
 			guoLider2.changeMode(MODE);
@@ -391,12 +385,6 @@ void imageCallback2(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG2++;
-		// if (contIMG2 % 100 == 0)
-		// {
-		// 	states[1].integral_error = Mat::zeros(3, 1, CV_64F);
-		// 	states[1].integral_error6 = Mat::zeros(6, 1, CV_64F);
-		// 	states[1].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		// }
 		saveStuff(1);
 	}
 }
@@ -415,6 +403,18 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// if (states[2].error < 0.075)
+		// {
+		// 	states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone3.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[2].integral_error.at<double>(i, 0) = 0;
+			}
+		}
 
 		// Getting the bearings from camera's drone
 		if (bearDrone3.getVels(actual) < 0)
@@ -442,12 +442,6 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG3++;
-		if (contIMG3 % 250 == 0)
-		{
-			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[2].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[2].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(2);
 
 		if (states[2].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
@@ -471,6 +465,18 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// if (states[3].error < 0.075)
+		// {
+		// 	states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone4.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[3].integral_error.at<double>(i, 0) = 0;
+			}
+		}
 
 		// Getting the bearings from camera's drone
 		if (bearDrone4.getVels(actual) < 0)
@@ -498,12 +504,6 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG4++;
-		if (contIMG4 % 250 == 0)
-		{
-			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[3].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[3].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(3);
 
 		if (states[3].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)
@@ -527,6 +527,18 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		cout << CYAN_C << endl
 			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+		// if (states[4].error < 0.075)
+		// {
+		// 	states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone5.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[4].integral_error.at<double>(i, 0) = 0;
+			}
+		}
 
 		// Getting the bearings from camera's drone
 		if (bearDrone5.getVels(actual) < 0)
@@ -554,12 +566,6 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 		}
 
 		contIMG5++;
-		if (contIMG5 % 250 == 0)
-		{
-			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
-			// states[4].integral_error6 = Mat::zeros(6, 1, CV_64F);
-			// states[4].integral_error12 = Mat::zeros(12, 1, CV_64F);
-		}
 		saveStuff(4);
 
 		if (states[4].error < CHANGE_THRESHOLD_FOLLOWER && states[0].in_target && states[1].in_target)

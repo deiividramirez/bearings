@@ -46,6 +46,7 @@ for index, dron in enumerate(DRONE_COUNT):
     intx = np.loadtxt(f"{path}/out/out_integral_x_{dron}.txt")
     inty = np.loadtxt(f"{path}/out/out_integral_y_{dron}.txt")
     intz = np.loadtxt(f"{path}/out/out_integral_z_{dron}.txt")
+    execution_data = np.loadtxt(f"{path}/out/execution_data_{dron}.txt")
 
     NUM = 0
 
@@ -56,12 +57,17 @@ Tiempo total -> {time[-1]}
 Error final -> {err[-1]}, Max -> {max(err[NUM:])}
 Error pixels final -> {err_pix_real[-1]}, Max -> {max(err_pix_real[NUM:])}
 Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
+
+Excecution data: {np.mean(execution_data)}
+Max time: {np.max(execution_data)}
+Min time: {np.min(execution_data)}
     """
     )
 
     ax[0][index].title.set_text(f"Drone {dron}")
     if np.any(err_pix_real != 0):
         err_pix = (err_pix_real) / max(err_pix_real[NUM + 10 :]) * max(err[NUM:])
+        # err_pix = err_pix_real
         ax[0][index].plot(time[NUM:], err_pix[NUM:], "r", label="Error (px)")
         ax[0][index].plot(
             [time[NUM], time[-1]],
@@ -127,7 +133,9 @@ Velocidad final -> {vx[-1], vy[-1], vz[-1], vyaw[-1]}
     ax[3][index].set_ylabel("Integrales")
 
 fig.tight_layout()
-fig.savefig(f"{path}/out_velocidades.png", bbox_inches="tight", pad_inches=0.1)
+# print(f"Saving plot in {path}/out_velocidades.png")
+# exit()
+# fig.savefig(f"{path}/out_velocidades.png", bbox_inches="tight", pad_inches=0.1)
 
 ########################################################################################
 
