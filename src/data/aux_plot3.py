@@ -8,14 +8,18 @@ Email: david.parada@cimat.mx
 """
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import sys
 import os
 
+font = {"size": 11}
+matplotlib.rc("font", **font)
+plt.rcParams["figure.autolayout"] = True
+
 from pathlib import Path
 
 path = Path(__file__).parent.absolute()
-plt.rcParams["figure.autolayout"] = True
 DRONE_COUNT = range(1, 5)
 COLORS = [
     "red",
@@ -44,29 +48,62 @@ forcount = (
 for title, txt, label in forcount:
     print(f"Plotting {title} for all drones with {txt}*")
     labArray = []
-    fig = plt.figure(num=f"{title}", figsize=(3 * len(DRONE_COUNT), 3))
-    gs = fig.add_gridspec(
-        ncols=5, nrows=1, width_ratios=[2, 2, 2, 2, 0.1]
+    # fig = plt.figure(num=f"{title}", figsize=(3 * len(DRONE_COUNT), 3))
+    # gs = fig.add_gridspec(ncols=5, nrows=1, width_ratios=[2, 2, 2, 2, 0.1])
+    # ax = []
+    # for i in range(4):
+    #     ax.append(fig.add_subplot(gs[0, i]))
+    # ax.append(fig.add_subplot(gs[0, 4]))
+    fig, ax = plt.subplots(
+        1,
+        4 if "Super" not in title else 2,
+        sharex=True,
+        num=f"{title}",
+        # figsize is variable depending on the number of drones
+        # figsize=(4 * len(DRONE_COUNT), 4),
+        # gridspec_kw={"width_ratios": [3, 3, 3, 3]},
     )
-    ax = []
-    for i in range(4):
-        ax.append(fig.add_subplot(gs[0, i]))
-    ax.append(fig.add_subplot(gs[0, 4]))
-    ax = np.array(ax).flatten()
+    # fig.set_size_inches(16, 4, forward=False)
+    # set width to 434.18 pt
+    fig.set_size_inches(12, 3.5, forward=True)
+    ax = (
+        np.array(ax).flatten() if "Super" not in title else np.array([ax, ax]).flatten()
+    )
 
-    ax[-1].axis("off")
-    ax[-1].axis("tight")
+    # ax[-1].axis("off")
+    # ax[-1].axis("tight")
 
-    fig.suptitle(title)
+    # fig.suptitle(title)
 
     for drone in range(1, 5):
         ax[drone - 1].title.set_text(
-            f"Drone {drone} {'(Leader)' if drone in (0,1) else '(Follower)'}"
+            f"Drone {drone} {'(Leader)' if drone in (1,2) else '(Follower)'}"
         )
+        
         time = np.loadtxt(f"{path}/out/out_time_{drone}.txt")
-        ax[drone - 1].set_xticks(np.linspace(0, time[-1], 5, endpoint=True))
+        print(f"\nTotal time: {time[-1]:.1f}")
+
+        execution_data = np.loadtxt(f"{path}/out/execution_data_{drone}.txt")
+        print(f"Execution data: {np.mean(execution_data):.3f} -- max: {np.max(execution_data):.3f} -- min: {np.min(execution_data):.3f}")
+
+        # quantity of hz in the simulation
+        hz = 1 / np.mean(execution_data)
+        print(f"Hz: {hz:.1f}")
+
+
+        # xticks with no decimals
+        ax[drone - 1].set_xticks(
+            np.linspace(0, time[-1], 6, endpoint=True), minor=False
+        ) if "Super" not in title else ax[drone - 1].set_xticks(
+            np.linspace(0, time[-1], 10, endpoint=True), minor=False
+        )
+        ax[drone - 1].set_xticklabels(
+            np.linspace(0, time[-1], 6, endpoint=True).round(1), minor=False
+        ) if "Super" not in title else ax[drone - 1].set_xticklabels(
+            np.linspace(0, time[-1], 10, endpoint=True).round(1), minor=False
+        )
         # set equal axis for all plots
-        ax[drone - 1].set_xlim([0, time[-1]])
+        ax[drone - 1].set_xlim([-0.5, 0.5 + time[-1]])
         if "Vel" in title:
             x = np.vstack(
                 (
@@ -76,6 +113,7 @@ for title, txt, label in forcount:
                     np.loadtxt(f"{path}/out/{txt}yaw_{drone}.txt"),
                 ),
             )
+            print("Final velocity: ", x[:, -1])
         elif "Super" in title:
             x = np.vstack(
                 (
@@ -84,6 +122,7 @@ for title, txt, label in forcount:
                     np.loadtxt(f"{path}/out/{txt}z_{drone}.txt"),
                 ),
             )
+            print("Final super-twisting: ", x[:, -1])
         elif "Adaptive" in title:
             x = np.vstack(
                 (
@@ -92,8 +131,10 @@ for title, txt, label in forcount:
                     np.loadtxt(f"{path}/out/{txt}kd_{drone}.txt"),
                 )
             )
+            print("Final gains: ", x[:, -1])
         else:
             x = np.loadtxt(f"{path}/out/{txt}{drone}.txt")
+            print(f"Final {txt}: ", x[-1])
 
         print(
             f"Drone {drone} -> {x.shape} -> time: {time.shape} -> txt: {txt}{drone}.txt"
@@ -115,9 +156,9 @@ for title, txt, label in forcount:
         labArray.append(f"{label}_y$")
         labArray.append(f"{label}_z$")
     elif "Adaptive" in title:
-        labArray.append(f"{label}" + "{" + "kp" + "}$")
-        labArray.append(f"{label}" + "{" + "kv" + "}$")
-        labArray.append(f"{label}" + "{" + "kd" + "}$")
+        labArray.append(f"{label}" + "{" + "kvp" + "}$")
+        labArray.append(f"{label}" + "{" + "kvi" + "}$")
+        labArray.append(f"{label}" + "{" + "k \omega" + "}$")
     else:
         labArray.append(f"{label}")
 
@@ -125,11 +166,19 @@ for title, txt, label in forcount:
     ax[-1].legend(
         [Line2D([0], [0], color=COLORS[i]) for i in range(10)],
         labArray,
-        loc="center right",
+        loc="best",
     )
-    fig.savefig(f"{path}/{txt}.png", bbox_inches="tight", pad_inches=0.1, dpi=300, transparent=True)
-    fig.savefig(f"{path}/{txt}.svg", bbox_inches="tight", transparent=True, dpi=300)
+    fig.savefig(
+        f"{path}/sim_{txt}.png",
+        bbox_inches="tight",
+        pad_inches=0.1,
+        dpi=300,
+        transparent=True,
+    )
+    fig.savefig(f"{path}/sim_{txt}.svg", bbox_inches="tight", transparent=True, dpi=300)
+    print(f"Saving plot in {path}/sim_{txt}.png\n\n\n")
 
+# plt.show()
 
 # ================================================================================
 
@@ -277,4 +326,4 @@ for title, txt, label in forcount:
 # fig3d.tight_layout()
 # fig3d.savefig(f"{path}/out_posiciones.png", bbox_inches="tight", pad_inches=0.1)
 
-plt.show()
+# plt.show()

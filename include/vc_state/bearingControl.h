@@ -17,6 +17,8 @@ public:
    vector<vc_state> drones;
    vector<Mat> Ris;
 
+   Mat ERROR_MAT;
+
    double t0L = 0.0, tfL = 1.0;
 
    bearingControl()
@@ -47,6 +49,7 @@ public:
       }
 
       timeExcec = ofstream(workspace + "/src/bearings/src/data/out/execution_data_" + to_string(droneID) + ".txt");
+      this->ERROR_MAT = Mat::zeros(3, 1, CV_64F);
    }
 
    bearingControl(vc_state *stated, vector<vc_state> drones, int droneID)
@@ -75,6 +78,7 @@ public:
       }
 
       timeExcec = ofstream(workspace + "/src/bearings/src/data/out/execution_data_" + to_string(droneID) + ".txt");
+      this->ERROR_MAT = Mat::zeros(3, 1, CV_64F);
    }
 
    int getDesiredData()
@@ -168,6 +172,9 @@ public:
 
       (*this->state).desired.img = this->imgDesired;
       (*this->state).desired.imgGray = this->imgDesiredGray;
+
+      cout << "Desired bearings: " << (*this->state).desired.bearings << endl;
+      cout << "DRONE ID: " << droneID << endl;
 
       return 0;
    }
@@ -367,6 +374,7 @@ public:
       // Error calculation
       // Mat Error = (*this->state).actual.bearings - (*this->state).desired.bearings;
       Mat Error = abs(suma3);
+      this->ERROR_MAT = Error;
 
       (*this->state).error = norm(Error, NORM_L2);
       (*this->state).error_pix = norm((*this->state).actual.normPoints - (*this->state).desired.normPoints, NORM_L2);

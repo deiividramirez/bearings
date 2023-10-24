@@ -133,8 +133,8 @@ Min time: {np.min(execution_data)}
     ax[3][index].set_ylabel("Integrales")
 
 fig.tight_layout()
-print(f"Saving plot in {path}/out_velocidades.png")
-exit()
+# print(f"Saving plot in {path}/out_velocidades.png")
+# exit()
 # fig.savefig(f"{path}/out_velocidades.png", bbox_inches="tight", pad_inches=0.1)
 
 ########################################################################################

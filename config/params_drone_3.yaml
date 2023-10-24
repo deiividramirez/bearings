@@ -20,7 +20,7 @@ gainv_max: .5
 gainv_prime: -10
 
 # Gain on linear velocities (integral)
-gainv_ki: 0.225
+gainv_ki: 0.2
 gainv_ki_max: .05
 gainv_ki_prime: -0.4
 

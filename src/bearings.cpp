@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 			bearDrone5 = bearingControl(&states[4], states, 5);
 		}
 	}
-
+	// exit(0);
 	/****************** MOVING TO POSES ******************/
 	if (!SAVE_DESIRED_IMAGES)
 	{
@@ -404,9 +404,16 @@ void IMGCallback3(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback3 for Drone 3 iter: " << contIMG3 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[2].error < 0.075)
-		{
-			states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+		// if (states[2].error < 0.075)
+		// {
+		// 	states[2].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone3.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[2].integral_error.at<double>(i, 0) = 0;
+			}
 		}
 
 		// Getting the bearings from camera's drone
@@ -459,9 +466,16 @@ void IMGCallback4(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback4 for Drone 4 iter: " << contIMG4 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[3].error < 0.075)
-		{
-			states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+		// if (states[3].error < 0.075)
+		// {
+		// 	states[3].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone4.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[3].integral_error.at<double>(i, 0) = 0;
+			}
 		}
 
 		// Getting the bearings from camera's drone
@@ -514,9 +528,16 @@ void IMGCallback5(const sensor_msgs::Image::ConstPtr &msg)
 			  << "=============> BEGIN IMGCallback5 for Drone 5 iter: " << contIMG5 << " <=============" << RESET_C << endl;
 		Mat actual = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-		if (states[4].error < 0.075)
-		{
-			states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+		// if (states[4].error < 0.075)
+		// {
+		// 	states[4].integral_error = Mat::zeros(3, 1, CV_64F);
+		// }
+		for (int i = 0; i < 3; i++)
+		{ 
+			if (bearDrone5.ERROR_MAT.at<double>(i, 0) < 0.075)
+			{
+				states[4].integral_error.at<double>(i, 0) = 0;
+			}
 		}
 
 		// Getting the bearings from camera's drone

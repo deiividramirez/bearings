@@ -149,7 +149,7 @@ public:
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
             {
-               indexMark = 3;
+               indexMark = 1;
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
             {
@@ -257,7 +257,7 @@ public:
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 98)
             {
-               indexMark = 3;
+               indexMark = 1;
             }
             else if ((*this->state).params.seguimiento.at<double>(marker_index, 0) == 99)
             {
@@ -538,7 +538,7 @@ public:
       {
          this->firstTime = false;
          this->lastLKT = (*this->state).t;
-         this->detector = ORB::create(400,
+         this->detector = ORB::create(500,
                                       (*this->state).params.scaleFactor,
                                       (*this->state).params.nlevels,
                                       (*this->state).params.edgeThreshold,
@@ -706,11 +706,11 @@ public:
       Mat p2;
       vector<Mat> keys;
 
-      // keys.push_back((Mat_<double>(1, 2) << 480, 270));
+      keys.push_back((Mat_<double>(1, 2) << 480, 270));
       // keys.push_back((Mat_<double>(1, 2) << 1440, 270));
       // keys.push_back((Mat_<double>(1, 2) << 1440, 810));
       // keys.push_back((Mat_<double>(1, 2) << 480, 810));
-      keys.push_back((Mat_<double>(1, 2) << 0, 0));
+      // keys.push_back((Mat_<double>(1, 2) << 0, 0));
       keys.push_back((Mat_<double>(1, 2) << 1920, 0));
       keys.push_back((Mat_<double>(1, 2) << 0, 1080));
       keys.push_back((Mat_<double>(1, 2) << 1920, 1080));
