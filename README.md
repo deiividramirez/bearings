@@ -132,7 +132,7 @@ Each drone has a different namespace with "iris_n" where n is the number of the 
 You can move any drone along Gazebo's world by using the following command:
 
 ```bash
-rosrun placing_iris placing_iris iris_n pos_x pos_y pos_z pos_yaw
+rosrun placing_iris placing_iris bebop2_n pos_x pos_y pos_z pos_yaw
 ```
   
 where n is the number of the drone, pos_x, pos_y, pos_z, and pos_yaw are the position and orientation of the drone in the Gazebo's world.
