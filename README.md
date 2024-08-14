@@ -124,7 +124,7 @@ You have to run the following commands in different terminals:
 ### Gazebo launch file
   
 ```bash
-roslaunch bearings iris.launch
+roslaunch bearings bebop2_4.launch
 ```
 
 Each drone has a different namespace with "iris_n" where n is the number of the drone, for example, the first drone has the namespace "iris_1", the second drone has the namespace "iris_2", and so on.
